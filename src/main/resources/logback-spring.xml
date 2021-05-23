@@ -1,0 +1,74 @@
+<configuration>
+
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>TRACE</level>
+		</filter>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/Temp/Logs/web.log</file>
+		<append>true</append>
+		<immediateFlush>false</immediateFlush>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
+			</pattern>
+		</encoder>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/Temp/Logs/web-%d{yyyy-MM-dd}.log
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>3GB</totalSizeCap>
+		</rollingPolicy>
+
+	</appender>
+
+  <!--   <include resource="org/springframework/boot/logging/logback/base.xml" /> -->
+
+<!--
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+
+	</root>
+
+ -->
+	<springProfile name="dev,local">
+
+		<root level="INFO">
+			<appender-ref ref="STDOUT" />
+			<appender-ref ref="FILE" />
+		</root>
+
+		<logger name="org.springframework.web.client.RestTemplate" level="DEBUG" />
+
+		<logger name="org.hibernate" level="INFO" />
+
+		<logger name="org.hibernate.SQL" level="DEBUG" />
+
+		<logger name="com.vaadin" level="INFO" />
+
+		<logger name="org.atmosphere" additivity="false" />
+
+
+
+
+
+	</springProfile>
+
+	<springProfile name="prod">
+
+
+
+	</springProfile>
+
+
+
+
+</configuration>
