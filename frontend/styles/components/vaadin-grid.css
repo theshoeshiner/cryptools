@@ -1,0 +1,94 @@
+:host([navigating]) [part~="cell"]::before {
+	box-shadow:none !important;
+}
+
+/* last column only shows on hover */
+
+:host(.button-column) tr td[last-column] ::slotted(*) {
+	opacity:0;
+	transition: opacity 0.1s;
+}
+
+:host(.button-column) tr:hover td[last-column] ::slotted(*) {
+	opacity:1; 
+}
+
+
+[part~="row"]:hover > [part~="body-cell"]{
+	background-color: var(--lumo-primary-color-10pct);
+}
+
+/* hide checkbox for parent items on data point selector */
+
+
+:host(.hide-first-column) tr[aria-level="1"] td[first-column] ::slotted(*) {
+	visibility:hidden;
+}
+
+
+
+/* This is for the patient profile view */
+
+:host(.small-header) tr th ::slotted(*) {
+	font-size: var(--lumo-font-size-xs);
+	font-weight:500;
+    text-overflow: clip;
+    white-space: pre-wrap;
+}
+
+/* make the top header a different color */
+
+:host(.small-header) [part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
+	 background-color:var(--lumo-primary-color);  
+	
+}
+
+:host(.profile-details) tbody [part~="row"] [part~="body-cell"][first-column] {
+	font-weight:500;
+	font-size: 12px;
+}
+
+:host(.profile-details)  thead [part~="row"][aria-rowindex="2"]  {
+	display:none;
+}
+
+/* Print styles */
+
+@media print {
+	
+	/* Change table header span color */
+	
+	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"]) ::slotted(*) {
+		 color:var(--lumo-body-text-color) !important;
+	}
+	
+	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
+		 background-color:var(--lumo-shade-20pct) !important;
+		
+	}
+	
+	/*dont show hover colors */
+	
+	[part~="row"]:hover > [part~="body-cell"]{
+		background-color: unset;
+	}
+	
+}
+
+:host(.small-header) tr th[colspan]:not([colspan="1"]) ::slotted(*) {
+	color:var(--lumo-primary-contrast-color);
+	margin-bottom:10px;
+	font-size:var(--lumo-font-size-m);
+}
+
+/* Give the table cells a border */
+
+:host(.small-header) tr th:not([first-column]):not([colspan]) {	
+    border-left:1px solid var(--lumo-contrast-20pct);
+}
+
+:host(.small-header) tr td:not([first-column]) {
+    border-left:1px solid var(--lumo-contrast-20pct);
+}
+
+

@@ -1,0 +1,15 @@
+.confirm-dialog h3 {
+	margin-top:0px;
+}
+
+.confirm-dialog iron-icon {
+	color:var(--lumo-primary-color);
+}
+
+.confirm-dialog vaadin-button[theme='primary'] iron-icon {
+	color:var(--lumo-primary-contrast-color);
+}
+
+.confirm-dialog.warning iron-icon {
+	color:var(--lumo-error-color);
+}

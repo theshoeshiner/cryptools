@@ -1,0 +1,3 @@
+:host(.no-border) div[part=input-field]::after {
+	border:none; 
+}

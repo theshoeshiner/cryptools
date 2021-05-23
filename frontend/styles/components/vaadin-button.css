@@ -1,0 +1,12 @@
+:host([theme=tertiary-inline].link) div[part=label] {
+	font-weight:400; 
+}
+
+:host([theme=tertiary-inline].link:hover) div[part=label] {
+	text-decoration:underline;
+}
+
+
+:host([theme=tertiary-inline].link:hover) iron-icon {
+	
+}

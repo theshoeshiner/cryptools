@@ -1,0 +1,178 @@
+
+#header {
+  height: var(--lumo-size-xl);
+  margin-top:0px;
+}
+
+#header h1 {
+  margin: 0;
+}
+#logo {
+
+  box-sizing: border-box;
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+  padding: var(--lumo-space-xl) var(--lumo-space-m);
+  background-color:var(--lumo-primary-color);
+ 	 
+}
+ 
+
+#logo iron-icon {
+	
+	 color:var(--lumo-tint-70pct);
+	 height:32px;
+	 width:32px;
+	
+	} 
+
+ #logo .h2 {
+  	color:var(--lumo-tint-70pct);
+	font-weight:700;
+}
+/* 
+vaadin-tab {
+  font-size: var(--lumo-font-size-s);
+  height: var(--lumo-size-l);
+  font-weight: 600;
+  color: var(--lumo-body-text-color);
+}
+
+vaadin-tab:hover {
+  background-color: var(--lumo-contrast-5pct);
+}
+
+vaadin-tab[selected] {
+  background-color: var(--lumo-primary-color-10pct);
+  color: var(--lumo-primary-text-color);
+} 
+
+ */
+.entities-view .count {
+	font-size:var(--lumo-font-size-xs);
+	font-weight:700;
+}
+
+.entities-view vaadin-grid {
+	/* margin-top:0px; */
+}
+
+
+
+iron-icon.flow-error {
+	color:var(--lumo-error-color);
+}
+
+
+iron-icon.primary {
+	color:var(--lumo-primary-color);
+}
+
+.helper-text {
+    display: block;
+    color: var(--lumo-secondary-text-color);
+    font-size: var(--lumo-font-size-xs);
+    line-height: var(--lumo-line-height-xs);
+    transition: color 0.2s;
+}
+
+.grid-buttons vaadin-button {
+	color:var(--lumo-contrast-60pct);
+}
+
+.grid-buttons vaadin-button:hover {
+	color:var(--lumo-contrast); 
+}
+
+.grid-buttons vaadin-button[aria-disabled=true] {
+	color:var(--lumo-contrast-20pct);
+} 
+
+vaadin-details[theme=stacktrace] :not([slot=summary]) {
+	font-size:var(--lumo-size-xxs); 
+}
+
+vaadin-details[theme=stacktrace] {
+	width:100%;
+}
+
+vaadin-vertical-layout.stacktrace {
+	white-space:pre; 
+	
+}
+
+
+
+vaadin-notification-card[theme=error] h3 {
+	color: var(--lumo-error-contrast-color);
+	margin-top:0px;
+	word-break: break-word;
+}
+
+vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
+	color: var(--lumo-error-contrast-color);
+}
+
+/* Users View  */
+
+.roles-column-list span {
+	padding-right:4px;
+	padding-left:4px;
+	padding-bottom:4px;
+	margin-right:4px;
+	font-weight:600;
+}
+
+.roles-column-list span.project_manager {
+	background-color: #cefdce  ;
+}
+
+.roles-column-list span.administrator {
+	background-color: #ffccd4 ;
+}
+
+.roles-column-list span.reviewer {
+	background-color: #ceebfd ;
+}
+ 
+ .version-change iron-icon {
+	align-self: flex-end;
+    padding-bottom: 8px;
+    padding-right:16px;
+ }
+ 
+/* 
+.slider{
+  position:absolute;
+  width:800px;
+  height:5px;
+  overflow-x: hidden;
+}
+
+.line{
+  position:absolute;
+  opacity: 0.4;
+  background:#4a8df8;
+  width:150%;
+  height:5px;
+}
+
+.subline{
+  position:absolute;
+  background:#4a8df8;
+  height:5px; 
+}
+.inc{
+animation: increase 2s infinite;
+}
+.dec{
+animation: decrease 2s 0.5s infinite;
+}
+
+@keyframes increase {
+ from { left: -5%; width: 5%; }
+ to { left: 130%; width: 100%;}
+}
+@keyframes decrease {
+ from { left: -80%; width: 80%; }
+ to { left: 110%; width: 10%;}
+} */

@@ -1,0 +1,13 @@
+a[router-link] iron-icon {
+	width:var(--lumo-icon-size-s);
+	height:var(--lumo-icon-size-s); 
+	padding-right:var(--lumo-space-s); 
+	vertical-align: text-bottom;
+}
+
+
+vaadin-button[theme=tertiary-inline].link iron-icon {
+	width:2em;
+	height:2em; 
+	padding-right: var(--lumo-space-xs);
+}

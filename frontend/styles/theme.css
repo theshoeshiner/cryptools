@@ -1,0 +1,171 @@
+html {
+   
+   
+  
+  /* --primary-color-dark-l: calc(var(--primary-color-l) - var(--darknessTransform));
+  --secondary-color-light-l: calc(var(--secondary-color-l) + var(--lightnessTransform));
+  --secondary-color-dark-l: calc(var(--secondary-color-l) - var(--darknessTransform)); */
+  
+  /* --color-primary: hsl(var(--primary-color-h),
+                       var(--primary-color-s),
+                       var(--primary-color-l));
+  --color-secondary: hsl(var(--secondary-color-h),
+                       var(--secondary-color-s),
+                       var(--secondary-color-l));
+  --color-primary-dark:hsl(var(--primary-color-h),
+                       var(--primary-color-s),
+                       var(--primary-color-dark-l));
+  --color-secondary-dark:hsl(var(--secondary-color-h),
+                       var(--secondary-color-s),
+                       var(--secondary-color-dark-l));
+                        */
+
+   
+   
+   
+   
+      --lumo-border-radius: 0px;
+      --lumo-size-xl: 3rem;
+      --lumo-size-l: 2.5rem;
+      --lumo-size-m: 2rem;
+      --lumo-size-s: 1.75rem;
+      --lumo-size-xs: 1.5rem;
+      --lumo-space-xl: 1.875rem;
+      --lumo-space-l: 1.25rem;
+      --lumo-space-m: 0.625rem;
+      --lumo-space-s: 0.3125rem;
+      --lumo-space-xs: 0.1875rem;
+      --lumo-line-height-m: 1.4;
+      --lumo-line-height-s: 1.2;
+      --lumo-line-height-xs: 1.1;
+      --lumo-primary-color: #C56E00;
+      --lumo-primary-text-color: #C56E00;
+      --lumo-body-text-color: #03253a;
+      --lumo-base-color: #fff;
+      --lumo-success-color: #008F35;
+      --lumo-success-text-color: #008F35;
+      --lumo-error-color: #c83214;
+      --lumo-error-text-color: #c83214;
+      
+      
+     	
+      /* --lumo-primary-text-color: #C56E00; */
+      
+      /* --material-body-text-color: #2B4C6F;
+		--material-secondary-text-color: rgba(0, 0, 0, 0.54);
+		--material-disabled-text-color: rgba(0, 0, 0, 0.38);
+		--material-primary-text-color: #6200ee;
+		--material-error-text-color: #b00020; */
+		
+		--material-h1-font-size: 1rem;
+		--material-h2-font-size: 3.75rem;
+		--material-h3-font-size: 1.5rem;
+		--material-h4-font-size: 2.125rem;
+		--material-h5-font-size: 1.5rem;
+		--material-h6-font-size: 1.25rem;
+		--material-body-font-size: 1rem;
+		--material-small-font-size: 0.875rem;
+		--material-button-font-size: 0.875rem;
+		--material-caption-font-size: 0.75rem;
+      
+      /*--material-h1-color: #FF0000;*/
+      /* hsl(210, 77%, 25%) */
+      
+      
+      --primary-color-h:210;
+      --primary-color-s:77%;
+      --primary-color-l:25%;
+   
+   	--primary-color-l-transform: 70%;
+  --darknessTransform: 15%;
+  
+  --primary-color-light-l: calc(var(--primary-color-l) + var(--primary-color-l-transform));
+      
+      
+      --primary-color-light-transform: 1%;
+      
+     /*  --primary-color-light-l: calc(var(--primary-color-l) + var(--primary-color-light-transform)); */
+      
+      
+	
+		--primary-color-light: hsl (
+		var(--primary-color-h),
+		var(--primary-color-s),
+		var(--primary-color-light-l)
+		
+		);
+		
+		  --color-primary-light:hsl(var(--primary-color-h),
+                       var(--primary-color-s),
+                       var(--primary-color-light-l));
+      
+      --material-primary-color: hsl(var(--primary-color-h),var(--primary-color-s),var(--primary-color-l));
+       --material-body-text-color: #2B4C6F;
+		--material-secondary-text-color: #2B4C6F; 
+		--material-disabled-text-color: rgba(0, 0, 0, 0.38);
+		/* primary buttons */
+		--material-primary-text-color: #133253; 
+		
+		--material-secondary-background-color: #D2DBE6;
+
+      
+      --material-border-radius: 0px;
+      --material-size-xl: 3rem;
+      --material-size-l: 2.5rem;
+      --material-size-m: 2rem;
+      --material-size-s: 1.75rem;
+      --material-size-xs: 1.5rem;
+      
+      --material-space-xl: 1.5rem;
+      --material-space-l: 1.25rem;
+      --material-space-m: 0.625rem;
+      --material-space-s: 0.4rem;
+      --material-space-xs: 0.1875rem;
+      
+      --material-line-height-m: 1.4;
+      --material-line-height-s: 1.2;
+      --material-line-height-xs: 1.1;
+      
+      
+/*       --material-primary-text-color: #2B4C6F;
+      --material-body-text-color: #03253a;
+      --material-base-color: #fff;
+      --material-success-color: #008F35;
+      --material-success-text-color: #008F35;
+      --material-error-color: #c83214;
+      --material-error-text-color: #c83214;
+ */     
+	  --lumo-body-text-color: var(--material-body-text-color);
+      --lumo-primary-color: var(--material-primary-color); 
+ 
+    }
+
+    [theme~="dark"] {
+      /*--lumo-primary-color: #C56E00;
+      --lumo-primary-text-color: #C56E00;
+      --lumo-error-color: #c83214;
+      --lumo-error-text-color: #c83214;
+      --lumo-success-color: #008F35;
+      --lumo-success-text-color: #008F35;
+      --lumo-base-color: #11334b;
+      --lumo-body-text-color: #b0c2d4;*/
+      
+     /*  --material-body-text-color: #FF0000;
+		--material-secondary-text-color: #0000FF;
+		--material-disabled-text-color: rgba(0, 0, 0, 0.38);
+		--material-primary-text-color: #00FF00;
+		--material-error-text-color: #b00020; */
+      
+      --lumo-primary-color: #4A6B8A; 
+      --material-primary-color: #4A6B8A;
+      --material-primary-text-color: #4A6B8A;
+      --material-error-color: #c83214;
+      --material-error-text-color: #c83214;
+      --material-success-color: #008F35;
+      --material-success-text-color: #008F35;
+      
+      /* --material-base-color: #11334b; */
+      
+      --material-body-text-color: #b0c2d4;
+
+    }

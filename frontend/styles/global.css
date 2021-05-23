@@ -1,0 +1,100 @@
+
+   
+    
+    h1,h2,h3,h4,h5,h6 , .h1,.h2,.h3,.h4,.h5,.h6{
+    color:var(--lumo-primary-color);
+   }
+   
+   h1, .h1 {
+	   font-weight: 600;
+   }
+   
+   .h2 {
+   	font-size:1.5rem;
+   	font-weight:600;
+   }
+   
+
+vaadin-button:hover {
+	cursor:pointer;
+}
+
+vaadin-drawer-toggle:hover {
+	cursor:pointer;
+}
+
+vaadin-grid-tree-toggle:not([leaf]):hover {
+	cursor:pointer;
+}
+
+.clickable:hover {
+	cursor:pointer;
+}
+
+vaadin-details [slot=summary]:hover {
+	cursor:pointer; 
+}
+
+.link:hover {
+	cursor:pointer;
+}
+
+
+/* icon only button */
+
+vaadin-button.icon-only::before {
+	background-color: unset;
+}
+
+vaadin-button.icon-only {
+	padding:0px;
+	background-color: unset;
+}
+
+vaadin-button.icon-only iron-icon {
+	padding:0px;
+}
+
+
+vaadin-button.large iron-icon {
+	height:32px;
+	width:32px;
+}
+
+vaadin-button[theme*=small] {
+	height:16px;
+}
+
+vaadin-button.unclickable:hover {
+	cursor:unset; 
+}
+
+vaadin-button.form-field-align {
+	margin-top:30px;
+}
+
+/* checkbox */
+
+vaadin-checkbox:hover {
+	cursor:pointer;
+}
+
+/* Grid */
+
+vaadin-grid.borderless {
+	/*border:0px;*/
+}
+
+vaadin-grid-cell-content:hover {
+	 cursor:pointer; 
+}
+
+vaadin-grid.no-cursor vaadin-grid-cell-content:hover  {
+	cursor:unset; 
+}
+
+.field-label {
+	color: var(--lumo-primary-text-color);
+    font-size: var(--lumo-font-size-xs);
+    font-weight: 500;
+}

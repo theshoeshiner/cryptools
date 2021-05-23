@@ -1,0 +1,47 @@
+
+
+.menu {
+	margin-left:0px;
+	margin-right:0px;
+	margin-top:0px;
+	padding:0px;
+}
+
+.menu a[router-link] {
+	text-decoration-line:unset;
+	color: var(--lumo-secondary-text-color);
+	
+	padding-top:var(--lumo-space-m);
+	padding-bottom:var(--lumo-space-m);
+	padding-left:var(--lumo-space-l);
+	margin:0px;
+	width:235px;
+}
+
+.menu a[router-link][highlight] {
+	/* color:var(--lumo-primary-color); */
+	background-color:var(--lumo-contrast-10pct);
+	
+	transition: background-color 0.25s ease;
+	font-weight:700;
+}
+
+.menu a[router-link] iron-icon {
+	
+}
+
+.menu a[router-link][highlight] iron-icon {
+	color:var(--lumo-primary-color);
+}
+
+.menu a[router-link] {
+	display: flex;
+    align-items: center;
+}
+.menu a[router-link] iron-icon {
+	width:20px;
+	height:20px; 
+	padding-right:8px;
+	color:var(--lumo-contrast-80pct);
+}
+
