@@ -5,11 +5,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.thshsh.crypt.CryptModel;
+import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.IdedEntity;
 import org.thshsh.crypt.User;
 
 @Entity
-@Table(schema = CryptmanModel.SCHEMA, name = CryptmanModel.TABLE_PREFIX+"account")
+@Table(schema = CryptmanModel.SCHEMA, name = "account")
 public class Account extends IdedEntity {
 
 	@ManyToOne

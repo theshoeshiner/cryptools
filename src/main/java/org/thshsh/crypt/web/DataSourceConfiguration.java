@@ -18,6 +18,10 @@ import org.thshsh.cryptman.CryptmanModel;
 @Configuration
 @EnableJpaRepositories(
 		//repositoryBaseClass = BaseRepositoryImpl.class
+		basePackageClasses = {
+				CryptModel.class,
+				CryptmanModel.class
+				}
 )
 @EntityScan(basePackageClasses = {
 		CryptModel.class,

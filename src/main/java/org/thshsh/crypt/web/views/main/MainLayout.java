@@ -13,6 +13,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.view.AboutView;
+import org.thshsh.crypt.web.view.BalancesView;
 import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.HomeView;
@@ -260,6 +261,8 @@ public class MainLayout extends AppLayout {
     	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
 
     	items.add(about);
+
+    	items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
 		/*Tab home = createTab("Home", HomeView.class);
 		Tab browse = createTab("Browser", MetaDataBrowser.class);

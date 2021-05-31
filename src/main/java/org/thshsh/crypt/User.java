@@ -16,7 +16,7 @@ import javax.persistence.Transient;
 import org.thshsh.crypt.web.model.LoaderModel;
 import org.thshsh.crypt.web.view.LdapUser;
 
-@Table(schema = CryptModel.SCHEMA, name = CryptModel.TABLE_PREFIX+"user_account")
+@Table(schema = CryptModel.SCHEMA, name = "user_account")
 @Entity
 public class User extends IdedEntity {
 
