@@ -40,20 +40,20 @@ import com.vaadin.flow.router.RouteConfiguration;
  * This is a component that can list entities in a table with a button column for operations
  * It needs a "Provider" implementation to be passed to it to to delegate parts of the component
  *
- * 
+ *
  * @author daniel.watson
  *
  * @param <T>
  * @param <ID>
  */
 @SuppressWarnings("serial")
-public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
-	
+public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout implements EntitiesListProvider<T, ID> {
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(EntitiesList.class);
-	
+
 	@Autowired
 	ApplicationContext appCtx;
-	
+
 	EntitiesListProvider<T, ID> provider;
 	ExampleFilterRepository<T, ID> repository;
 	ExampleFilterDataProvider<T, ID> dataProvider;
@@ -73,11 +73,17 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 	TextField filter;
 	Column<?> buttonColumn;
 	String createText = "New";
-	
+
 	Button editButton;
 	Button deleteButton;
-	
-	public EntitiesList(Class<T> c, 
+
+	public EntitiesList(Class<T> c,
+			Class<? extends Component> ev) {
+		this.entityClass = c;
+		this.entityView = ev;
+	}
+
+	public EntitiesList(Class<T> c,
 			Class<? extends Component> ev,
 			EntitiesListProvider<T, ID> provider) {
 		this.entityClass = c;
@@ -85,41 +91,51 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 		this.provider = provider;
 
 	}
-	
+
+	public EntitiesList(Class<T> c,
+			Class<? extends Component> ev,
+			DelegateEntitiesListProvider<T, ID> provider) {
+		this.entityClass = c;
+		this.entityView = ev;
+		provider.list = this;
+		this.provider = provider;
+
+	}
+
 	@SuppressWarnings("deprecation")
 	public void postConstruct(ApplicationContext appCtx) {
-		
+
 		LOGGER.info("postConstruct {}",provider);
-		
+
 		this.appCtx = appCtx;
-		
+
 		this.repository = provider.getRepository();
 		this.addClassName("entities-view");
-		
+
 		if(entityName == null) entityName = entityClass.getSimpleName();
 		if(entityNamePlural == null) entityNamePlural = English.plural(entityName);
 		dataProvider = provider.createDataProvider();
 		filterEntity = provider.createFilterEntity();
 		dataProvider.setFilter(filterEntity);
-		
+
 		if(showHeader) {
 			HorizontalLayout header = new HorizontalLayout();
 			header.setSpacing(true);
 			header.setWidth("100%");
 			header.setAlignItems(Alignment.CENTER);
 			this.add(header);
-	
+
 			count = new Span();
 			count.addClassName("count");
 			header.addAndExpand(count);
-			
+
 			filter = new TextField();
 			filter.setClearButtonVisible(true);
-	
+
 			filter.setPlaceholder("Search");
 			filter.addValueChangeListener(change -> provider.changeFilter(change.getValue()));
 			header.add(filter);
-			
+
 			if(entityView!=null) {
 				Button add =new Button(createText+" "+entityName,VaadinIcon.PLUS.create());
 				add.addClickListener(provider::clickNew);
@@ -127,37 +143,37 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 				header.add(add);
 			}
 		}
-		
+
 		grid = new Grid<T>(entityClass,false);
 		grid.setDataProvider(dataProvider);
 		grid.addThemeVariants(
 				//GridVariant.LUMO_NO_ROW_BORDERS,
-		        GridVariant.LUMO_NO_BORDER, 
+		        GridVariant.LUMO_NO_BORDER,
 		        GridVariant.LUMO_ROW_STRIPES
 		        );
 		grid.addClassName("borderless");
 		grid.setHeight("100%");
-		
-		
+
+
 		//dataProvider = provider.createDataProvider();
 		//filterEntity = provider.createFilterEntity();
 		//dataProvider.setFilter(filterEntity);
 		//grid.setDataProvider(dataProvider);
-		
+
 		provider.setupColumns(grid);
-		
+
 		if(showButtonColumn) {
-		
+
 			grid.addClassName("button-column");
 			buttonColumn = grid.addComponentColumn(e -> {
-				
+
 				HorizontalLayout buttons = new HorizontalLayout();
 				buttons.addClassName("grid-buttons");
 				buttons.setWidthFull();
 				buttons.setJustifyContentMode(JustifyContentMode.END);
-				
+
 				provider.addButtonColumn(buttons, e);
-				
+
 				return buttons;
 			})
 			.setFlexGrow(0)
@@ -166,24 +182,24 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 			})
 			.setWidth("250px")
 			;
-		
+
 		}
-		
+
 		grid.addItemClickListener(click -> {
 			LOGGER.info("Clicked item: {}",click.getItem());
 		});
-		
+
 		this.add(grid);
-		
+
 		provider.updateCount();
-		
+
 	}
-	
+
 	public void refresh() {
 		dataProvider.refreshAll();
 		provider.updateCount();
 	}
-	
+
 	public void addButtonColumn(HorizontalLayout buttons, T e) {
 		if(showEditButton) {
 			editButton = new Button(VaadinIcon.PENCIL.create());
@@ -201,78 +217,78 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 				clickDelete(e);
 			});
 		}
-		
+
 	}
-	
+
 	public void clickDelete(T e) {
-		
-		ConfirmDialogs.deleteDialog(entityName+" \""+provider.getEntityName(e), () -> {
+
+		ConfirmDialogs.deleteDialog(entityName+" \""+provider.getEntityName(e) +"\"", () -> {
 			provider.delete(e);
 		}).open();
 		/*
 		ConfirmDialog cd = new ConfirmDialog(null,"Delete "+entityName+" \""+provider.getEntityName(e)+"\" ?",VaadinIcon.TRASH.create());
 		cd.withYesButton()
 		.withVariants(ButtonVariant.LUMO_PRIMARY)
-		
+
 		.with(null,() -> {
 			provider.delete(e);
 		});
 		cd.withNoButton().withIcon(null);
 		cd.open(); */
 	}
-	
-	public <V extends  Component & HasUrlParameter<ID>> void clickEdit(ClickEvent<Button> click,T entity) {
+
+	public void clickEdit(ClickEvent<Button> click,T entity) {
 		if(Dialog.class.isAssignableFrom(entityView)) {
-			Dialog cd = (Dialog) appCtx.getBean(entityView,entity);
+			Dialog cd = createDialog(entity);
 			cd.addOpenedChangeListener(change -> {
 				provider.refresh();
 			});
 			cd.open();
 		}
 		else {
-			Class<V> hup = (Class<V>) entityView;
-			
-			String route = RouteConfiguration.forSessionScope().getUrl(hup);
-			
+			//Class<V> hup = (Class<V>) entityView;
+
+			String route = RouteConfiguration.forSessionScope().getUrl(entityView);
+
 			//RouteParameters rpParameters;
 			QueryParameters queryParameters = new QueryParameters(Collections.singletonMap("id", Arrays.asList(provider.getEntityId(entity).toString())));
-			
-			
+
+
 			//LOGGER.info("entityView: {}",entityView);
 			//UI.getCurrent().navigate(hup,provider.getEntityId(entity));
 			UI.getCurrent().navigate(route,queryParameters);
-		
+
 		}
 	}
-	
-	
-	
+
+
+
 	public ExampleFilterDataProvider<T,ID> createDataProvider(){
 		ExampleFilterDataProvider<T,ID> dataProvider = new ExampleFilterDataProvider<T,ID>(
-				repository, 
+				repository,
 				ExampleMatcher.matchingAny()
 				.withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
 				.withIgnoreCase().withIgnoreNullValues()
 				, provider.getDefaultSortOrder()
 				);
-			
+
 		return dataProvider;
 	}
-	
+
 	public List<QuerySortOrder> getDefaultSortOrder() {
 		if(defaultSortAsc) return QuerySortOrder.asc(defaultSortOrderProperty).build();
 		else return QuerySortOrder.desc(defaultSortOrderProperty).build();
 	}
-	
+
 	public T createFilterEntity() {
 		try {
 			return entityClass.newInstance();
-		} 
+		}
 		catch (InstantiationException | IllegalAccessException e) {
 			throw new IllegalArgumentException("Could not instantiate class "+entityClass);
 		}
 	}
-	
+
 	public void updateCount() {
 		if(showHeader) {
 			long full = repository.count();
@@ -280,17 +296,17 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 			count.setText("Showing "+shown+" of "+full);
 		}
 	}
-	
+
 	public void changeFilter(String text) {
 		if(StringUtils.isBlank(text)) provider.clearFilter();
 		else provider.setFilter(text);
 		dataProvider.refreshAll();
 		provider.updateCount();
 	}
-	
+
 	public void clickNew(ClickEvent<Button> click) {
 		if(Dialog.class.isAssignableFrom(entityView)) {
-			Dialog cd = (Dialog) appCtx.getBean(entityView,(Object)null);
+			Dialog cd = createDialog(null);
 			cd.open();
 			cd.addOpenedChangeListener(change -> {
 				if(cd instanceof EntityDialog) {
@@ -304,34 +320,81 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout  {
 			UI.getCurrent().navigate(entityView);
 		}
 	}
+
+	public Dialog createDialog(T entity) {
+		Dialog cd = (Dialog) appCtx.getBean(entityView,entity);
+		return cd;
+	}
 	/*
 		@Override
 		public void setupColumns(Grid<T> grid) {
 			throw new NotImplementedException();
 		}
-	
+
 		@Override
 		public void setFilter(String text) {
 			throw new NotImplementedException();
 		}
-	
+
 		@Override
 		public void clearFilter() {
 			throw new NotImplementedException();
 		}
-	
+
 		@Override
 		public ExampleFilterRepository<T, ID> getRepository() {
 			throw new NotImplementedException();
 		}
-	
+
 		@Override
 		public String getEntityName(T t) {
 			throw new NotImplementedException();
 		}
-	
+
 		@Override
 		public void delete(T t) {
 			throw new NotImplementedException();
 		}*/
+
+	@Override
+	public ID getEntityId(T entity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setupColumns(Grid<T> grid) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setFilter(String text) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void clearFilter() {
+
+	}
+
+
+
+	@Override
+	public ExampleFilterRepository<T, ID> getRepository() {
+		return null;
+	}
+
+	@Override
+	public String getEntityName(T t) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void delete(T t) {
+
+
+	}
 }
