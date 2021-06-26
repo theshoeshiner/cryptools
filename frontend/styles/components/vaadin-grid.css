@@ -10,7 +10,7 @@
 }
 
 :host(.button-column) tr:hover td[last-column] ::slotted(*) {
-	opacity:1; 
+	opacity:1;
 }
 
 
@@ -27,6 +27,19 @@
 
 
 
+[part~="row"] [part~="body-cell"].warn-0 {
+	background-color: var(--warn-0-color);
+}
+
+[part~="row"] [part~="body-cell"].warn-1 {
+	background-color: var(--warn-1-color);
+}
+
+[part~="row"] [part~="body-cell"].warn-2 {
+	background-color: var(--warn-2-color);
+}
+
+
 /* This is for the patient profile view */
 
 :host(.small-header) tr th ::slotted(*) {
@@ -39,8 +52,8 @@
 /* make the top header a different color */
 
 :host(.small-header) [part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
-	 background-color:var(--lumo-primary-color);  
-	
+	 background-color:var(--lumo-primary-color);
+
 }
 
 :host(.profile-details) tbody [part~="row"] [part~="body-cell"][first-column] {
@@ -55,24 +68,24 @@
 /* Print styles */
 
 @media print {
-	
+
 	/* Change table header span color */
-	
+
 	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"]) ::slotted(*) {
 		 color:var(--lumo-body-text-color) !important;
 	}
-	
+
 	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
 		 background-color:var(--lumo-shade-20pct) !important;
-		
+
 	}
-	
+
 	/*dont show hover colors */
-	
+
 	[part~="row"]:hover > [part~="body-cell"]{
 		background-color: unset;
 	}
-	
+
 }
 
 :host(.small-header) tr th[colspan]:not([colspan="1"]) ::slotted(*) {
@@ -83,7 +96,7 @@
 
 /* Give the table cells a border */
 
-:host(.small-header) tr th:not([first-column]):not([colspan]) {	
+:host(.small-header) tr th:not([first-column]):not([colspan]) {
     border-left:1px solid var(--lumo-contrast-20pct);
 }
 

@@ -1,7 +1,7 @@
 html {
-	
-	--lumo-clickable-cursor: pointer;  
-   
+
+	--lumo-clickable-cursor: pointer;
+
 	--lumo-line-height-m: 1.4;
 	--lumo-line-height-s: 1.2;
 	--lumo-line-height-xs: 1.1;
@@ -24,9 +24,9 @@ html {
 	--lumo-font-size-s: 0.8125rem;
 	--lumo-font-size-xs: 0.75rem;
 	--lumo-font-size-xxs: 0.6875rem;
-	
+
 	--lumo-border-radius: 0em;
-		
+
 	/* Tints are used mostly in dark theme */
 	--lumo-tint:hsl(var( --lumo-tint-hue),34%,50%);
    	--lumo-tint-5pct: hsla(var(--lumo-tint-hue), 0%, 100%, 0.3);
@@ -39,7 +39,7 @@ html {
 	--lumo-tint-70pct: hsla(var(--lumo-tint-hue), 0%, 100%, 0.77);
 	--lumo-tint-80pct: hsla(var(--lumo-tint-hue), 0%, 100%, 0.84);
 	--lumo-tint-90pct: hsla(var(--lumo-tint-hue), 0%, 100%, 0.9);
-	
+
 	/* shades are used in light theme */
 	--lumo-shade: hsl(var( --lumo-shade-hue), 35%, 15%);
   	--lumo-shade-5pct: hsla(var( --lumo-shade-hue), 61%, 25%, 0.05);
@@ -52,13 +52,13 @@ html {
 	--lumo-shade-70pct: hsla(var( --lumo-shade-hue), 42%, 18%, 0.72);
 	--lumo-shade-80pct: hsla(var( --lumo-shade-hue), 41%, 17%, 0.83);
 	--lumo-shade-90pct: hsla(var( --lumo-shade-hue), 40%, 16%, 0.94);
-	
-	
+
+
 	--lumo-primary-color-10pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.1);
 	--lumo-primary-color-50pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.5);
 	--lumo-primary-color: hsl(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit));
 	--lumo-primary-contrast-color: #FFF;
-	
+
 	--lumo-icon-size-s: 1.25em;
   	--lumo-icon-size-m: 1.5em;
  	--lumo-icon-size-l: 2.25em;
@@ -67,63 +67,68 @@ html {
 }
 
 [theme~="light"] {
-   
+
    /*
    CDSIC green  174, yellow 40, red 1
-   	
+
    	BC Blue 211
    */
-   
+
 	--lumo-primary-hue:211;
 	--lumo-primary-sat:52%;
 	--lumo-primary-lit:44%;
-	
+
 	--lumo-tint-hue: 199;
 	--lumo-shade-hue:199;
- 
- 	
+
+
 	--lumo-body-text-color: #03253a;
 	--lumo-base-color: #fff;
 	--lumo-success-color: #008F35;
 	--lumo-success-text-color: #008F35;
 	--lumo-error-color: #c83214;
 	--lumo-error-text-color: #c83214;
-  
+
+	--warn-0-color: #b34045;
+	--warn-1-color: #FEAB6D;
+	--warn-2-color: #fecf6d;
+
+
 
     /* --lumo-body-text-color: var(--material-body-text-color);
       --lumo-primary-color: var(--material-primary-color);  */
     /* --lumo-primary-color: #2B4C6F; */
    /*  --lumo-tint: #9dcfca; */
-   
+
    /*  --lumo-shade: Red; */
-    
+
    /*  --lumo-primary-color-50pct: #2B4C6F;   */
-    
-
-     /* --lumo-contrast-color:Red; */ 
 
 
-   
-   
+     /* --lumo-contrast-color:Red; */
+
+
+
+
      /*  --lumo-size-xl: 3rem;
       --lumo-size-l: 2.5rem;
       --lumo-size-m: 2rem;
-      
+
       --lumo-size-xs: 1.5rem;
-      
+
       --lumo-space-xl: 1.875rem;
       --lumo-space-l: 1.25rem;
       --lumo-space-m: 0.625rem;
       --lumo-space-s: 0.3125rem;
-      --lumo-space-xs: 0.1875rem; 
-      
+      --lumo-space-xs: 0.1875rem;
+
       --lumo-line-height-m: 1.4;
       --lumo-line-height-s: 1.2;
       --lumo-line-height-xs: 1.1;
       */
-      
-      
-      
+
+
+
       /*
 	  --lumo-size-xl: 3rem;
 	  --lumo-size-l: 2.5rem;
@@ -131,20 +136,20 @@ html {
 	  --lumo-size-s: 1.75rem;
 	  --lumo-size-xs: 1.5rem;
 	  --lumo-size-xxs: .75rem;
-	  
+
 	  --lumo-space-xl: 1.875rem;
 	  --lumo-space-l: 1.25rem;
 	  --lumo-space-m: 0.625rem;
 	  --lumo-space-s: 0.3125rem;
 	  --lumo-space-xs: 0.1875rem;
       */
-      
-      
+
+
       /* --lumo-primary-color: #C56E00;
       --lumo-primary-text-color: #C56E00; */
-      
-   
-     	
+
+
+
 	/* --theme-primary-color:var(--lumo-primary-color);
 	--theme-primary-color-light: #c8d8ea;
 	--theme-secondary-color:#738CA6;
@@ -153,32 +158,32 @@ html {
 	--theme-primary-color-darkest: #041E38;
 	--theme-primary-color-gray: #676b70;
 	--theme-secondary-background-color:#D2DBE6; */
-	
+
 	/* --theme-space-xs:var(--lumo-space-xs);
 	--theme-space-s:var(--lumo-space-s);
 	--theme-space-m:var(--lumo-space-m);
 	--theme-space-l:var(--lumo-space-l);
 	--theme-space-xl:var(--lumo-space-xl); */
- 
+
  	/* --theme-error-color-light:#ffaaaa;
  	--theme-error-color:var(--lumo-error-color); */
- 
+
     }
 
 
     [theme~="dark"] {
-    
-   
+
+
       --lumo-primary-hue:211;
    --lumo-tint-hue: 174;
    --lumo-shade-hue:174;
-   
+
    /*  --lumo-primary-color: #81A0C1;
     --theme-secondary-background-color:#0F4072;
     --lumo-primary-text-color: #5A8DC3;  */
-    
-    
-    
+
+
+
       /*--lumo-primary-color: #C56E00;
       --lumo-primary-text-color: #C56E00;
       --lumo-error-color: #c83214;
@@ -187,15 +192,15 @@ html {
       --lumo-success-text-color: #008F35;
       --lumo-base-color: #11334b;
       --lumo-body-text-color: #b0c2d4;*/
-      
+
      /*  --material-body-text-color: #FF0000;
 		--material-secondary-text-color: #0000FF;
 		--material-disabled-text-color: rgba(0, 0, 0, 0.38);
 		--material-primary-text-color: #00FF00;
 		--material-error-text-color: #b00020; */
-      
-     
-      
+
+
+
 
     }
-    
+

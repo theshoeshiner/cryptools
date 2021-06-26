@@ -13,23 +13,23 @@
   box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
   padding: var(--lumo-space-xl) var(--lumo-space-m);
   background-color:var(--lumo-primary-color);
- 	 
+
 }
- 
+
 
 #logo iron-icon {
-	
+
 	 color:var(--lumo-tint-70pct);
 	 height:32px;
 	 width:32px;
-	
-	} 
+
+	}
 
  #logo .h2 {
   	color:var(--lumo-tint-70pct);
 	font-weight:700;
 }
-/* 
+/*
 vaadin-tab {
   font-size: var(--lumo-font-size-s);
   height: var(--lumo-size-l);
@@ -44,7 +44,7 @@ vaadin-tab:hover {
 vaadin-tab[selected] {
   background-color: var(--lumo-primary-color-10pct);
   color: var(--lumo-primary-text-color);
-} 
+}
 
  */
 .entities-view .count {
@@ -80,15 +80,15 @@ iron-icon.primary {
 }
 
 .grid-buttons vaadin-button:hover {
-	color:var(--lumo-contrast); 
+	color:var(--lumo-contrast);
 }
 
 .grid-buttons vaadin-button[aria-disabled=true] {
 	color:var(--lumo-contrast-20pct);
-} 
+}
 
 vaadin-details[theme=stacktrace] :not([slot=summary]) {
-	font-size:var(--lumo-size-xxs); 
+	font-size:var(--lumo-size-xxs);
 }
 
 vaadin-details[theme=stacktrace] {
@@ -96,8 +96,8 @@ vaadin-details[theme=stacktrace] {
 }
 
 vaadin-vertical-layout.stacktrace {
-	white-space:pre; 
-	
+	white-space:pre;
+
 }
 
 
@@ -133,14 +133,19 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
 .roles-column-list span.reviewer {
 	background-color: #ceebfd ;
 }
- 
+
  .version-change iron-icon {
 	align-self: flex-end;
     padding-bottom: 8px;
     padding-right:16px;
  }
- 
-/* 
+
+ .invisible {
+ 	visibility:hidden;
+ 	display:none;
+ }
+
+/*
 .slider{
   position:absolute;
   width:800px;
@@ -159,7 +164,7 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
 .subline{
   position:absolute;
   background:#4a8df8;
-  height:5px; 
+  height:5px;
 }
 .inc{
 animation: increase 2s infinite;
