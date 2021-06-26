@@ -2,14 +2,13 @@ package org.thshsh.cryptman;
 
 import java.math.BigDecimal;
 
-import javax.persistence.BigDecimalToStringConverter;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.IdedEntity;
 
 @Entity
@@ -19,12 +18,18 @@ public class Balance extends IdedEntity {
 	@ManyToOne
 	Account account;
 
+	@ManyToOne
+	Exchange exchange;
+
 	@ManyToOne(optional = false)
 	Currency currency;
 
-	@Column
-	@Convert(converter = BigDecimalToStringConverter.class)
+	@Column(columnDefinition = "decimal")
+	//@Convert(converter = BigDecimalToStringConverter.class)
 	BigDecimal balance;
+
+	@ManyToOne
+	Portfolio portfolio;
 
 	public Account getAccount() {
 		return account;
@@ -50,6 +55,29 @@ public class Balance extends IdedEntity {
 	public void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
+
+	public Portfolio getPortfolio() {
+		return portfolio;
+	}
+
+	public void setPortfolio(Portfolio portfolio) {
+		this.portfolio = portfolio;
+	}
+
+	public Exchange getExchange() {
+		return exchange;
+	}
+
+	public void setExchange(Exchange exchange) {
+		this.exchange = exchange;
+	}
+
+	@Override
+	public String toString() {
+		return "[exchange=" + exchange + ", currency=" + currency + ", balance=" + balance + ", portfolio="
+				+ portfolio + "]";
+	}
+
 
 
 }

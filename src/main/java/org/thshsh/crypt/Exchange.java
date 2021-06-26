@@ -13,10 +13,13 @@ import org.thshsh.cryptman.CryptmanModel;
  */
 @Entity
 @Table(schema = CryptModel.SCHEMA, name = "exchange")
-public class Exchange extends IdedEntity {
+public class Exchange extends IdedEntity implements HasImage {
 
 	@Column
 	String name;
+
+	@Column(unique = true)
+	String key;
 
 	@Column
 	String remoteName;
@@ -24,14 +27,18 @@ public class Exchange extends IdedEntity {
 	@Column
 	String remoteId;
 
+	@Column
+	String imageUrl;
+
 	public Exchange() {}
 
 
-	public Exchange(String name, String remoteId, String remoteName) {
+	public Exchange(String name, String remoteId, String remoteName, String image) {
 		super();
 		this.name = name;
 		this.remoteId = remoteId;
 		this.remoteName = remoteName;
+		this.imageUrl = image;
 	}
 
 	public String getName() {
@@ -59,9 +66,30 @@ public class Exchange extends IdedEntity {
 	}
 
 
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
+
 	@Override
 	public String toString() {
 		return "[name=" + name + ", remoteName=" + remoteName + ", remoteId=" + remoteId + "]";
+	}
+
+
+	public String getKey() {
+		return key;
+	}
+
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 

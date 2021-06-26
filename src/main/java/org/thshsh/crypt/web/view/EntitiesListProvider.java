@@ -3,18 +3,18 @@ package org.thshsh.crypt.web.view;
 import java.io.Serializable;
 import java.util.List;
 
-import org.thshsh.vaadin.ExampleFilterDataProvider;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
 public interface EntitiesListProvider<T,ID extends Serializable> {
 
-	ExampleFilterDataProvider<T, ID> createDataProvider();
+	DataProvider<T, ?> createDataProvider();
 	T createFilterEntity();
 	ID getEntityId(T entity);
 	void refresh();
@@ -27,7 +27,7 @@ public interface EntitiesListProvider<T,ID extends Serializable> {
 	void clickEdit(ClickEvent<Button> click,T entity);
 	void addButtonColumn(HorizontalLayout buttons, T e);
 	List<QuerySortOrder> getDefaultSortOrder();
-	ExampleFilterRepository<T,ID> getRepository();
+	PagingAndSortingRepository<T, ID> getRepository();
 	String getEntityName(T t);
 	void delete(T t);
 }

@@ -16,7 +16,9 @@ import org.thshsh.crypt.web.view.AboutView;
 import org.thshsh.crypt.web.view.BalancesView;
 import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.view.DarkModeButton;
+import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
+import org.thshsh.crypt.web.view.PortfoliosView;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -263,6 +265,10 @@ public class MainLayout extends AppLayout {
     	items.add(about);
 
     	items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
+
+    	items.add(createMenuItem(VaadinIcon.INSTITUTION.create(),"Exchanges", ExchangesView.class));
+
+    	items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
 
 		/*Tab home = createTab("Home", HomeView.class);
 		Tab browse = createTab("Browser", MetaDataBrowser.class);

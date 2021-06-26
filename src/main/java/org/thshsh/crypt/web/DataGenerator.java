@@ -1,6 +1,10 @@
 package org.thshsh.crypt.web;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -10,11 +14,15 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.PlatformType;
 import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 
@@ -32,38 +40,149 @@ public class DataGenerator {
 	@Autowired
 	CryptoCompare compare;
 
+	@Autowired
+	TaskExecutor executor;
+
+	@Autowired
+	DataConfiguration dataConfig;
+
+	@Autowired
+	CurrencyService curService;
+
+	@Autowired
+	ImageService imageService;
+
+	@Autowired
+	PlatformTransactionManager transactionManager;
+
+	TransactionTemplate template;
+
+	Map<String,Currency> currMap;
+
 	@PostConstruct
 	public void postConstruct() {
 
+		template = new TransactionTemplate(transactionManager);
 
-		Map<String,Exchange> idMap = exchangeRepo.findAll().stream().collect(Collectors.toMap(Exchange::getRemoteId,Function.identity()));
+		executor.execute(() -> {
 
-		compare.getExchanges().forEach(ex -> {
-			if(!idMap.containsKey(ex.getId())) {
-				Exchange e = new Exchange(ex.getName(), ex.getId(), ex.getInternalName());
-				LOGGER.info("Creating Exchange: {}",e);
-				exchangeRepo.save(e);
+			exchanges();
+
+			currencies();
+
+			for(List<String> cur : dataConfig.getFiatcurrencies()) {
+				LOGGER.info("checking for {}",cur);
+				Currency c = currencyRepo.findByKey(cur.get(1));
+				if(c == null) c = new Currency(cur.get(0),cur.get(1),PlatformType.fiat);
+				else {
+					c.setName(cur.get(0));
+					c.setPlatformType(PlatformType.fiat);
+				}
+				LOGGER.info("saving: {}",c);
+				currencyRepo.save(c);
+
 			}
+
+
 		});
 
-		Map<String,Currency> currMap = currencyRepo.findAll().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
+	}
 
+	protected void currency(Coin coin) {
 
+		template.executeWithoutResult(action -> {
 
-		Collection<Coin> coins = compare.getCoins();
-		coins.forEach(coin -> {
 			Currency c = currMap.get(coin.getId());
 			if(c == null) c = new Currency(null, null, coin.getId());
 			c.setName(coin.getName());
-			c.setSymbol(coin.getSymbol());
+			c.setKey(coin.getSymbol());
+
 			if(coin.getBuiltOn()!=null) {
-				Currency b = currencyRepo.findBySymbol(coin.getBuiltOn());
+				Currency b = currencyRepo.findByKey(coin.getBuiltOn());
 				c.setBuiltOn(b);
+			}
+			c.setPlatformType(coin.getPlatformType()==null?null:PlatformType.valueOf(coin.getPlatformType()));
+
+
+			try {
+				imageService.syncImage(c, coin.getImageUrl());
 
 			}
+			catch (IOException ioe) {
+				LOGGER.error("",ioe);
+			}
+
+			/*if(coin.getImageUrl() != null) {
+				if(c.getImageUrl() == null) {
+					File imagepath = new File(coin.getImageUrl());
+					try {
+						InputStream is = curService.getImage(imagepath.getName());
+						if(is != null) {
+							LOGGER.info("Image {} already existed",imagepath);
+							c.setImageUrl(imagepath.getName());
+						}
+						else {
+							InputStream remoteImage = compare.getImage(coin);
+							curService.saveImage(c, remoteImage, imagepath.getName());
+						}
+					}
+					catch (IOException e) {
+						LOGGER.error("error",e);
+					}
+				}
+			}*/
+
 			currencyRepo.save(c);
+
 		});
 
+	}
+
+	protected void currencies() {
+
+		currMap = currencyRepo.findByRemoteIdNotNull().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
+
+		Collection<Coin> coins = compare.getCoins();
+		coins.forEach(coin -> {
+			currency(coin);
+		});
+
+
+	}
+
+	protected void exchanges() {
+
+		Map<String,Exchange> idMap = exchangeRepo.findAll().stream().collect(Collectors.toMap(
+				Exchange::getRemoteId,
+				Function.identity(),
+				(k0,k1) -> {
+					return k0;
+				}
+				));
+
+		compare.getExchanges().forEach(ex -> {
+
+			template.executeWithoutResult(action -> {
+				Exchange e;
+				if(!idMap.containsKey(ex.getId())) {
+					e = new Exchange(ex.getName(), ex.getId(), ex.getInternalName(),null);
+					LOGGER.info("Creating Exchange: {}",e);
+
+				}
+				else {
+					e = idMap.get(ex.getId());
+				}
+				e.setKey(e.getName().replaceAll("[^\\p{Alnum}]+?", "").toLowerCase());
+				try {
+					imageService.syncImage(e, ex.getLogoUrl());
+				}
+				catch (IOException ioe) {
+					LOGGER.error("",ioe);
+				}
+				exchangeRepo.save(e);
+			});
+
+		});
 
 	}
 

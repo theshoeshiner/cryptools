@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.repo.AppUserRepository;
 
 import com.vaadin.flow.component.Text;
@@ -34,12 +35,18 @@ public class AppSession {
 	@Autowired
 	AppUserRepository userRepo;
 
-
+	User user;
 
 
 	@PostConstruct
 	protected void postConstruct() {
 
+		//REMOVE
+		user = userRepo.findAll().stream().findFirst().orElseGet(() -> {
+			User u = new User("John","Doe","jd@email.com");
+			userRepo.save(u);
+			return u;
+		});
 
 
 		//permissionsMap = user.getPermissionsMap();
@@ -107,6 +114,16 @@ public class AppSession {
 			notification.open();
 
 		});
+	}
+
+
+	public User getUser() {
+		return user;
+	}
+
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 

@@ -32,14 +32,6 @@ public class User extends IdedEntity {
 	@Column
 	String email;
 
-	@Column
-	String directoryId;
-
-
-
-	@Transient
-	LdapUser ldapUser;
-
 	public User() {}
 
 	public User(String firstName, String lastName, String email) {
@@ -81,30 +73,6 @@ public class User extends IdedEntity {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public String getDirectoryId() {
-		return directoryId;
-	}
-
-	public void setDirectoryId(String directoryId) {
-		this.directoryId = directoryId;
-	}
-
-
-
-	public LdapUser getLdapUser() {
-		return ldapUser;
-	}
-
-	public void setLdapUser(LdapUser ldapUser) {
-		this.ldapUser = ldapUser;
-	}
-
-	public void update(LdapUser ldap) {
-		this.directoryId = ldap.getId().toString();
-		this.displayName = ldap.getDisplayName();
-		this.email = ldap.getEmail().toLowerCase();
 	}
 
 

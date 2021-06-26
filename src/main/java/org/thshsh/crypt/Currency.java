@@ -2,6 +2,8 @@ package org.thshsh.crypt;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -14,14 +16,13 @@ import org.thshsh.cryptman.CryptmanModel;
  */
 @Entity
 @Table(schema = CryptModel.SCHEMA, name = "currency")
-public class Currency extends IdedEntity {
-
+public class Currency extends IdedEntity implements HasImage  {
 
 	@Column
 	String name;
 
-	@Column
-	String symbol;
+	@Column(name = "symbol")
+	String key;
 
 	@Column
 	String remoteName;
@@ -29,17 +30,43 @@ public class Currency extends IdedEntity {
 	@Column
 	String remoteId;
 
+	@Column
+	String imageUrl;
+
+	//@Column
+	//Boolean fiat;
+
+	@Column
+	@Enumerated(EnumType.STRING)
+	PlatformType platformType;
+
 	@ManyToOne
 	Currency builtOn;
 
+	/*
+	 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - platformtypes: [null, blockchain, derivative, token]
+13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - builton: [null, XLM,ETH, Mainnet,BNB, NAS, TRX,ETH, VET, RSK Network, SOL,ETH, ETH,BNB,FTM, mainnet,BNB, HT, WAVES, ETH/BNB, mainnet,ETH, ONT, XLM, ETH,BNB,mainnet, 2017-10-25, TRX, QTUM, Mainnet,NEO,ETH, LUNA, luniverse, ETH,WAN, KAVA, IOST, BNB,TRX,ETH, ETH,BNB,NEO,NULS, EOS, GO, WAVES,ETH, STRAX, ETH,BTC,EOS,TRX,ALGO,SLP,OMG, ETH,BNB, ETH,BNB,DOT,ALGO,ADA, BNB, ETH, NEO, ETH,ZIL, OMNI, XMR]
+	 */
+
 	public Currency() {}
+
+	public Currency(String name, String symbol, PlatformType type) {
+		super();
+		this.name = name;
+		this.key = symbol;
+		this.platformType = type;
+	}
 
 
 	public Currency(String name, String symbol, String remoteId) {
 		super();
 		this.name = name;
-		this.symbol = symbol;
+		this.key = symbol;
 		this.remoteId = remoteId;
+	}
+
+	public String getDisplayName() {
+		return name+" ("+key+")";
 	}
 
 	public String getName() {
@@ -50,12 +77,12 @@ public class Currency extends IdedEntity {
 		this.name = name;
 	}
 
-	public String getSymbol() {
-		return symbol;
+	public String getKey() {
+		return key;
 	}
 
-	public void setSymbol(String symbol) {
-		this.symbol = symbol;
+	public void setKey(String symbol) {
+		this.key = symbol;
 	}
 
 	public String getRemoteName() {
@@ -83,9 +110,30 @@ public class Currency extends IdedEntity {
 	}
 
 
+
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
+	public PlatformType getPlatformType() {
+		return platformType;
+	}
+
+
+
+	public void setPlatformType(PlatformType platformType) {
+		this.platformType = platformType;
+	}
+
+
 	@Override
 	public String toString() {
-		return "[name=" + name + ", symbol=" + symbol + ", remoteName=" + remoteName + ", remoteId=" + remoteId
+		return "[name=" + name + ", symbol=" + key + ", remoteName=" + remoteName + ", remoteId=" + remoteId
 				+ "]";
 	}
 

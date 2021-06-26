@@ -15,7 +15,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 @Route(value = HomeView.PATH, layout = MainLayout.class)
 @PageTitle(HomeView.TITLE)
-//@RouteAlias(value = "", layout = MainLayout.class)
+@RouteAlias(value = "", layout = MainLayout.class)
 public class HomeView extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(HomeView.class);

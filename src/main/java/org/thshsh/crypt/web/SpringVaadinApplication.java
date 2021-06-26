@@ -5,8 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.thshsh.cryptman.CryptmanModel;
 import org.vaadin.artur.helpers.LaunchUtil;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -18,8 +20,10 @@ import com.vaadin.flow.theme.material.Material;
 
 @SpringBootApplication(scanBasePackageClasses = {
 		SpringVaadinApplication.class,
-		DataSourceConfiguration.class
-})
+		DataSourceConfiguration.class,
+		CryptmanModel.class
+},
+exclude = ErrorMvcAutoConfiguration.class)
 //@EnableJpaRepositories
 @Theme(value = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)
 //@Theme(value = Material.class, variant = Material.LIGHT)

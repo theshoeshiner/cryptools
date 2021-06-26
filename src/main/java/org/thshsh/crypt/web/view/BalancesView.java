@@ -1,8 +1,12 @@
 package org.thshsh.crypt.web.view;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.web.views.main.MainLayout;
+import org.thshsh.cryptman.Account;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.vaadin.ExampleFilterRepository;
@@ -29,25 +33,39 @@ public class BalancesView extends EntitiesView<Balance, Long> {
 		return balRepo;
 	}
 
+	@PostConstruct
+	public void postConstruct() {
+		entitiesList.showButtonColumn = true;
+		super.postConstruct();
+	}
+
 	@Override
 	public String getEntityName(Balance t) {
-		return null;
+		return FunctionUtils.nestedValue(Balance::getAccount, Account::getExchange, Exchange::getName).apply(t) +" / "+t.getBalance() +" "+t.getCurrency().getKey();
 	}
 
 	@Override
 	public void setupColumns(Grid<Balance> grid) {
 
 
-
-		grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getName))
+		grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getDisplayName))
 		.setHeader("Currency")
+		.setSortProperty("currency.name")
+		;
+
+		grid.addColumn(FunctionUtils.nestedValue(Balance::getAccount, Account::getExchange, Exchange::getName))
+		.setHeader("Exchange")
+		.setSortProperty("account.exchange.name")
 		;
 
 		grid.addColumn(Balance::getBalance)
 		.setHeader("Balance")
+		.setSortProperty("balance")
 		;
 
 	}
+
+
 
 	@Override
 	public void setFilter(String text) {

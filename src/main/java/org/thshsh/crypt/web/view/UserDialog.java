@@ -98,7 +98,7 @@ public class UserDialog extends EntityDialog<User> {
 				}
 			});
 			*/
-			binder
+			/*binder
 			.forField(userSearch)
 			.withValidator((v,c) -> {
 				if(userRepo.findByEmailIgnoreCase(userSearch.getValue().getEmail()).isPresent()) {
@@ -106,7 +106,7 @@ public class UserDialog extends EntityDialog<User> {
 				}
 				else return ValidationResult.ok();
 			})
-			.bind(User::getLdapUser, User::setLdapUser);
+			.bind(User::getLdapUser, User::setLdapUser);*/
 
 			formLayout.endLayout();
 
@@ -179,7 +179,7 @@ public class UserDialog extends EntityDialog<User> {
 	protected void bind() throws ValidationException {
 		super.bind();
 		if(create) {
-			getEntity().update(userSearch.getValue());
+			//getEntity().update(userSearch.getValue());
 		}
 	}
 

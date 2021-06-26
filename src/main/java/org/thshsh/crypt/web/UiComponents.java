@@ -1,11 +1,13 @@
 package org.thshsh.crypt.web;
 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -32,6 +34,14 @@ public class UiComponents {
 	public UserDialog getUserDialog(User c) {
 		return new UserDialog(c);
 	}
+
+	@Bean
+	@Qualifier("hundred")
+	public BigDecimal hundred() {
+		return new BigDecimal(100l);
+	}
+
+
 
 	/*	@Bean
 		@Scope("prototype")
@@ -72,4 +82,5 @@ public class UiComponents {
 			     .toFormatter();
 		return formatter;
 	}
+
 }

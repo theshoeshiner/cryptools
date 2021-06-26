@@ -1,23 +1,16 @@
 package org.thshsh.crypt.web.view;
 
-import java.util.Collections;
-import java.util.List;
-
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.ldap.repository.support.SimpleLdapRepository;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper;
-import org.springframework.ldap.query.LdapQuery;
-import org.springframework.ldap.query.LdapQueryBuilder;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -38,6 +31,9 @@ public class AboutView extends VerticalLayout {
 
 	@Autowired
 	Breadcrumbs breadcrumbs;
+
+	@Autowired
+	JavaMailSender mailSender;
 
 	//@Value("${ldap.user.base}")
 	//String ldapUserBase;
@@ -68,6 +64,16 @@ public class AboutView extends VerticalLayout {
 		Button noclick = new Button("Unclickable");
 		noclick.addClassName("unclickable");
 		add(noclick);
+
+		Button sendMail = new Button("Send mail",click -> {
+			 SimpleMailMessage message = new SimpleMailMessage();
+		        message.setFrom("cryptools@thshsh.org");
+		        message.setTo("dcwatson84@gmail.com");
+		        message.setSubject("Auto Test: "+System.currentTimeMillis());
+		        message.setText("test");
+		        mailSender.send(message);
+		});
+		add(sendMail);
 
 		/*List<LdapUser> found = search("ab");
 		LOGGER.info("found: {}",found);

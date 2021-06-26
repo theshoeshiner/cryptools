@@ -9,4 +9,6 @@ public interface HasNameRepository<T> {
 
 	public Integer countByNameContainsIgnoreCase(String name);
 
+	public T findByKey(String name);
+
 }

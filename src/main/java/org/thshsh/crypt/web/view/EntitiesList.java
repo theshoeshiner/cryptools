@@ -12,10 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.ExampleFilterDataProvider;
 import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.StringSearchDataProvider;
 import org.thshsh.vaadin.UIUtils;
 
+import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -30,9 +34,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 
@@ -47,16 +52,22 @@ import com.vaadin.flow.router.RouteConfiguration;
  * @param <ID>
  */
 @SuppressWarnings("serial")
-public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout implements EntitiesListProvider<T, ID> {
+public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(EntitiesList.class);
+
+	public static enum FilterMode {
+		String, Example, None;
+	}
 
 	@Autowired
 	ApplicationContext appCtx;
 
-	EntitiesListProvider<T, ID> provider;
-	ExampleFilterRepository<T, ID> repository;
-	ExampleFilterDataProvider<T, ID> dataProvider;
+	EntitiesListProvider<T, ID> listOperationProvider;
+
+	PagingAndSortingRepository<T, ID> repository;
+	DataProvider<T, ?> dataProvider;
+
 	T filterEntity;
 	Class<? extends Component> entityView;
 	Class<T> entityClass;
@@ -68,58 +79,68 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout imp
 	Boolean showButtonColumn = false;
 	Boolean showEditButton = true;
 	Boolean showDeleteButton = true;
+	Boolean showCreateButton = true;
 	Boolean showHeader = true;
 	Span count;
 	TextField filter;
 	Column<?> buttonColumn;
 	String createText = "New";
+	HorizontalLayout header;
 
+	//holds a temporary reference to the edit button, which is replaced as we are iterating over the rows
 	Button editButton;
 	Button deleteButton;
 
-	public EntitiesList(Class<T> c,
-			Class<? extends Component> ev) {
+	FilterMode filterMode;
+
+	Boolean caseSensitive = false;
+
+	public EntitiesList(Class<T> c,Class<? extends Component> ev) {
 		this.entityClass = c;
 		this.entityView = ev;
+		this.filterMode=FilterMode.Example;
 	}
 
-	public EntitiesList(Class<T> c,
-			Class<? extends Component> ev,
-			EntitiesListProvider<T, ID> provider) {
+	public EntitiesList(Class<T> c, Class<? extends Component> ev,FilterMode fm) {
 		this.entityClass = c;
 		this.entityView = ev;
-		this.provider = provider;
-
+		this.filterMode = fm;
 	}
 
-	public EntitiesList(Class<T> c,
-			Class<? extends Component> ev,
-			DelegateEntitiesListProvider<T, ID> provider) {
+	public EntitiesList(Class<T> c, Class<? extends Component> ev, EntitiesListProvider<T, ID> provider,
+			FilterMode fm) {
 		this.entityClass = c;
 		this.entityView = ev;
-		provider.list = this;
-		this.provider = provider;
-
+		this.listOperationProvider = provider;
+		this.filterMode = fm;
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void postConstruct(ApplicationContext appCtx) {
 
-		LOGGER.info("postConstruct {}",provider);
+		LOGGER.info("postConstruct {}", listOperationProvider);
 
 		this.appCtx = appCtx;
 
-		this.repository = provider.getRepository();
+		this.repository = listOperationProvider.getRepository();
 		this.addClassName("entities-view");
 
-		if(entityName == null) entityName = entityClass.getSimpleName();
-		if(entityNamePlural == null) entityNamePlural = English.plural(entityName);
-		dataProvider = provider.createDataProvider();
-		filterEntity = provider.createFilterEntity();
-		dataProvider.setFilter(filterEntity);
+		if (entityName == null)
+			entityName = entityClass.getSimpleName();
+		if (entityNamePlural == null)
+			entityNamePlural = English.plural(entityName);
 
-		if(showHeader) {
-			HorizontalLayout header = new HorizontalLayout();
+		dataProvider = listOperationProvider.createDataProvider();
+
+		LOGGER.info("dataProvider: {}",dataProvider);
+
+		if (filterMode == FilterMode.Example) {
+			filterEntity = listOperationProvider.createFilterEntity();
+			((ExampleFilterDataProvider<T, ID>) dataProvider).setFilter(filterEntity);
+		}
+
+		if (showHeader) {
+			header = new HorizontalLayout();
 			header.setSpacing(true);
 			header.setWidth("100%");
 			header.setAlignItems(Alignment.CENTER);
@@ -132,83 +153,77 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout imp
 			filter = new TextField();
 			filter.setClearButtonVisible(true);
 
-			filter.setPlaceholder("Search");
-			filter.addValueChangeListener(change -> provider.changeFilter(change.getValue()));
+			filter.setPlaceholder("Filter");
+			filter.addValueChangeListener(change -> listOperationProvider.changeFilter(change.getValue()));
 			header.add(filter);
 
-			if(entityView!=null) {
-				Button add =new Button(createText+" "+entityName,VaadinIcon.PLUS.create());
-				add.addClickListener(provider::clickNew);
+			if (entityView != null && showCreateButton) {
+				Button add = new Button(createText + " " + entityName, VaadinIcon.PLUS.create());
+				add.addClickListener(listOperationProvider::clickNew);
 				add.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				header.add(add);
 			}
 		}
 
-		grid = new Grid<T>(entityClass,false);
+		grid = new Grid<T>(entityClass, false);
 		grid.setDataProvider(dataProvider);
 		grid.addThemeVariants(
 				//GridVariant.LUMO_NO_ROW_BORDERS,
-		        GridVariant.LUMO_NO_BORDER,
-		        GridVariant.LUMO_ROW_STRIPES
-		        );
+				GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
 		grid.addClassName("borderless");
 		grid.setHeight("100%");
-
 
 		//dataProvider = provider.createDataProvider();
 		//filterEntity = provider.createFilterEntity();
 		//dataProvider.setFilter(filterEntity);
 		//grid.setDataProvider(dataProvider);
 
-		provider.setupColumns(grid);
+		listOperationProvider.setupColumns(grid);
 
-		if(showButtonColumn) {
+		if (showButtonColumn) {
 
 			grid.addClassName("button-column");
 			buttonColumn = grid.addComponentColumn(e -> {
 
 				HorizontalLayout buttons = new HorizontalLayout();
 				buttons.addClassName("grid-buttons");
+				buttons.setPadding(true);
 				buttons.setWidthFull();
 				buttons.setJustifyContentMode(JustifyContentMode.END);
 
-				provider.addButtonColumn(buttons, e);
+				listOperationProvider.addButtonColumn(buttons, e);
 
 				return buttons;
-			})
-			.setFlexGrow(0)
-			.setClassNameGenerator(val -> {
+			}).setFlexGrow(0).setClassNameGenerator(val -> {
 				return "grid-buttons-column";
-			})
-			.setWidth("250px")
-			;
+			}).setWidth("250px");
 
 		}
 
 		grid.addItemClickListener(click -> {
-			LOGGER.info("Clicked item: {}",click.getItem());
+			LOGGER.info("Clicked item: {}", click.getItem());
 		});
 
 		this.add(grid);
 
-		provider.updateCount();
+		listOperationProvider.updateCount();
 
 	}
 
 	public void refresh() {
 		dataProvider.refreshAll();
-		provider.updateCount();
+		listOperationProvider.updateCount();
 	}
 
 	public void addButtonColumn(HorizontalLayout buttons, T e) {
-		if(showEditButton) {
+		if (showEditButton) {
 			editButton = new Button(VaadinIcon.PENCIL.create());
 			editButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 			buttons.add(editButton);
 			UIUtils.setTitle(editButton, "Edit");
-			editButton.addClickListener(click -> provider.clickEdit(click, e));
+			editButton.addClickListener(click -> listOperationProvider.clickEdit(click, e));
 		}
-		if(showDeleteButton) {
+		if (showDeleteButton) {
 			deleteButton = new Button(VaadinIcon.TRASH.create());
 			deleteButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 			buttons.add(deleteButton);
@@ -222,101 +237,141 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout imp
 
 	public void clickDelete(T e) {
 
-		ConfirmDialogs.deleteDialog(entityName+" \""+provider.getEntityName(e) +"\"", () -> {
-			provider.delete(e);
+		ConfirmDialogs.deleteDialog(entityName + " \"" + listOperationProvider.getEntityName(e) +"\"", () -> {
+			listOperationProvider.delete(e);
 		}).open();
-		/*
-		ConfirmDialog cd = new ConfirmDialog(null,"Delete "+entityName+" \""+provider.getEntityName(e)+"\" ?",VaadinIcon.TRASH.create());
-		cd.withYesButton()
-		.withVariants(ButtonVariant.LUMO_PRIMARY)
 
-		.with(null,() -> {
-			provider.delete(e);
-		});
-		cd.withNoButton().withIcon(null);
-		cd.open(); */
 	}
 
-	public void clickEdit(ClickEvent<Button> click,T entity) {
-		if(Dialog.class.isAssignableFrom(entityView)) {
-			Dialog cd = createDialog(entity);
-			cd.addOpenedChangeListener(change -> {
-				provider.refresh();
-			});
-			cd.open();
-		}
-		else {
-			//Class<V> hup = (Class<V>) entityView;
+	public void delete(T e) {
+		repository.delete(e);
+		refresh();
+	}
 
-			String route = RouteConfiguration.forSessionScope().getUrl(entityView);
+	public void clickEdit(ClickEvent<Button> click, T entity) {
+		if(entityView != null) {
+			if (Dialog.class.isAssignableFrom(entityView)) {
+				Dialog cd = createDialog(entity);
+				cd.open();
+				cd.addOpenedChangeListener(change -> {
+					listOperationProvider.refresh();
+				});
+			} else {
+				Class<? extends Component> hup = entityView;
 
-			//RouteParameters rpParameters;
-			QueryParameters queryParameters = new QueryParameters(Collections.singletonMap("id", Arrays.asList(provider.getEntityId(entity).toString())));
+				String route = RouteConfiguration.forSessionScope().getUrl(hup);
 
+				//RouteParameters rpParameters;
+				QueryParameters queryParameters = new QueryParameters(Collections.singletonMap("id",
+						Arrays.asList(listOperationProvider.getEntityId(entity).toString())));
 
-			//LOGGER.info("entityView: {}",entityView);
-			//UI.getCurrent().navigate(hup,provider.getEntityId(entity));
-			UI.getCurrent().navigate(route,queryParameters);
+				//LOGGER.info("entityView: {}",entityView);
+				//UI.getCurrent().navigate(hup,provider.getEntityId(entity));
+				UI.getCurrent().navigate(route, queryParameters);
 
+			}
 		}
 	}
 
+	public DataProvider<T, ?> createDataProvider() {
+		LOGGER.info("createDataProvider: {}",filterMode);
 
+		switch (filterMode) {
+		case Example: {
+			ExampleFilterRepository<T, ID> r = (ExampleFilterRepository<T, ID>) repository;
+			ExampleFilterDataProvider<T, ID> dataProvider = new ExampleFilterDataProvider<T, ID>(r,
+					ExampleMatcher.matchingAny().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+							.withIgnoreCase().withIgnoreNullValues(),
+					listOperationProvider.getDefaultSortOrder());
+			return dataProvider;
+		}
+		case String: {
+			//StringSearchRepository<T, ID> r = (StringSearchRepository<T, ID>) repository;
+			StringSearchDataProvider<T, ID> dp = new StringSearchDataProvider<>(repository,listOperationProvider.getDefaultSortOrder());
+			return dp;
+		}
+		case None: {
+			CallbackDataProvider<T, Void> dataProvider = DataProvider.fromCallbacks(
+					q -> repository.findAll(ChunkRequest.of(q, listOperationProvider.getDefaultSortOrder())).getContent().stream(),
+					q -> Ints.checkedCast(repository.count()));
 
-	public ExampleFilterDataProvider<T,ID> createDataProvider(){
-		ExampleFilterDataProvider<T,ID> dataProvider = new ExampleFilterDataProvider<T,ID>(
-				repository,
-				ExampleMatcher.matchingAny()
-				.withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-				.withIgnoreCase().withIgnoreNullValues()
-				, provider.getDefaultSortOrder()
-				);
+			return dataProvider;
+		}
+		default: throw new IllegalStateException();
 
-		return dataProvider;
+		}
+
 	}
 
 	public List<QuerySortOrder> getDefaultSortOrder() {
-		if(defaultSortAsc) return QuerySortOrder.asc(defaultSortOrderProperty).build();
-		else return QuerySortOrder.desc(defaultSortOrderProperty).build();
+		if (defaultSortAsc)
+			return QuerySortOrder.asc(defaultSortOrderProperty).build();
+		else
+			return QuerySortOrder.desc(defaultSortOrderProperty).build();
 	}
 
 	public T createFilterEntity() {
 		try {
 			return entityClass.newInstance();
-		}
-		catch (InstantiationException | IllegalAccessException e) {
-			throw new IllegalArgumentException("Could not instantiate class "+entityClass);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IllegalArgumentException("Could not instantiate class " + entityClass);
 		}
 	}
 
 	public void updateCount() {
-		if(showHeader) {
-			long full = repository.count();
+
+		if (showHeader) {
+			long full = getCountAll();
 			int shown = dataProvider.size(new Query<>());
-			count.setText("Showing "+shown+" of "+full);
+			count.setText("Showing " + shown + " of " + full);
 		}
 	}
 
+	public Long getCountAll() {
+		switch(filterMode) {
+		case Example: return repository.count();
+		case None: return null;
+		case String: return ((StringSearchDataProvider<T, Serializable>)dataProvider).countAll();
+		default: throw new IllegalStateException();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public void changeFilter(String text) {
-		if(StringUtils.isBlank(text)) provider.clearFilter();
-		else provider.setFilter(text);
+		if(!caseSensitive) text = StringUtils.lowerCase(text);
+		switch (filterMode) {
+		case Example:
+			if (StringUtils.isBlank(text))
+				listOperationProvider.clearFilter();
+			else
+				listOperationProvider.setFilter(text);
+			break;
+		case String:
+			((StringSearchDataProvider<T, ID>) dataProvider).setFilter(text);
+			break;
+		case None:
+			break;
+		default:
+			break;
+		}
+
 		dataProvider.refreshAll();
-		provider.updateCount();
+		listOperationProvider.updateCount();
 	}
 
 	public void clickNew(ClickEvent<Button> click) {
-		if(Dialog.class.isAssignableFrom(entityView)) {
+		if (Dialog.class.isAssignableFrom(entityView)) {
 			Dialog cd = createDialog(null);
 			cd.open();
 			cd.addOpenedChangeListener(change -> {
-				if(cd instanceof EntityDialog) {
+				if (cd instanceof EntityDialog) {
 					EntityDialog<?> ed = (EntityDialog<?>) cd;
-					if(ed.getSaved()) provider.refresh();
-				}
-				else provider.refresh();
+					if (ed.getSaved())
+						listOperationProvider.refresh();
+				} else
+					listOperationProvider.refresh();
 			});
-		}
-		else {
+		} else {
 			UI.getCurrent().navigate(entityView);
 		}
 	}
@@ -325,6 +380,30 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout imp
 		Dialog cd = (Dialog) appCtx.getBean(entityView,entity);
 		return cd;
 	}
+
+	protected EntitiesViewRefreshThread refreshThread;
+
+	public void refreshEvery(Long ms) {
+
+		if(ms == null) {
+			if(refreshThread != null) {
+				refreshThread.setStopped();
+				refreshThread = null;
+			}
+		}
+		else {
+			if(refreshThread == null) {
+				refreshThread = new EntitiesViewRefreshThread(this, UI.getCurrent(), ms);
+				UI.getCurrent().addBeforeLeaveListener(before -> {
+					refreshThread.setStopped();
+				});
+				refreshThread.start();
+			}
+			else refreshThread.setWait(ms);
+		}
+
+	}
+
 	/*
 		@Override
 		public void setupColumns(Grid<T> grid) {
@@ -356,45 +435,4 @@ public class EntitiesList<T,ID extends Serializable>  extends VerticalLayout imp
 			throw new NotImplementedException();
 		}*/
 
-	@Override
-	public ID getEntityId(T entity) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setupColumns(Grid<T> grid) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setFilter(String text) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void clearFilter() {
-
-	}
-
-
-
-	@Override
-	public ExampleFilterRepository<T, ID> getRepository() {
-		return null;
-	}
-
-	@Override
-	public String getEntityName(T t) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void delete(T t) {
-
-
-	}
 }
