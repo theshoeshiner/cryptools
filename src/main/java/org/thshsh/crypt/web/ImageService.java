@@ -38,7 +38,7 @@ public class ImageService {
 	ExchangeRepository exRepo;
 
 	//String imageArchive = "./media/images";
-	File imageArchive = new File("./media/images");
+	File imageArchive = new File("../cryptools_media/images");
 
 
 	@PostConstruct
