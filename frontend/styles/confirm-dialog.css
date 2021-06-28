@@ -3,13 +3,15 @@
 }
 
 .confirm-dialog iron-icon {
-	color:var(--lumo-primary-color);
+	color:var(--lumo-accent-color-1); 
 }
 
 .confirm-dialog vaadin-button[theme='primary'] iron-icon {
-	color:var(--lumo-primary-contrast-color);
+	color:var(--lumo-accent-color-1); 
 }
 
 .confirm-dialog.warning iron-icon {
-	color:var(--lumo-error-color);
+	color:var(--lumo-warning-color);
+	width:var(--lumo-size-xl) !important;
+	height:var(--lumo-size-xl) !important;
 }

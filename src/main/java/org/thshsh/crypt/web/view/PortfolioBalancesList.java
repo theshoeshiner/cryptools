@@ -10,16 +10,22 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.Portfolio;
+import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.ExampleFilterRepository;
 import org.thshsh.vaadin.FunctionUtils;
 
+import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 
 @SuppressWarnings("serial")
 @Component
@@ -38,13 +44,14 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 	ManagePortfolioView view;
 
 	public PortfolioBalancesList(ManagePortfolioView v) {
-		super(Balance.class, BalanceDialog.class);
+		super(Balance.class, BalanceDialog.class,FilterMode.None);
 		this.listOperationProvider = new PortfolioBalancesListProvider();
 		this.portfolio = v.entity;
 		LOGGER.info("PortfolioBalancesList: {}",this.portfolio);
 		this.showDeleteButton = true;
 		this.showButtonColumn = true;
 		this.view = v;
+		this.showc
 
 	}
 
@@ -61,6 +68,15 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 	}
 
 
+
+	@Override
+	public DataProvider<Balance, ?> createDataProvider() {
+		CallbackDataProvider<Balance, Void> dataProvider = DataProvider.fromCallbacks(
+				q -> balanceRepo.findByPortfolio(portfolio,ChunkRequest.of(q, getDefaultSortOrder())).getContent().stream(),
+				q -> Ints.checkedCast(balanceRepo.countByPortfolio(portfolio)));
+
+		return dataProvider;
+	}
 
 	@Override
 	public void refresh() {
@@ -84,7 +100,7 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 		@Override
 		public void setupColumns(Grid<Balance> grid) {
 
-			grid.addComponentColumn(entry -> {
+			Column<?> col = grid.addComponentColumn(entry -> {
 				if(entry.getExchange().getImageUrl()!=null) {
 					String imageUrl = "/image/"+entry.getExchange().getImageUrl();
 					Image image = new Image(imageUrl,"Icon");
@@ -94,25 +110,19 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 				}
 				else return new Span();
 
-			})
-			.setWidth("48px")
-			.setFlexGrow(0)
-			//.setSortProperty("exchange.name")
-			.setClassNameGenerator(pe -> {
-				return "icon";
-			})
+			});
+			UiComponents.iconColumn(col);
 
-			;
-
-			grid.addColumn(FunctionUtils.nestedValue(Balance::getExchange, Exchange::getName))
+			Column<?> eName = grid.addColumn(FunctionUtils.nestedValue(Balance::getExchange, Exchange::getName))
 			.setHeader("Exchange")
 			.setSortProperty("exchange.name")
 			.setSortable(true)
 			.setWidth("150px")
 			.setFlexGrow(0)
 			;
+			UiComponents.iconLabelColumn(eName);
 
-			grid.addComponentColumn(entry -> {
+			Column<?> curIcon = grid.addComponentColumn(entry -> {
 				if(entry.getCurrency().getImageUrl()!=null) {
 					String imageUrl = "/image/"+entry.getCurrency().getImageUrl();
 					Image image = new Image(imageUrl,"Icon");
@@ -123,21 +133,17 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 				else return new Span();
 
 			})
-			.setWidth("48px")
-			.setFlexGrow(0)
-			//.setSortProperty("currency.key")
-			.setClassNameGenerator(pe -> {
-				return "icon";
-			})
 			;
+			UiComponents.iconColumn(curIcon);
 
-			grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getKey))
+			Column<?> label = grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getKey))
 			.setHeader("Currency")
 			.setSortProperty("currency.key")
 			.setSortable(true)
 			.setWidth("125px")
 			.setFlexGrow(0)
 			;
+			UiComponents.iconLabelColumn(label);
 
 			grid.addColumn(Balance::getBalance)
 			.setHeader("Balance")

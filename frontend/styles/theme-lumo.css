@@ -10,6 +10,7 @@ html {
 	--lumo-size-m: 2rem;
 	--lumo-size-s: 1.75rem;
 	--lumo-size-xs: 1.5rem;
+	--lumo-size-xxs: 1.1rem;
 	--lumo-space-xl: 1.875rem;
 	--lumo-space-l: 1.25rem;
 	--lumo-space-m: 0.625rem;
@@ -25,7 +26,7 @@ html {
 	--lumo-font-size-xs: 0.75rem;
 	--lumo-font-size-xxs: 0.6875rem;
 
-	--lumo-border-radius: 0em;
+	--lumo-border-radius: .15em;
 
 	/* Tints are used mostly in dark theme */
 	--lumo-tint:hsl(var( --lumo-tint-hue),34%,50%);
@@ -54,28 +55,73 @@ html {
 	--lumo-shade-90pct: hsla(var( --lumo-shade-hue), 40%, 16%, 0.94);
 
 
-	--lumo-primary-color-10pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.1);
-	--lumo-primary-color-50pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.5);
-	--lumo-primary-color: hsl(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit));
+
+
 	--lumo-primary-contrast-color: #FFF;
 
 	--lumo-icon-size-s: 1.25em;
   	--lumo-icon-size-m: 1.5em;
  	--lumo-icon-size-l: 2.25em;
-  	/* For backwards compatibility */
   	--lumo-icon-size: var(--lumo-icon-size-m);
+  	--lumo-font-family:"Segoe UI";
+
+
+
+  	--bc-light-blue: #ddf1f7;
+   --bc-light-blue-60pct:hsla(194, 62%, 60%, 1);
+   --bc-light-blue-50pct:hsla(194, 62%, 50%, 1);
+   --bc-light-blue-40pct:hsla(194, 62%, 40%, 1);
+   --bc-green: #6db43d;
+   --bc-light-amber: #ffd24f;
+   --bc-dark-amber: #faa634;
 }
 
 [theme~="light"] {
 
+   /*
+   CDSIC green  174, yellow 40, red 1
 
-	--lumo-primary-hue:211;
-	--lumo-primary-sat:52%;
-	--lumo-primary-lit:44%;
+   	BC Blue 211
+
+   	BC blue 210, 54%, 25%
+   	BC light blue #ddf1f7
+
+   	BC colors
+
+   	Green: 6cb33f (6db43d)
+   	Dk Blue: 1e4164
+   	lt blue:	ddf1f7
+   	lt gray: cfd4d8
+   	dk gray: 455560
+   	lt amber: ffd24f
+   	dk amber:	faa634
+
+   	//light blue , #ddf1f7 , 194°, 62%, 92%
+   */
+
+   /* bioclinica colors */
+
+   --lumo-primary-hue:40;
+	--lumo-primary-sat:4%;
+	--lumo-primary-lit:14%;
+
+   --lumo-primary-color: hsl(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit));
+	--lumo-primary-color-10pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.1);
+	--lumo-primary-color-50pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.5);
+	--lumo-primary-color-70pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.70);
+	--lumo-primary-color-80pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.80);
+
+
+   --lumo-accent-color-1:#FB6107;
+   --lumo-accent-color-2:var(--bc-light-amber);
+   --lumo-accent-color-3:var(--bc-green);
+   --lumo-accent-color-4:var(--bc-dark-amber);
+   --lumo-accent-color-5:var(--bc-dark-amber);
+
+
 
 	--lumo-tint-hue: 199;
 	--lumo-shade-hue:199;
-
 
 	--lumo-body-text-color: #03253a;
 	--lumo-base-color: #fff;
@@ -83,10 +129,14 @@ html {
 	--lumo-success-text-color: #008F35;
 	--lumo-error-color: #c83214;
 	--lumo-error-text-color: #c83214;
+	--lumo-warning-color: #fa8034;
 
-	--warn-0-color: #b34045;
+  	--lumo-header-text-color:var(--lumo-primary-color);
+
+  	--warn-0-color: #b34045;
 	--warn-1-color: #FEAB6D;
 	--warn-2-color: #fecf6d;
+
 
 
     }
@@ -94,34 +144,47 @@ html {
 
     [theme~="dark"] {
 
+    /* dark needs to change
 
-      --lumo-primary-hue:211;
-   --lumo-tint-hue: 174;
-   --lumo-shade-hue:174;
+    --lumo-shade: hsl(0, 0%, 10%);
+    --lumo-primary-color: hsl(22, 96%, 47%);
+    --lumo-primary-text-color: rgb(235, 89, 5);
+    --lumo-shade-5pct: rgba(26, 26, 26, 0.05);
 
-   /*  --lumo-primary-color: #81A0C1;
-    --theme-secondary-background-color:#0F4072;
-    --lumo-primary-text-color: #5A8DC3;  */
+    */
 
+    --lumo-primary-hue:210;
+	--lumo-primary-sat:54%;
+	--lumo-primary-lit:25%;
 
+	--lumo-tint-hue: 199;
+	--lumo-shade-hue:199;
 
-      /*--lumo-primary-color: #C56E00;
-      --lumo-primary-text-color: #C56E00;
-      --lumo-error-color: #c83214;
-      --lumo-error-text-color: #c83214;
-      --lumo-success-color: #008F35;
-      --lumo-success-text-color: #008F35;
-      --lumo-base-color: #11334b;
-      --lumo-body-text-color: #b0c2d4;*/
+	--lumo-base-color: #fff;
+	--lumo-success-color: #008F35;
+	--lumo-success-text-color: #008F35;
+	--lumo-error-color: #c83214;
+	--lumo-error-text-color: #c83214;
 
-     /*  --material-body-text-color: #FF0000;
-		--material-secondary-text-color: #0000FF;
-		--material-disabled-text-color: rgba(0, 0, 0, 0.38);
-		--material-primary-text-color: #00FF00;
-		--material-error-text-color: #b00020; */
+	  --lumo-accent-color-1:var(--bc-dark-amber);
+   --lumo-accent-color-2:var(--bc-light-amber);
+   --lumo-accent-color-3:var(--bc-green);
+   --lumo-accent-color-4:var(--bc-light-blue-50pct);
+   --lumo-accent-color-5:var(--bc-light-blue-40pct);
 
+   --lumo-primary-color: hsl(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit));
+	--lumo-primary-color-10pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.1);
+	--lumo-primary-color-50pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.5);
+	--lumo-primary-color-70pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.70);
+	--lumo-primary-color-80pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.80);
 
 
 
     }
+
+     [theme~="dark"] [slot~=drawer] ,  [theme~="dark"] [slot~=navbar]{
+    	background-color:rgb(74,102,129);
+    }
+
+
 

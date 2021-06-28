@@ -8,21 +8,25 @@
 
 
     h1,h2,h3,h4,h5,h6 , .h1,.h2,.h3,.h4,.h5,.h6{
-    color:var(--lumo-primary-color);
+    	color:var(--lumo-header-text-color);
    }
-
+    
    h1, .h1 {
 	   font-weight: 600;
    }
-
+   
    .h2 {
-   	font-size:1.5rem;
-   	font-weight:600;
+   		font-size:1.5rem;
+   		font-weight:600;
    }
-
+   
 
 vaadin-button:hover {
 	cursor:pointer;
+}
+
+vaadin-drawer-toggle {
+	color:var(--lumo-accent-color-4);
 }
 
 vaadin-drawer-toggle:hover {
@@ -38,7 +42,7 @@ vaadin-grid-tree-toggle:not([leaf]):hover {
 }
 
 vaadin-details [slot=summary]:hover {
-	cursor:pointer;
+	cursor:pointer; 
 }
 
 .link:hover {
@@ -72,9 +76,14 @@ vaadin-button[theme*=small] {
 }
 
 vaadin-button.unclickable:hover {
-	cursor:unset;
+	cursor:unset; 
 }
 
+vaadin-button.warning {
+	color:var(--lumo-warning-color); 
+}
+
+/** Aligns buttons with form fields */
 vaadin-button.form-field-align {
 	margin-top:30px;
 }
@@ -92,11 +101,11 @@ vaadin-grid.borderless {
 }
 
 vaadin-grid-cell-content:hover {
-	 cursor:pointer;
+	 cursor:pointer; 
 }
 
 vaadin-grid.no-cursor vaadin-grid-cell-content:hover  {
-	cursor:unset;
+	cursor:unset; 
 }
 
 .field-label {
@@ -104,3 +113,4 @@ vaadin-grid.no-cursor vaadin-grid-cell-content:hover  {
     font-size: var(--lumo-font-size-xs);
     font-weight: 500;
 }
+

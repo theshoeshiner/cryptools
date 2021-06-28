@@ -1,0 +1,12 @@
+
+:host  , [part='container']  {
+	background-color: transparent !important;
+}
+
+:host  {
+	background-color: var(--lumo-primary-color-50pct) !important;
+	 position:fixed; 
+}
+
+
+

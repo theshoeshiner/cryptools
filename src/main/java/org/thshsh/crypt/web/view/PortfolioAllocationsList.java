@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.AllocationRepository;
 import org.thshsh.cryptman.BalanceRepository;
@@ -20,6 +21,8 @@ import org.thshsh.vaadin.FunctionUtils;
 
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.NumberRenderer;
@@ -109,8 +112,25 @@ public class PortfolioAllocationsList extends EntitiesList<Allocation, Long> {
 		@Override
 		public void setupColumns(Grid<Allocation> grid) {
 
-			grid.addColumn(FunctionUtils.nestedValue(Allocation::getCurrency, Currency::getName))
+
+			Column<?> curIcon = grid.addComponentColumn(entry -> {
+				if(entry.getCurrency().getImageUrl()!=null) {
+					String imageUrl = "/image/"+entry.getCurrency().getImageUrl();
+					Image image = new Image(imageUrl,"Icon");
+					image.setWidth(ManagePortfolioView.ICON_SIZE);
+					image.setHeight(ManagePortfolioView.ICON_SIZE);
+					return image;
+				}
+				else return new Span();
+
+			})
+			;
+			UiComponents.iconColumn(curIcon);
+
+			Column<?> lab = grid.addColumn(FunctionUtils.nestedValue(Allocation::getCurrency, Currency::getName))
 			.setHeader("Currency");
+
+			UiComponents.iconLabelColumn(lab);
 
 			grid.addColumn(new NumberRenderer<>(Allocation::getPercent,PortfolioEntriesList.PercentFormat))
 			.setHeader("Percent");

@@ -189,11 +189,11 @@ public class MainLayout extends AppLayout {
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.setJustifyContentMode(JustifyContentMode.CENTER);
 
-        Icon logo = VaadinIcon.DATABASE.create();
-        logoLayout.add(logo);
+        //Icon logo = VaadinIcon.DATABASE.create();
+        //logoLayout.add(logo);
 
-        Span odm = new Span("Sample");
-        Span loader = new Span("Webapp");
+        Span odm = new Span("¢");
+        Span loader = new Span("ryptools");
 
 
 

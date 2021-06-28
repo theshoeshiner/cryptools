@@ -6,6 +6,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.repo.AppUserRepository;
@@ -35,18 +37,35 @@ public class AppSession {
 	@Autowired
 	AppUserRepository userRepo;
 
+	@Autowired
+	AppConfiguration appConfig;
+
 	User user;
+
+
 
 
 	@PostConstruct
 	protected void postConstruct() {
 
+		if(appConfig.loginEnabled) {
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			LOGGER.info("Authentication: {}",authentication);
+			LOGGER.info("Authentication: {}",authentication.getPrincipal());
+		}
+		else {
+			user = userRepo.findByUserNameIgnoreCase(appConfig.username).orElseThrow(() -> new ApplicationException("No user configured"));
+		}
+
+
+
+
 		//REMOVE
-		user = userRepo.findAll().stream().findFirst().orElseGet(() -> {
-			User u = new User("John","Doe","jd@email.com");
+		/*user = userRepo.findAll().stream().findFirst().orElseGet(() -> {
+			User u = new User("John","Doe","jd@email.com",null,null);
 			userRepo.save(u);
 			return u;
-		});
+		});*/
 
 
 		//permissionsMap = user.getPermissionsMap();

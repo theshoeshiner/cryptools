@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -40,7 +41,7 @@ public class Currency extends IdedEntity implements HasImage  {
 	@Enumerated(EnumType.STRING)
 	PlatformType platformType;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	Currency builtOn;
 
 	/*

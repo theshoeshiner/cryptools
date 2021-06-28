@@ -1,18 +1,20 @@
 package org.thshsh.crypt.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.thshsh.crypt.CryptUserDetailsService;
+import org.thshsh.crypt.UserRepository;
 
 /**
  * Configures spring security, doing the following:
@@ -25,18 +27,32 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+	public static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfiguration.class);
+
 	private static final String LOGIN_PROCESSING_URL = "/login";
 	private static final String LOGIN_FAILURE_URL = "/login?error";
 	private static final String LOGIN_URL = "/login";
 	private static final String LOGOUT_SUCCESS_URL = "/dashboard";
+
+	@Autowired
+	UserRepository userRepo;
+
+	@Autowired
+	AppConfiguration appConfig;
 
 	/**
 	 * Require login to access internal pages and configure login form.
 	 */
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// Not using Spring CSRF here to be able to use plain HTML for the login page
-		http.csrf().disable()
+
+		LOGGER.info("appConfig.loginEnabled: {}",appConfig.loginEnabled);
+
+
+		if(appConfig.loginEnabled) {
+
+			// Not using Spring CSRF here to be able to use plain HTML for the login page
+			http.csrf().disable()
 
 				// Register our CustomRequestCache, that saves unauthorized access attempts, so
 				// the user is redirected after login.
@@ -52,29 +68,46 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.anyRequest().authenticated()
 
 				// Configure the login page.
-				.and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
+				.and().formLogin().loginPage(LOGIN_URL).permitAll()
+				.loginProcessingUrl(LOGIN_PROCESSING_URL)
 				.failureUrl(LOGIN_FAILURE_URL)
+				.defaultSuccessUrl("/dashboard",true)
+
+				//.successForwardUrl("/dashboard")
 
 				// Configure logout
-				.and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+				.and()
+
+				.logout()
+				.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+
+		}
+		else {
+			http.authorizeRequests().anyRequest().authenticated();
+		}
 	}
 
 	@Bean
 	public PasswordEncoder encoder() {
-	    return NoOpPasswordEncoder.getInstance();
+		  return new BCryptPasswordEncoder();
+	   // return NoOpPasswordEncoder.getInstance();
 		//return new StandardPasswordEncoder();
 	}
+
+
 
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
-		UserDetails user =
-				User.withUsername("user")
-						.password("password")
-						.roles("USER")
-						.build();
+		return new CryptUserDetailsService(userRepo);
+	}
 
-		return new InMemoryUserDetailsManager(user);
+	@Bean
+	public DaoAuthenticationProvider authProvider() {
+	    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+	    authProvider.setUserDetailsService(userDetailsService());
+	    authProvider.setPasswordEncoder(encoder());
+	    return authProvider;
 	}
 
 	/**
@@ -113,5 +146,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 				// (production mode) static resources
 				"/frontend-es5/**", "/frontend-es6/**");
+
+		if(!appConfig.loginEnabled) {
+			web.ignoring().antMatchers("/**");
+		}
 	}
+
+
 }

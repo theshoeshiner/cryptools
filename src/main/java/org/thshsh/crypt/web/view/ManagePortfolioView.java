@@ -31,8 +31,10 @@ import org.thshsh.vaadin.BasicTabSheet;
 
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;
+import com.github.appreciated.apexcharts.config.Fill;
 import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
 import com.github.appreciated.apexcharts.config.builder.DataLabelsBuilder;
+import com.github.appreciated.apexcharts.config.builder.FillBuilder;
 import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
 import com.github.appreciated.apexcharts.config.builder.StrokeBuilder;
 import com.github.appreciated.apexcharts.config.builder.TitleSubtitleBuilder;
@@ -190,6 +192,10 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 		add(outer);*/
 
 
+	    breadcrumbs.resetBreadcrumbs()
+	    .addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
+	    .addBreadcrumb(entity.getName(), null)
+	    ;
 	}
 
 	protected void refreshMainTab() {
@@ -308,6 +314,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 						                .withSubtitle(TitleSubtitleBuilder.get()
 					                    .withText("Price Movements")
 					                    .withAlign(Align.left).build())
+					.withStroke(StrokeBuilder.get().withColors("var(--lumo-accent-color-1)").build())
 	                .withLabels(IntStream.range(1, 10).boxed().map(day -> LocalDate.of(2000, 1, day).toString()).toArray(String[]::new))
 	                //.withXaxis(XAxisBuilder.get().with)
 	                .withXaxis(XAxisBuilder.get()
@@ -326,6 +333,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 
 		return vl;
 	}
+
+
 
 	DateTimeFormatter dtf = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -374,7 +383,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	        ApexCharts areaChart = ApexChartsBuilder.get()
 
 	                .withChart(ChartBuilder.get()
-	                        .withType(Type.area)
+	                        .withType(Type.line)
 	                        .withZoom(ZoomBuilder.get()
 	                                .withEnabled(false)
 	                                .build())
@@ -382,7 +391,15 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	                .withDataLabels(DataLabelsBuilder.get()
 	                        .withEnabled(false)
 	                        .build())
-	                .withStroke(StrokeBuilder.get().withCurve(Curve.straight).build())
+	                .withStroke(StrokeBuilder.get()
+	                		.withCurve(Curve.straight)
+	                		.withColors("var(--lumo-accent-color-1)"
+	                				,"var(--lumo-accent-color-2)"
+	                				)
+	                		.withWidth(3d)
+	                		.build()
+	                		)
+	                .withFill(FillBuilder.get().withOpacity(0d).build())
 	                //.withSeries(new Series<>("STOCK ABC", 10.0, 41.0, 35.0, 51.0, 49.0, 62.0, 69.0, 91.0, 148.0))
 	                .withSeries(new Series<>("USD Value", values.toArray()),
 	                new Series<>("Alert Threshold", thresh.toArray()))
@@ -398,10 +415,12 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	//                        .withText("Price Movements")
 	  //                      .withAlign(Align.left).build())
 	                //.withLabels(IntStream.range(1, 10).boxed().map(day -> LocalDate.of(2000, 1, day).toString()).toArray(String[]::new))
+	                //.withStroke(StrokeBuilder.get().withColors("var(--lumo-accent-color-1)").build())
 	               .withLabels(labels.toArray(new String[labels.size()]))
 
 	                .withXaxis(XAxisBuilder.get()
 	                        .withType(XAxisType.datetime)
+
 	                        //.withTickAmount(new BigDecimal(50))
 	                        .withLabels(LabelsBuilder
 	                        		.get()
@@ -424,6 +443,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	                .withYaxis(YAxisBuilder.get()
 	                        //.withOpposite(true)
 //	                		.withAxisTicks(null)
+
 	                		.withDecimalsInFloat(0d)
 	                		.withTickAmount(10d)
 	                        .withMin(0d)
@@ -448,9 +468,9 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 
 	                .build();
 	        add(areaChart);
-	        areaChart.setHeight("400px");
+	        areaChart.setHeight("600px");
 	        setWidth("100%");
-	        setHeight("400px");
+	        setHeight("600px");
 
 	    }
 	}

@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.thshsh.crypt.CryptModel;
 import org.thshsh.cryptman.CryptmanModel;
 import org.vaadin.artur.helpers.LaunchUtil;
 
@@ -21,7 +22,8 @@ import com.vaadin.flow.theme.material.Material;
 @SpringBootApplication(scanBasePackageClasses = {
 		SpringVaadinApplication.class,
 		DataSourceConfiguration.class,
-		CryptmanModel.class
+		CryptmanModel.class,
+		CryptModel.class
 },
 exclude = ErrorMvcAutoConfiguration.class)
 //@EnableJpaRepositories

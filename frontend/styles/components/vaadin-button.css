@@ -6,7 +6,6 @@
 	text-decoration:underline;
 }
 
-
-:host([theme=tertiary-inline].link:hover) iron-icon {
-	
+:host([theme=tertiary-inline].close) div[part=suffix] {
+	margin-left:-3px;
 }

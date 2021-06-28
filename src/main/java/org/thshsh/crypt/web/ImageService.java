@@ -117,7 +117,7 @@ public class ImageService {
 	@GetMapping( value = "/image/{name}",
 			 produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
 	)
-	public @ResponseBody ResponseEntity getImageRequest(@PathVariable String name) throws IOException {
+	public @ResponseBody ResponseEntity<?> getImageRequest(@PathVariable String name) throws IOException {
 		//LOGGER.info("getimage: {}",name);
 		FileInputStream is = getImage(name);
 		HttpHeaders httpHeaders = new HttpHeaders();
@@ -127,7 +127,7 @@ public class ImageService {
 
 		InputStreamResource inputStreamResource = new InputStreamResource(is);
 		httpHeaders.setContentLength(is.available());
-		return new ResponseEntity(inputStreamResource, httpHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(inputStreamResource, httpHeaders, HttpStatus.OK);
 
 		//InputStream in = getClass().getResourceAsStream("/com/baeldung/produceimage/data.txt");
 		//return IOUtils.toByteArray(in);

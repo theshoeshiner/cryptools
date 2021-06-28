@@ -1,0 +1,9 @@
+:host {
+	color:Red;
+}
+
+:host [part=overlay] {
+	color:var(--lumo-primary-contrast-color);
+	padding:10px;
+	background-color: var(--lumo-primary-color-80pct);
+}

@@ -14,7 +14,7 @@
 }
 
 
-[part~="row"]:hover > [part~="body-cell"]{
+[part~="row"]:hover > [part~="body-cell"] {
 	background-color: var(--lumo-primary-color-10pct);
 }
 
@@ -25,6 +25,14 @@
 	visibility:hidden;
 }
 
+
+[part~="row"] [part~="body-cell"].icon ::slotted(*)  {
+	text-overflow:clip;
+}
+
+[part~="row"] [part~="body-cell"].icon-label ::slotted(*)  {
+	padding-left:0px;
+}
 
 
 [part~="row"] [part~="body-cell"].warn-0 {
@@ -40,21 +48,15 @@
 }
 
 
-/* This is for the patient profile view */
 
 :host(.small-header) tr th ::slotted(*) {
 	font-size: var(--lumo-font-size-xs);
 	font-weight:500;
     text-overflow: clip;
-    white-space: pre-wrap;
+    white-space: normal;
 }
 
 /* make the top header a different color */
-
-:host(.small-header) [part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
-	 background-color:var(--lumo-primary-color);
-
-}
 
 :host(.profile-details) tbody [part~="row"] [part~="body-cell"][first-column] {
 	font-weight:500;
@@ -65,26 +67,24 @@
 	display:none;
 }
 
-/* Print styles */
+/* small-header is when we want a header that spans the entire table */
 
-@media print {
+:host(.small-header) [part~="row"][aria-rowindex="1"] [part~="header-cell"][colspan]:not([colspan="1"])  {
+	 background-color:var(--lumo-primary-color);
 
-	/* Change table header span color */
+}
 
-	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"]) ::slotted(*) {
-		 color:var(--lumo-body-text-color) !important;
-	}
+:host(.small-header) [part~="row"][aria-rowindex="2"] [part~="header-cell"]  {
+	 background-color:var(--lumo-contrast-20pct);
 
-	[part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
-		 background-color:var(--lumo-shade-20pct) !important;
+}
 
-	}
+:host(.small-header) tr[aria-rowindex="1"] th ::slotted(*) {
+    white-space: pre-wrap;
+}
 
-	/*dont show hover colors */
-
-	[part~="row"]:hover > [part~="body-cell"]{
-		background-color: unset;
-	}
+:host(.small-header) [part~="row"] [part~="header-cell"][colspan]:not([colspan="1"])  {
+	 background-color:var(--lumo-primary-color);
 
 }
 
@@ -94,7 +94,7 @@
 	font-size:var(--lumo-font-size-m);
 }
 
-/* Give the table cells a border */
+/* Give the table cells a side border */
 
 :host(.small-header) tr th:not([first-column]):not([colspan]) {
     border-left:1px solid var(--lumo-contrast-20pct);
@@ -103,5 +103,8 @@
 :host(.small-header) tr td:not([first-column]) {
     border-left:1px solid var(--lumo-contrast-20pct);
 }
+
+
+
 
 

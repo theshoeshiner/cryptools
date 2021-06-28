@@ -1,0 +1,7 @@
+.toggle-button.off iron-icon {
+	color: var(--lumo-contrast-20pct);
+}
+
+.toggle-button.off:hover iron-icon {
+	color: unset;
+}

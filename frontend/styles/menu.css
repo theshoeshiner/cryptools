@@ -1,47 +1,130 @@
 
+vaadin-vertical-layout[slot="drawer"]{
+	background-color:var(--lumo-primary-color-80pct);
+}
+
+vaadin-vertical-layout[slot="navbar"]{
+
+}
+
+vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
+	color:var(--lumo-accent-color-4);
+}
+
 
 .menu {
 	margin-left:0px;
 	margin-right:0px;
-	margin-top:0px;
+	margin-top:16px;
 	padding:0px;
+}
+
+.menu vaadin-horizontal-layout vaadin-button {
+	font-size:var(--lumo-font-size-s);
+	color:var(--lumo-accent-color-1);
+}
+
+.menu vaadin-horizontal-layout{
+	padding-left:10px;
 }
 
 .menu a[router-link] {
 	text-decoration-line:unset;
-	color: var(--lumo-secondary-text-color);
-	
+
 	padding-top:var(--lumo-space-m);
 	padding-bottom:var(--lumo-space-m);
 	padding-left:var(--lumo-space-l);
 	margin:0px;
-	width:235px;
+	border-left:10px solid transparent;
 }
 
 .menu a[router-link][highlight] {
-	/* color:var(--lumo-primary-color); */
-	background-color:var(--lumo-contrast-10pct);
-	
+
 	transition: background-color 0.25s ease;
-	font-weight:700;
+	font-weight:500;
+
+	 border-left:10px solid var(--lumo-accent-color-1);
 }
 
-.menu a[router-link] iron-icon {
-	
-}
+.menu a[router-link][highlight], .menu a[router-link][highlight] iron-icon {
+	color: var(--lumo-accent-color-1);
 
+}
 .menu a[router-link][highlight] iron-icon {
-	color:var(--lumo-primary-color);
 }
+
+
+
+.menu a[router-link] , .menu a[router-link] iron-icon {
+	color: var(--lumo-primary-contrast-color);
+}
+
+
 
 .menu a[router-link] {
 	display: flex;
     align-items: center;
+    font-weight: 600;
 }
 .menu a[router-link] iron-icon {
 	width:20px;
-	height:20px; 
+	height:20px;
 	padding-right:8px;
-	color:var(--lumo-contrast-80pct);
+
+}
+
+.menu a.h3 {
+	font-size:var(--lumo-font-size-s);
+}
+
+.menu hr {
+	background-color: var(--lumo-accent-color-1);
+	margin-left:10px;
+	margin-right:10px;
+}
+
+#logo {
+
+  box-sizing: border-box;
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+  /* padding: var(--lumo-space-xl) var(--lumo-space-m); */
+  padding: var(--lumo-space-m);
+  background-color:var(--lumo-primary-color);
+  padding-bottom:var(--lumo-space-l);
+
+}
+
+ #logo .name {
+ 	border-top:1px solid var(--lumo-primary-contrast-color);
+ 	border-bottom:1px solid var(--lumo-primary-contrast-color);
+ }
+#logo iron-icon {
+
+	 color:var(--lumo-accent-color-3);
+	 height:32px;
+	 width:32px;
+
+	}
+
+ /* #logo .h2 {
+  	color: var(--lumo-primary-contrast-color);
+	font-weight:700;
+	font-size:2em;
+} */
+
+ #logo .h2 {
+ font-family: 'Righteous';
+  	color:var(--lumo-tint-70pct);
+	font-weight:400;
+	font-size:2.5em;
+}
+
+ #logo .h2 span {
+vertical-align:middle;
+ }
+
+ #logo .h2 span:nth-child(1) {
+	font-size:1.3em;
+
 }
 

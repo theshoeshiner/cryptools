@@ -1,0 +1,24 @@
+.error-layout h1 {
+	color:var(--lumo-accent-color-1);
+	
+	margin:0px;
+}
+
+.error-layout h1 iron-icon {
+	width:32px;
+	height:32px;
+	margin-right:var(--lumo-space-m);
+}
+
+
+.error-layout .error-details {
+	text-align:center;
+}
+
+.error-layout .error-details .error-message {
+	text-align:center;
+}
+
+.error-layout .error-details span {
+	display:block;
+}

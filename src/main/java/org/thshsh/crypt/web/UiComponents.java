@@ -15,6 +15,8 @@ import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.repo.AppUserRepository;
 import org.thshsh.crypt.web.view.UserDialog;
 
+import com.vaadin.flow.component.grid.Grid.Column;
+
 @Configuration
 public class UiComponents {
 
@@ -81,6 +83,23 @@ public class UiComponents {
 			     .appendSuffix("m")
 			     .toFormatter();
 		return formatter;
+	}
+
+	public static void iconColumn(Column<?> col) {
+		col.setWidth("38px")
+		.setFlexGrow(0)
+		.setClassNameGenerator(pe -> {
+			return "icon";
+		});
+	}
+
+	public static void iconLabelColumn(Column<?> col) {
+		col
+		//.setWidth("38px")
+		//.setFlexGrow(0)
+		.setClassNameGenerator(pe -> {
+			return "icon-label";
+		});
 	}
 
 }

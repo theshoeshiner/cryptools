@@ -7,44 +7,19 @@
 #header h1 {
   margin: 0;
 }
-#logo {
 
-  box-sizing: border-box;
-  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
-  padding: var(--lumo-space-xl) var(--lumo-space-m);
-  background-color:var(--lumo-primary-color);
-
+#header .right .profile {
+	font-weight:600;
 }
 
-
-#logo iron-icon {
-
-	 color:var(--lumo-tint-70pct);
-	 height:32px;
-	 width:32px;
-
-	}
-
- #logo .h2 {
- font-family: 'Righteous';
-  	color:var(--lumo-tint-70pct);
-	font-weight:400;
-	font-size:2.5em;
+#header .right iron-icon {
+	color:var(--lumo-accent-color-4);
+	background-color:var(--lumo-primary-color);
+	padding:5px;
+	border-radius:2em;
+	width:var(--lumo-size-xxs);
+	height:var(--lumo-size-xxs);
 }
-
- #logo .h2 span {
-
- }
-
- #logo .h2 span:nth-child(1) {
-	font-size:1.3em;
-	vertical-align:middle;
-}
-
- #logo .h2 span:nth-child(2) {
- vertical-align:middle;
-}
-
 
 /*
 vaadin-tab {
@@ -64,9 +39,16 @@ vaadin-tab[selected] {
 }
 
  */
+
+
+
+
+
+
 .entities-view .count {
 	font-size:var(--lumo-font-size-xs);
 	font-weight:700;
+	color:var(--lumo-accent-color-1);
 }
 
 .entities-view vaadin-grid {
@@ -74,10 +56,32 @@ vaadin-tab[selected] {
 }
 
 
-
-iron-icon.flow-error {
-	color:var(--lumo-error-color);
+iron-icon.status-icon:hover {
+	color:var(--lumo-contrast);
 }
+
+
+iron-icon.status-icon {
+	/* color:var(--lumo-contrast-20pct); */
+	color:var(--lumo-accent-color-4);
+}
+
+iron-icon.status-icon.failed {
+	color:var(--lumo-error-color) !important;
+}
+
+iron-icon.status-icon.paused {
+	 color:var(--lumo-contrast-20pct);
+}
+
+iron-icon.status-icon.running {
+	color:var(--lumo-accent-color-1) !important;
+	animation-name: spin;
+  	animation-duration: 5000ms;
+  	animation-iteration-count: infinite;
+  	animation-timing-function: linear;
+}
+
 
 
 iron-icon.primary {
@@ -92,17 +96,6 @@ iron-icon.primary {
     transition: color 0.2s;
 }
 
-.grid-buttons vaadin-button {
-	color:var(--lumo-contrast-60pct);
-}
-
-.grid-buttons vaadin-button:hover {
-	color:var(--lumo-contrast);
-}
-
-.grid-buttons vaadin-button[aria-disabled=true] {
-	color:var(--lumo-contrast-20pct);
-}
 
 vaadin-details[theme=stacktrace] :not([slot=summary]) {
 	font-size:var(--lumo-size-xxs);
@@ -113,10 +106,14 @@ vaadin-details[theme=stacktrace] {
 }
 
 vaadin-vertical-layout.stacktrace {
-	white-space:pre;
-
+	white-space:nowrap;
+	font-size:var(--lumo-font-size-xxs);
 }
 
+vaadin-vertical-layout.stacktrace vaadin-vertical-layout::before {
+	height:0px;
+	display:none;
+}
 
 
 vaadin-notification-card[theme=error] h3 {
@@ -137,6 +134,7 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
 	padding-bottom:4px;
 	margin-right:4px;
 	font-weight:600;
+	border-radius:var(--lumo-border-radius);
 }
 
 .roles-column-list span.project_manager {
@@ -151,10 +149,36 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
 	background-color: #ceebfd ;
 }
 
+.roles-column-list span.reader {
+	background-color: #FFFACD ;
+}
+
+
  .version-change iron-icon {
 	align-self: flex-end;
     padding-bottom: 8px;
     padding-right:16px;
+    padding-left:16px;
+ }
+
+ .helper-text.warning span:nth-child(1){
+ 	font-weight: 700;
+    margin-right: 8px;
+    color: var(--lumo-warning-color);
+ }
+
+ .duplicate-connection {
+    padding-top: 16px;
+	margin-left: 32px;
+ }
+
+.connection-name {
+	font-weight: 700;
+}
+
+
+ .quill-editor {
+ margin-bottom:25px;
  }
 
  .invisible {
@@ -198,3 +222,12 @@ animation: decrease 2s 0.5s infinite;
  from { left: -80%; width: 80%; }
  to { left: 110%; width: 10%;}
 } */
+
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}

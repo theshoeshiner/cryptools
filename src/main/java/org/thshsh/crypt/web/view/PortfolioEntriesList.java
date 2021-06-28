@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.AllocationRepository;
 import org.thshsh.cryptman.BalanceRepository;
@@ -250,7 +251,7 @@ public class PortfolioEntriesList extends EntitiesList<PortfolioEntry, Long> {
 		public void setupColumns(Grid<PortfolioEntry> grid) {
 
 
-			grid.addComponentColumn(entry -> {
+			Column<?> curCol = grid.addComponentColumn(entry -> {
 				if(entry.getCurrency().getImageUrl()!=null) {
 					String imageUrl = "image/"+entry.getCurrency().getImageUrl();
 					Image image = new Image(imageUrl,"Icon");
@@ -261,20 +262,17 @@ public class PortfolioEntriesList extends EntitiesList<PortfolioEntry, Long> {
 				else return new Span();
 
 			})
-			.setWidth("48px")
-			.setFlexGrow(0)
-			//.setSortProperty("currency.symbol")
-			.setClassNameGenerator(pe -> {
-				return "icon";
-			})
 			;
 
-			grid.addColumn(FunctionUtils.nestedValue(PortfolioEntry::getCurrency, Currency::getKey))
+			UiComponents.iconColumn(curCol);
+
+			Column<?> sym = grid.addColumn(FunctionUtils.nestedValue(PortfolioEntry::getCurrency, Currency::getKey))
 			.setHeader("Currency")
 			.setWidth("110px")
 			.setFlexGrow(1)
 			.setSortProperty("currency.symbol")
 			;
+			UiComponents.iconLabelColumn(sym);
 
 			grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntry::getAllocation, Allocation::getPercent),PercentFormat))
 			.setHeader("Allocation")

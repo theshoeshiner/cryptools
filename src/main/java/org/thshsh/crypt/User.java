@@ -30,16 +30,23 @@ public class User extends IdedEntity {
 	String displayName;
 
 	@Column
+	String userName;
+
+	@Column
 	String email;
+
+	@Column
+	String password;
 
 	public User() {}
 
-	public User(String firstName, String lastName, String email) {
+	public User(String firstName, String lastName, String email, String un, String pass) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.displayName = firstName+" "+lastName;
+		this.userName = un;
 		this.email = email;
+		this.password = pass;
 	}
 
 
@@ -77,6 +84,22 @@ public class User extends IdedEntity {
 
 
 
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	@Override
 	public String toString() {

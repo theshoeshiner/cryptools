@@ -321,8 +321,8 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 	public void updateCount() {
 
 		if (showHeader) {
-			long full = getCountAll();
-			int shown = dataProvider.size(new Query<>());
+			Long full = getCountAll();
+			Integer shown = dataProvider.size(new Query<>());
 			count.setText("Showing " + shown + " of " + full);
 		}
 	}

@@ -2,3 +2,11 @@
 	font-size:var(--lumo-font-size-xs); 
 	margin-top:0px;
 }
+
+.breadcrumbs a[router-link] {
+	color:var(--lumo-accent-color-4);
+}
+
+.breadcrumbs .separator {
+	font-size:var(--lumo-font-size-l);
+}

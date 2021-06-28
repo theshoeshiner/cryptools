@@ -1,0 +1,41 @@
+.review-response .bottom {
+
+    border-top: 1px solid var(--lumo-shade-50pct);  
+}
+
+.responses .response .user {
+	font-weight:600;
+	color:var(--lumo-primary-color);
+	width:200px;
+}
+
+.responses .response .status {
+	font-weight:600;
+	font-size: var(--lumo-font-size-xs);
+}
+
+.responses .response .status.rejected {
+	color:var(--lumo-error-color);
+}
+
+.responses .response .reason {
+	/* margin-left:32px; */ 
+	margin-top:0px;
+}
+
+.responses .response .reason iron-icon {
+	color:var(--lumo-primary-color);
+	margin-right:8px;
+	width:1.25em;
+}
+
+.review-responses .responses  {
+	  border-top: 1px solid var(--lumo-shade-50pct);  
+}
+
+.review-responses iframe {
+	width:900px;
+	height:400px;
+	-webkit-transform: scale(.5);
+	-webkit-transform-origin: 0 0;
+}

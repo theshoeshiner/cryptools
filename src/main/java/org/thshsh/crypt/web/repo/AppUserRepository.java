@@ -11,6 +11,8 @@ public interface AppUserRepository extends BaseRepository<User, Long>, ExampleFi
 
 	public Optional<User> findByEmailIgnoreCase(String email);
 
+	public Optional<User> findByUserNameIgnoreCase(String un);
+
 	//public List<User> findByRoles(Role role);
 
 	public Page<User> findByDisplayNameContainsIgnoreCase(String name,Pageable p);

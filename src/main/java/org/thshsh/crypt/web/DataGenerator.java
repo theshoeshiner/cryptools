@@ -66,25 +66,31 @@ public class DataGenerator {
 
 		executor.execute(() -> {
 
-			exchanges();
+			//exchanges();
 
-			currencies();
+			//currencies();
 
-			for(List<String> cur : dataConfig.getFiatcurrencies()) {
-				LOGGER.info("checking for {}",cur);
-				Currency c = currencyRepo.findByKey(cur.get(1));
-				if(c == null) c = new Currency(cur.get(0),cur.get(1),PlatformType.fiat);
-				else {
-					c.setName(cur.get(0));
-					c.setPlatformType(PlatformType.fiat);
-				}
-				LOGGER.info("saving: {}",c);
-				currencyRepo.save(c);
-
-			}
+			//fiat();
 
 
 		});
+
+	}
+
+	protected void fiat() {
+
+		for(List<String> cur : dataConfig.getFiatcurrencies()) {
+			LOGGER.info("checking for {}",cur);
+			Currency c = currencyRepo.findByKey(cur.get(1));
+			if(c == null) c = new Currency(cur.get(0),cur.get(1),PlatformType.fiat);
+			else {
+				c.setName(cur.get(0));
+				c.setPlatformType(PlatformType.fiat);
+			}
+			LOGGER.info("saving: {}",c);
+			currencyRepo.save(c);
+
+		}
 
 	}
 

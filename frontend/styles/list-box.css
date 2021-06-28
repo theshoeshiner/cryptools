@@ -1,0 +1,103 @@
+.list-box h2 {
+	margin-top:0px;
+}
+
+.list-box .content {
+	 border-left:1px solid var(--lumo-shade-20pct);
+	 border-right:1px solid var(--lumo-shade-20pct);
+	 border-bottom:1px solid var(--lumo-shade-20pct); 
+	 border-radius: 0 0 var(--lumo-border-radius) var(--lumo-border-radius);
+
+}
+
+
+.list-box span.type {
+	font-size: var(--lumo-font-size-m);
+    font-weight: 500;
+	width: 100%;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--lumo-shade-50pct);
+    color: var(--lumo-accent-color-1);  
+}
+
+.list-box span.name {
+	color: var(--lumo-primary-color);
+	  font-weight: 700;
+}
+
+.list-box .header {
+	background-color:var(--lumo-primary-color);
+	color:var(--lumo-primary-contrast-color);
+	font-weight:700;
+	font-size:var(--lumo-font-size-m);
+	padding:var(--lumo-space-s);
+	border-radius: var(--lumo-border-radius) var(--lumo-border-radius) 0 0;
+}
+
+.list-box .header span {
+	color: var(--lumo-primary-contrast-color);
+	
+}
+
+.list-box .helper-message {
+    margin-left: 8px;
+}
+
+.helper-message {
+	font-size: var(--lumo-font-size-xs);
+}
+
+.list-box .list-row {
+  margin-bottom:8px;
+}
+ 
+  .list-box .info {
+ 	margin-top:4px;
+ 	margin-left:16px;
+}
+ 
+
+ 
+.list-box .info .property {
+	margin-left:0px;
+	font-size: var(--lumo-font-size-xs);
+}
+
+.list-box .info .property.version {
+	width: 105px;
+    /* border-right: 1px solid var(--lumo-shade-50pct); */
+    margin-right: 5px;
+}
+
+.list-box .info .property.response {
+	/* width:105px; */
+	/* border-right: 1px solid var(--lumo-shade-50pct); */
+    margin-right: 5px;
+}
+
+.list-box .info .property.final::before {
+	/* width:105px; */
+	/* border-right: 1px solid var(--lumo-shade-50pct); */
+    content:'/';
+    margin-right: 8px;
+}
+
+.list-box .info .property.pending {
+	width:150px;
+}
+
+.list-box .info .property.rejected span:nth-child(2) {
+	color:var(--lumo-error-color);
+} 
+
+/* property value */
+.list-box .info .property span:nth-child(2) {
+	color:var(--lumo-accent-color-4);
+	font-weight:600;
+	margin-left:4px;
+}
+
+.list-box .list-row .study {
+	font-size: var(--lumo-font-size-xs);
+}
+

@@ -23,8 +23,10 @@ import com.vaadin.flow.router.RouteConfiguration;
 
 @SuppressWarnings("serial")
 @Route(value = "portfolios", layout = MainLayout.class)
-@PageTitle("Portfolios")
+@PageTitle(PortfoliosView.TITLE)
 public class PortfoliosView extends EntitiesView<Portfolio, Long> {
+
+	public static final String TITLE = "Portfolios";
 
 	@Autowired
 	PortfolioRepository portRepo;
