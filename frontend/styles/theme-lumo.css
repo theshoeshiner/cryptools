@@ -68,11 +68,6 @@ html {
 
 [theme~="light"] {
 
-   /*
-   CDSIC green  174, yellow 40, red 1
-
-   	BC Blue 211
-   */
 
 	--lumo-primary-hue:211;
 	--lumo-primary-sat:52%;
@@ -93,80 +88,6 @@ html {
 	--warn-1-color: #FEAB6D;
 	--warn-2-color: #fecf6d;
 
-
-
-    /* --lumo-body-text-color: var(--material-body-text-color);
-      --lumo-primary-color: var(--material-primary-color);  */
-    /* --lumo-primary-color: #2B4C6F; */
-   /*  --lumo-tint: #9dcfca; */
-
-   /*  --lumo-shade: Red; */
-
-   /*  --lumo-primary-color-50pct: #2B4C6F;   */
-
-
-     /* --lumo-contrast-color:Red; */
-
-
-
-
-     /*  --lumo-size-xl: 3rem;
-      --lumo-size-l: 2.5rem;
-      --lumo-size-m: 2rem;
-
-      --lumo-size-xs: 1.5rem;
-
-      --lumo-space-xl: 1.875rem;
-      --lumo-space-l: 1.25rem;
-      --lumo-space-m: 0.625rem;
-      --lumo-space-s: 0.3125rem;
-      --lumo-space-xs: 0.1875rem;
-
-      --lumo-line-height-m: 1.4;
-      --lumo-line-height-s: 1.2;
-      --lumo-line-height-xs: 1.1;
-      */
-
-
-
-      /*
-	  --lumo-size-xl: 3rem;
-	  --lumo-size-l: 2.5rem;
-	  --lumo-size-m: 2rem;
-	  --lumo-size-s: 1.75rem;
-	  --lumo-size-xs: 1.5rem;
-	  --lumo-size-xxs: .75rem;
-
-	  --lumo-space-xl: 1.875rem;
-	  --lumo-space-l: 1.25rem;
-	  --lumo-space-m: 0.625rem;
-	  --lumo-space-s: 0.3125rem;
-	  --lumo-space-xs: 0.1875rem;
-      */
-
-
-      /* --lumo-primary-color: #C56E00;
-      --lumo-primary-text-color: #C56E00; */
-
-
-
-	/* --theme-primary-color:var(--lumo-primary-color);
-	--theme-primary-color-light: #c8d8ea;
-	--theme-secondary-color:#738CA6;
-	--theme-primary-color-med: #4B6A8B;
-	--theme-primary-color-dark: #143354;
-	--theme-primary-color-darkest: #041E38;
-	--theme-primary-color-gray: #676b70;
-	--theme-secondary-background-color:#D2DBE6; */
-
-	/* --theme-space-xs:var(--lumo-space-xs);
-	--theme-space-s:var(--lumo-space-s);
-	--theme-space-m:var(--lumo-space-m);
-	--theme-space-l:var(--lumo-space-l);
-	--theme-space-xl:var(--lumo-space-xl); */
-
- 	/* --theme-error-color-light:#ffaaaa;
- 	--theme-error-color:var(--lumo-error-color); */
 
     }
 

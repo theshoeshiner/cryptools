@@ -26,9 +26,26 @@
 	}
 
  #logo .h2 {
+ font-family: 'Righteous';
   	color:var(--lumo-tint-70pct);
-	font-weight:700;
+	font-weight:400;
+	font-size:2.5em;
 }
+
+ #logo .h2 span {
+
+ }
+
+ #logo .h2 span:nth-child(1) {
+	font-size:1.3em;
+	vertical-align:middle;
+}
+
+ #logo .h2 span:nth-child(2) {
+ vertical-align:middle;
+}
+
+
 /*
 vaadin-tab {
   font-size: var(--lumo-font-size-s);

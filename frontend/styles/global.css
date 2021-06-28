@@ -1,19 +1,25 @@
 
-   
-    
+@font-face {
+  font-family: 'Righteous';
+  src: url('/fonts/Righteous-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+       url('/fonts/Righteous-Regular.ttf')  format('truetype') /* Safari, Android, iOS */
+      ;
+}
+
+
     h1,h2,h3,h4,h5,h6 , .h1,.h2,.h3,.h4,.h5,.h6{
     color:var(--lumo-primary-color);
    }
-   
+
    h1, .h1 {
 	   font-weight: 600;
    }
-   
+
    .h2 {
    	font-size:1.5rem;
    	font-weight:600;
    }
-   
+
 
 vaadin-button:hover {
 	cursor:pointer;
@@ -32,7 +38,7 @@ vaadin-grid-tree-toggle:not([leaf]):hover {
 }
 
 vaadin-details [slot=summary]:hover {
-	cursor:pointer; 
+	cursor:pointer;
 }
 
 .link:hover {
@@ -66,7 +72,7 @@ vaadin-button[theme*=small] {
 }
 
 vaadin-button.unclickable:hover {
-	cursor:unset; 
+	cursor:unset;
 }
 
 vaadin-button.form-field-align {
@@ -86,11 +92,11 @@ vaadin-grid.borderless {
 }
 
 vaadin-grid-cell-content:hover {
-	 cursor:pointer; 
+	 cursor:pointer;
 }
 
 vaadin-grid.no-cursor vaadin-grid-cell-content:hover  {
-	cursor:unset; 
+	cursor:unset;
 }
 
 .field-label {
