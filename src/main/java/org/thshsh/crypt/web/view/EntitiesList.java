@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.atteo.evo.inflector.English;
 import org.slf4j.Logger;
@@ -22,6 +24,9 @@ import org.thshsh.vaadin.UIUtils;
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -52,7 +57,7 @@ import com.vaadin.flow.router.RouteConfiguration;
  * @param <ID>
  */
 @SuppressWarnings("serial")
-public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
+public abstract class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(EntitiesList.class);
 
@@ -63,7 +68,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 	@Autowired
 	ApplicationContext appCtx;
 
-	EntitiesListProvider<T, ID> listOperationProvider;
+	//EntitiesListProvider<T, ID> listOperationProvider;
 
 	PagingAndSortingRepository<T, ID> repository;
 	DataProvider<T, ?> dataProvider;
@@ -81,6 +86,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 	Boolean showDeleteButton = true;
 	Boolean showCreateButton = true;
 	Boolean showHeader = true;
+	Boolean showCount = true;
 	Span count;
 	TextField filter;
 	Column<?> buttonColumn;
@@ -94,35 +100,25 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 	FilterMode filterMode;
 
 	Boolean caseSensitive = false;
-
-	public EntitiesList(Class<T> c,Class<? extends Component> ev) {
-		this.entityClass = c;
-		this.entityView = ev;
-		this.filterMode=FilterMode.Example;
-	}
+	Boolean emptyFilter = true;
 
 	public EntitiesList(Class<T> c, Class<? extends Component> ev,FilterMode fm) {
+
 		this.entityClass = c;
 		this.entityView = ev;
+		//this.listOperationProvider = provider;
 		this.filterMode = fm;
 	}
 
-	public EntitiesList(Class<T> c, Class<? extends Component> ev, EntitiesListProvider<T, ID> provider,
-			FilterMode fm) {
-		this.entityClass = c;
-		this.entityView = ev;
-		this.listOperationProvider = provider;
-		this.filterMode = fm;
-	}
+	//@SuppressWarnings({ "deprecation", "unchecked" })
+	@PostConstruct
+	public void postConstruct() {
 
-	@SuppressWarnings({ "deprecation", "unchecked" })
-	public void postConstruct(ApplicationContext appCtx) {
+		LOGGER.info("postConstruct");
 
-		LOGGER.info("postConstruct {}", listOperationProvider);
+		//this.appCtx = appCtx;
 
-		this.appCtx = appCtx;
-
-		this.repository = listOperationProvider.getRepository();
+		this.repository = getRepository();
 		this.addClassName("entities-view");
 
 		if (entityName == null)
@@ -130,12 +126,12 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 		if (entityNamePlural == null)
 			entityNamePlural = English.plural(entityName);
 
-		dataProvider = listOperationProvider.createDataProvider();
+		dataProvider = createDataProvider();
 
 		LOGGER.info("dataProvider: {}",dataProvider);
 
 		if (filterMode == FilterMode.Example) {
-			filterEntity = listOperationProvider.createFilterEntity();
+			filterEntity = createFilterEntity();
 			((ExampleFilterDataProvider<T, ID>) dataProvider).setFilter(filterEntity);
 		}
 
@@ -154,12 +150,12 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 			filter.setClearButtonVisible(true);
 
 			filter.setPlaceholder("Filter");
-			filter.addValueChangeListener(change -> listOperationProvider.changeFilter(change.getValue()));
+			filter.addValueChangeListener(change -> changeFilter(change.getValue()));
 			header.add(filter);
 
 			if (entityView != null && showCreateButton) {
 				Button add = new Button(createText + " " + entityName, VaadinIcon.PLUS.create());
-				add.addClickListener(listOperationProvider::clickNew);
+				add.addClickListener(this::clickNew);
 				add.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 				header.add(add);
 			}
@@ -178,7 +174,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 		//dataProvider.setFilter(filterEntity);
 		//grid.setDataProvider(dataProvider);
 
-		listOperationProvider.setupColumns(grid);
+		setupColumns(grid);
 
 		if (showButtonColumn) {
 
@@ -191,7 +187,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 				buttons.setWidthFull();
 				buttons.setJustifyContentMode(JustifyContentMode.END);
 
-				listOperationProvider.addButtonColumn(buttons, e);
+				addButtonColumn(buttons, e);
 
 				return buttons;
 			}).setFlexGrow(0).setClassNameGenerator(val -> {
@@ -204,15 +200,21 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 			LOGGER.info("Clicked item: {}", click.getItem());
 		});
 
+		Shortcuts.addShortcutListener(grid, () -> {
+			grid.getSelectedItems().stream().findFirst().ifPresent(e -> {
+				shortcutDetails(e);
+			});
+		}, Key.KEY_I, KeyModifier.CONTROL);
+
 		this.add(grid);
 
-		listOperationProvider.updateCount();
+		updateCount();
 
 	}
 
 	public void refresh() {
 		dataProvider.refreshAll();
-		listOperationProvider.updateCount();
+		updateCount();
 	}
 
 	public void addButtonColumn(HorizontalLayout buttons, T e) {
@@ -221,7 +223,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 			editButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 			buttons.add(editButton);
 			UIUtils.setTitle(editButton, "Edit");
-			editButton.addClickListener(click -> listOperationProvider.clickEdit(click, e));
+			editButton.addClickListener(click -> clickEdit(click, e));
 		}
 		if (showDeleteButton) {
 			deleteButton = new Button(VaadinIcon.TRASH.create());
@@ -235,10 +237,14 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 	}
 
+	public void shortcutDetails(T e) {
+		//listOperationProvider.shortcutDetails(e);
+	}
+
 	public void clickDelete(T e) {
 
-		ConfirmDialogs.deleteDialog(entityName + " \"" + listOperationProvider.getEntityName(e) +"\"", () -> {
-			listOperationProvider.delete(e);
+		ConfirmDialogs.deleteDialog(entityName + " \"" + getEntityName(e) +"\"", () -> {
+			delete(e);
 		}).open();
 
 	}
@@ -254,7 +260,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 				Dialog cd = createDialog(entity);
 				cd.open();
 				cd.addOpenedChangeListener(change -> {
-					listOperationProvider.refresh();
+					refresh();
 				});
 			} else {
 				Class<? extends Component> hup = entityView;
@@ -263,7 +269,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 				//RouteParameters rpParameters;
 				QueryParameters queryParameters = new QueryParameters(Collections.singletonMap("id",
-						Arrays.asList(listOperationProvider.getEntityId(entity).toString())));
+						Arrays.asList(getEntityId(entity).toString())));
 
 				//LOGGER.info("entityView: {}",entityView);
 				//UI.getCurrent().navigate(hup,provider.getEntityId(entity));
@@ -282,17 +288,17 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 			ExampleFilterDataProvider<T, ID> dataProvider = new ExampleFilterDataProvider<T, ID>(r,
 					ExampleMatcher.matchingAny().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
 							.withIgnoreCase().withIgnoreNullValues(),
-					listOperationProvider.getDefaultSortOrder());
+					getDefaultSortOrder());
 			return dataProvider;
 		}
 		case String: {
 			//StringSearchRepository<T, ID> r = (StringSearchRepository<T, ID>) repository;
-			StringSearchDataProvider<T, ID> dp = new StringSearchDataProvider<>(repository,listOperationProvider.getDefaultSortOrder());
+			StringSearchDataProvider<T, ID> dp = new StringSearchDataProvider<>(repository,getDefaultSortOrder());
 			return dp;
 		}
 		case None: {
 			CallbackDataProvider<T, Void> dataProvider = DataProvider.fromCallbacks(
-					q -> repository.findAll(ChunkRequest.of(q, listOperationProvider.getDefaultSortOrder())).getContent().stream(),
+					q -> repository.findAll(ChunkRequest.of(q, getDefaultSortOrder())).getContent().stream(),
 					q -> Ints.checkedCast(repository.count()));
 
 			return dataProvider;
@@ -320,17 +326,18 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 	public void updateCount() {
 
-		if (showHeader) {
-			Long full = getCountAll();
-			Integer shown = dataProvider.size(new Query<>());
+		if (showHeader && showCount) {
+			long full = getCountAll();
+			long shown = emptyFilter?full:dataProvider.size(new Query<>());
 			count.setText("Showing " + shown + " of " + full);
 		}
 	}
 
 	public Long getCountAll() {
+		LOGGER.info("countall: {}",emptyFilter);
 		switch(filterMode) {
 		case Example: return repository.count();
-		case None: return null;
+		case None: return repository.count();
 		case String: return ((StringSearchDataProvider<T, Serializable>)dataProvider).countAll();
 		default: throw new IllegalStateException();
 		}
@@ -338,13 +345,15 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 
 	@SuppressWarnings("unchecked")
 	public void changeFilter(String text) {
+
+		if (StringUtils.isBlank(text)) emptyFilter = true;
+		else emptyFilter = false;
+
 		if(!caseSensitive) text = StringUtils.lowerCase(text);
 		switch (filterMode) {
 		case Example:
-			if (StringUtils.isBlank(text))
-				listOperationProvider.clearFilter();
-			else
-				listOperationProvider.setFilter(text);
+			if (emptyFilter) clearFilter();
+			else setFilter(text);
 			break;
 		case String:
 			((StringSearchDataProvider<T, ID>) dataProvider).setFilter(text);
@@ -356,7 +365,7 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 		}
 
 		dataProvider.refreshAll();
-		listOperationProvider.updateCount();
+		updateCount();
 	}
 
 	public void clickNew(ClickEvent<Button> click) {
@@ -367,9 +376,9 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 				if (cd instanceof EntityDialog) {
 					EntityDialog<?> ed = (EntityDialog<?>) cd;
 					if (ed.getSaved())
-						listOperationProvider.refresh();
+						refresh();
 				} else
-					listOperationProvider.refresh();
+					refresh();
 			});
 		} else {
 			UI.getCurrent().navigate(entityView);
@@ -435,4 +444,14 @@ public class EntitiesList<T, ID extends Serializable> extends VerticalLayout {
 			throw new NotImplementedException();
 		}*/
 
+	public abstract PagingAndSortingRepository<T, ID> getRepository();
+
+	public abstract void setupColumns(Grid<T> grid);
+
+	public abstract String getEntityName(T t);
+
+	abstract ID getEntityId(T entity);
+
+	abstract void setFilter(String text);
+	abstract void clearFilter();
 }

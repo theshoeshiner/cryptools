@@ -37,6 +37,9 @@ public class ImageService {
 	@Autowired
 	ExchangeRepository exRepo;
 
+	@Autowired
+	CryptoCompare compare;
+
 	//String imageArchive = "./media/images";
 	File imageArchive = new File("../cryptools_media/images");
 
@@ -49,11 +52,10 @@ public class ImageService {
 		}
 	}
 
-	@Autowired
-	CryptoCompare compare;
+
 
 	public void syncImage(HasImage entity, String mediaUrl) throws IOException {
-		LOGGER.info("sync image: {}",entity);
+		LOGGER.info("sync image: {} , {}",entity,mediaUrl);
 
 		String imageName = entity.getKey().toLowerCase()+"."+FilenameUtils.getExtension(mediaUrl);
 

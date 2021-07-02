@@ -7,6 +7,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.ExchangeRepository;
 import org.thshsh.crypt.web.views.main.MainLayout;
+import org.thshsh.vaadin.entity.EntityGridView;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
@@ -19,22 +20,23 @@ import com.vaadin.flow.router.Route;
 @SuppressWarnings("serial")
 @Route(value = "exchanges", layout = MainLayout.class)
 @PageTitle("Exchanges")
-public class ExchangesView extends EntitiesView<Exchange, Long> {
+public class ExchangesView extends EntityGridView<Exchange, Long> {
 
-	@Autowired
-	ExchangeRepository exchangeRepo;
+	//@Autowired
+	//ExchangeRepository exchangeRepo;
 
 	public ExchangesView() {
-		super(Exchange.class, ExchangeDialog.class);
+		super(ExchangesGrid.class);
 	}
 
 	@PostConstruct
 	public void postConstruct() {
-		this.entitiesList.showButtonColumn = true;
+
 		super.postConstruct();
+		//this.entitiesList.showButtonColumn = true;
 	}
 
-	@Override
+	/*@Override
 	public PagingAndSortingRepository<Exchange, Long> getRepository() {
 		return exchangeRepo;
 	}
@@ -86,7 +88,7 @@ public class ExchangesView extends EntitiesView<Exchange, Long> {
 	@Override
 	public void clearFilter() {
 
-	}
+	}*/
 
 
 

@@ -1,30 +1,22 @@
 package org.thshsh.crypt.web.view;
 
-import java.util.Arrays;
-import java.util.Collections;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioRepository;
-import org.thshsh.vaadin.ExampleFilterRepository;
-import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.entity.EntityGridView;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
 
 @SuppressWarnings("serial")
 @Route(value = "portfolios", layout = MainLayout.class)
 @PageTitle(PortfoliosView.TITLE)
-public class PortfoliosView extends EntitiesView<Portfolio, Long> {
+public class PortfoliosView extends EntityGridView<Portfolio, Long> {
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfoliosView.class);
 
 	public static final String TITLE = "Portfolios";
 
@@ -32,10 +24,10 @@ public class PortfoliosView extends EntitiesView<Portfolio, Long> {
 	PortfolioRepository portRepo;
 
 	public PortfoliosView() {
-		super(Portfolio.class, PortfolioDialog.class);
+		super(PortfolioGrid.class);
 	}
 
-	@Override
+	/*@Override
 	public ExampleFilterRepository<Portfolio, Long> getRepository() {
 		return portRepo;
 	}
@@ -49,17 +41,18 @@ public class PortfoliosView extends EntitiesView<Portfolio, Long> {
 	public void setupColumns(Grid<Portfolio> grid) {
 		grid.addColumn(Portfolio::getName).setHeader("Name");
 
-	}
+	}*/
 
 
 
 	@Override
 	public void postConstruct() {
-		this.entitiesList.showButtonColumn=true;
+		LOGGER.info("post construct");
+		//this.entitiesList.showButtonColumn=true;
 		super.postConstruct();
 	}
 
-	@Override
+	/*@Override
 	public void addButtonColumn(HorizontalLayout buttons, Portfolio e) {
 		super.addButtonColumn(buttons, e);
 
@@ -85,7 +78,7 @@ public class PortfoliosView extends EntitiesView<Portfolio, Long> {
 	@Override
 	public void clearFilter() {
 
-	}
+	}*/
 
 
 

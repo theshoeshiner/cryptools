@@ -25,6 +25,7 @@ public interface EntitiesListProvider<T,ID extends Serializable> {
 	void changeFilter(String text);
 	void clickNew(ClickEvent<Button> click);
 	void clickEdit(ClickEvent<Button> click,T entity);
+	void shortcutDetails(T e);
 	void addButtonColumn(HorizontalLayout buttons, T e);
 	List<QuerySortOrder> getDefaultSortOrder();
 	PagingAndSortingRepository<T, ID> getRepository();

@@ -94,6 +94,10 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 
 }
 
+#logo .logo-text span:nth-child(1) {
+	margin-bottom: -.08em;
+}
+
  #logo .name {
  	border-top:1px solid var(--lumo-primary-contrast-color);
  	border-bottom:1px solid var(--lumo-primary-contrast-color);
@@ -112,19 +116,5 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 	font-size:2em;
 } */
 
- #logo .h2 {
- font-family: 'Righteous';
-  	color:var(--lumo-tint-70pct);
-	font-weight:400;
-	font-size:2.5em;
-}
 
- #logo .h2 span {
-vertical-align:middle;
- }
-
- #logo .h2 span:nth-child(1) {
-	font-size:1.3em;
-
-}
 

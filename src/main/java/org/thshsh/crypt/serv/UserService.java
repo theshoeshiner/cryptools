@@ -30,6 +30,10 @@ public class UserService {
 	    return true;
 	}
 
+	public void setPassword(User u, String pass) {
+		u.setPassword(encoder.encode(pass));
+	}
+
 	@SuppressWarnings("serial")
 	public static class UserExistsException extends Exception {
 

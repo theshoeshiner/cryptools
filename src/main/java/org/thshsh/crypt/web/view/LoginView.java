@@ -7,12 +7,14 @@ import org.thshsh.crypt.User;
 import org.thshsh.crypt.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
+import org.thshsh.crypt.web.views.main.MainLayout;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -22,6 +24,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.data.validator.RegexpValidator;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -37,7 +40,7 @@ public class LoginView extends VerticalLayout {
 */
 //@Tag("sa-login-view")
 @Route(value = LoginView.ROUTE)
-@PageTitle("Login")
+@PageTitle(MainLayout.TITLE_PREFIX)
 //@HtmlImport("frontend://bower_components/iron-form/iron-form.html")
 //@JsModule("frontend://bower_components/iron-form/iron-form.html")
 @NpmPackage(value = "@polymer/iron-form", version = "3.0.1")
@@ -95,145 +98,220 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	VerticalLayout formLayout;
 	User registerUser;
 
+	Binder<User> binder ;
+	Button submitButton;
+	HorizontalLayout names;
+	Button register;
+	TextField userNameField;
+	PasswordField confirmPasswordField;
+	TextField firstName;
+	TextField lastName;
+	PasswordField passwordField;
+	Button backButton;
+	Span message;
+
 	public LoginView() {
 
-		Binder<User> binder = new Binder();
-
-
 		this.setSizeFull();
+
+		 TitleSpan title = new TitleSpan();
+	     title.addClassName("h1");
+	     add(title);
+
+
+	     message = new Span(" ");
+	     message.addClassName("message");
+	     //message.setVisible(false);
+	     add(message);
+
 
 		formLayout = new VerticalLayout();
 		formLayout.setAlignItems(Alignment.CENTER);
 		formLayout.setWidth("300px");
 
-		HorizontalLayout names = new HorizontalLayout();
-		names.setVisible(false);
+		names = new HorizontalLayout();
 		names.setWidthFull();
 
-		TextField firstName = new TextField();
+		firstName = new TextField();
 		firstName.setMinWidth("0px");
 		firstName.setPlaceholder("First Name");
-		binder
-		.forField(firstName)
-		.bind(User::getFirstName, User::setFirstName);
 
-		TextField lastName = new TextField();
+
+		lastName = new TextField();
 		lastName.setMinWidth("0px");
 		lastName.setPlaceholder("Last Name");
-		binder
-		.forField(lastName)
-		.bind(User::getLastName, User::setLastName);
 
 		names.add(firstName, lastName);
 		names.setFlexGrow(1, firstName, lastName);
 
-		//formLayout.add(names);
 
 		emailField = new TextField();
-		emailField.setPlaceholder("Username / Email");
 		emailField.getElement().setAttribute("name", "username"); //
 		emailField.setWidthFull();
 
 
-		PasswordField passwordField = new PasswordField();
+		passwordField = new PasswordField();
 		passwordField.setPlaceholder("Password");
 		passwordField.getElement().setAttribute("name", "password"); //
 		passwordField.setWidthFull();
 
-		TextField userNameField = new TextField();
+		userNameField = new TextField();
+
 		userNameField.setPlaceholder("Username (Optional)");
-		userNameField.setVisible(false);
 		userNameField.setWidthFull();
 
-		PasswordField confirmPasswordField = new PasswordField();
+		confirmPasswordField = new PasswordField();
 		confirmPasswordField.setPlaceholder("Confirm Password");
 		//passwordField.getElement().setAttribute("name", "password"); //
 		confirmPasswordField.setWidthFull();
-		confirmPasswordField.setVisible(false);
+		//confirmPasswordField.setVisible(false);
 
-		binder
-		.forField(confirmPasswordField)
-		.asRequired().withValidator((u,s) -> {
-			if(u.equals(passwordField.getValue())) return ValidationResult.ok();
-			else return ValidationResult.error("Passwords do not match");
-		})
-		.bind(User::getPassword, User::setPassword);
 
 		HorizontalLayout buttons = new HorizontalLayout();
 		buttons.setWidthFull();
 		buttons.setJustifyContentMode(JustifyContentMode.CENTER);
 		buttons.setMargin(false);
 
-		Button submitButton = new Button("Login");
+		submitButton = new Button("Login");
 		submitButton.setId("submitbutton"); //
 		buttons.add(submitButton);
 
-		Button register = new Button("Register");
+		backButton = new Button("Back");
+		buttons.add(backButton);
+		backButton.addClickListener(click -> {
+			showLogin();
+		});
+
+		register = new Button("Register");
 		buttons.add(register);
 		register.addClickListener(click -> {
-
-			if(submitButton.isEnabled()) {
-				registerUser = new User();
-
-				emailField.setPlaceholder("Email");
-
-				binder
-				.forField(emailField)
-				.asRequired()
-				.withValidator(new EmailValidator("Invalid Email Address"))
-				.withValidator((s,c) -> {
-					if(userRepo.findByEmail(s).isPresent()) return ValidationResult.error("Email Address already in use");
-					else return ValidationResult.ok();
-				})
-				.bind(User::getEmail, User::setEmail);
-
-				binder
-				.forField(userNameField)
-				//.asRequired()
-				//.withValidator(new EmailValidator("Invalid Email Address"))
-				.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
-				.withValidator((s,c) -> {
-					if(userRepo.findByUserNameIgnoreCase(s).isPresent()) return ValidationResult.error("Username already in use");
-					else return ValidationResult.ok();
-				})
-				.bind(User::getUserName, User::setUserName);
-
-
-				submitButton.setEnabled(false);
-				names.setVisible(true);
-				confirmPasswordField.setVisible(true);
-				userNameField.setVisible(true);
-				register.setText("Register");
-			}
-			else {
-				try {
-					LOGGER.info("write bean");
-					binder.writeBean(registerUser);
-					try {
-						userService.registerUser(registerUser);
-					} catch (UserExistsException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				catch (ValidationException e) {
-					LOGGER.error("",e);
-				}
-				//User user = new User(firstName.getValue(),lastName.getValue(),emailField.getValue(),userNameField.getValue(),passwordField.getValue());
-			}
+			showRegister();
 		});
 
 		formLayout.add(names,emailField, userNameField, passwordField, confirmPasswordField, buttons);
-		//UI.getCurrent().getPage().executeJs(ROUTE, null)
-
-		//FormLayout formLayout = new FormLayout(); //
-		// formLayout.add(userNameTextField, passwordField, submitButton);
 
 		this.setAlignItems(Alignment.CENTER);
-		this.setJustifyContentMode(JustifyContentMode.CENTER);
 
 		setClassName("login-view");
+
+		showLogin();
 	}
+
+	Boolean login = true;
+
+	protected void showLogin() {
+		login = true;
+		names.setVisible(false);
+		emailField.setPlaceholder("Username / Email");
+		confirmPasswordField.setVisible(false);
+		userNameField.setVisible(false);
+		userNameField.setValueChangeMode(ValueChangeMode.LAZY);
+		submitButton.setText("Login");
+		submitButton.setVisible(true);
+		backButton.setVisible(false);
+		passwordField.setValue("");
+		if(binder != null) {
+			binder.removeBinding(emailField);
+			binder.removeBinding(userNameField);
+			binder.removeBinding(confirmPasswordField);
+			binder.removeBinding(firstName);
+			binder.removeBinding(lastName);
+		}
+	}
+
+	protected void showRegister() {
+
+		if(login) {
+
+			login  = false;
+
+			submitButton.setVisible(false);
+			backButton.setVisible(true);
+
+			binder = new Binder<>();
+			//binder.removeBinding(emailField);
+
+			registerUser = new User();
+
+			emailField.setPlaceholder("Email");
+
+			binder
+			.forField(emailField)
+			.asRequired()
+			.withValidator(new EmailValidator("Invalid Email Address"))
+			.withValidator((s,c) -> {
+				if(userRepo.findByEmail(s).isPresent()) return ValidationResult.error("Email Address already in use");
+				else return ValidationResult.ok();
+			})
+			.bind(User::getEmail, User::setEmail);
+
+			binder
+			.forField(userNameField)
+			.withNullRepresentation("")
+			.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
+			.withValidator((s,c) -> {
+				if(s != null && userRepo.findByUserNameIgnoreCase(s).isPresent()) return ValidationResult.error("Username already in use");
+				else return ValidationResult.ok();
+			})
+			.bind(User::getUserName, User::setUserName);
+
+
+			//submitButton.setEnabled(false);
+			names.setVisible(true);
+			confirmPasswordField.setVisible(true);
+			userNameField.setVisible(true);
+
+			binder
+			.forField(firstName)
+			.withNullRepresentation("")
+			.bind(User::getFirstName, User::setFirstName);
+
+			binder
+			.forField(lastName)
+			.withNullRepresentation("")
+			.bind(User::getLastName, User::setLastName);
+
+			binder
+			.forField(confirmPasswordField)
+			.asRequired().withValidator((u,s) -> {
+				LOGGER.info("validate password {} vs {}",u,passwordField.getValue());
+				if(u.equals(passwordField.getValue())) return ValidationResult.ok();
+				else return ValidationResult.error("Passwords do not match");
+			})
+			.bind(User::getPassword, User::setPassword);
+
+			names.add(firstName, lastName);
+			names.setFlexGrow(1, firstName, lastName);
+
+		}
+		else {
+
+
+			try {
+				LOGGER.info("write bean");
+				binder.writeBean(registerUser);
+				try {
+					userService.registerUser(registerUser);
+					message.setText("Registration Successful");
+					message.setVisible(true);
+
+					showLogin();
+					LOGGER.info("registration success");
+					//UI.getCurrent().getPage().reload();
+
+				}
+				catch (UserExistsException e) {
+
+				}
+			}
+			catch (ValidationException e) {
+				LOGGER.error("validation error",e);
+			}
+			//User user = new User(firstName.getValue(),lastName.getValue(),emailField.getValue(),userNameField.getValue(),passwordField.getValue());
+		}
+	}
+
+
 
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
@@ -264,8 +342,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		//login.setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
 		if (event.getLocation().getQueryParameters().getParameters().containsKey("error")) {
 			LOGGER.info("setting error");
-			emailField.setErrorMessage("Error");
-			emailField.setValue("error");
+			emailField.setErrorMessage("Username and Password do not match");
+			emailField.setInvalid(true);
+			//message.setText("Username and Password do not match");
+			//emailField.setValue("error");
 		}
 	}
 }

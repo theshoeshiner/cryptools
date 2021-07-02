@@ -48,6 +48,7 @@ public class ManagePortfolioService {
 		summary.entries = entries;
 
 		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio);
+		if(sum == null) sum = BigDecimal.ZERO;
 
 		BigDecimal remainder = BigDecimal.ONE.subtract(sum);
 		LOGGER.info("remainder: {}",remainder);
@@ -94,7 +95,9 @@ public class ManagePortfolioService {
 			entries.add(pe);
 		});
 
-		BigDecimal remainderPer = remainder.divide(BigDecimal.valueOf(remainderCount.longValue()),4, RoundingMode.HALF_EVEN);
+		Long count = remainderCount.longValue();
+		if(count == 0) count++;
+		BigDecimal remainderPer = remainder.divide(BigDecimal.valueOf(count),4, RoundingMode.HALF_EVEN);
 		LOGGER.info("{} / {} = {}", remainder,remainderCount,remainderPer);
 		remainderAllocation.setPercent(remainderPer);
 

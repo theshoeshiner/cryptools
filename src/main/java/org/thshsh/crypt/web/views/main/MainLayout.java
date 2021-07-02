@@ -13,12 +13,12 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.view.AboutView;
-import org.thshsh.crypt.web.view.BalancesView;
 import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
 import org.thshsh.crypt.web.view.PortfoliosView;
+import org.thshsh.crypt.web.view.TitleSpan;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -57,6 +57,8 @@ import com.vaadin.flow.spring.annotation.UIScope;
 public class MainLayout extends AppLayout {
 
 	protected static final Logger LOGGER = LoggerFactory.getLogger(MainLayout.class);
+
+	public static final String TITLE_PREFIX = "Cryptools";
 
     private VerticalLayout menu;
     private Span viewTitle;
@@ -192,13 +194,8 @@ public class MainLayout extends AppLayout {
         //Icon logo = VaadinIcon.DATABASE.create();
         //logoLayout.add(logo);
 
-        Span odm = new Span("¢");
-        Span loader = new Span("ryptools");
 
-
-
-        Span title = new Span(odm,loader);
-
+        TitleSpan title = new TitleSpan();
         title.addClassName("h2");
 
 
@@ -264,7 +261,7 @@ public class MainLayout extends AppLayout {
 
     	items.add(about);
 
-    	items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
+    	//items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
     	items.add(createMenuItem(VaadinIcon.INSTITUTION.create(),"Exchanges", ExchangesView.class));
 

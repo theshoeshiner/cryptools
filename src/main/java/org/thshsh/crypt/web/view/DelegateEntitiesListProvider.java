@@ -3,6 +3,9 @@ package org.thshsh.crypt.web.view;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -10,6 +13,9 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
 public abstract class DelegateEntitiesListProvider<T,ID extends Serializable> implements EntitiesListProvider<T, ID> {
+
+	@Autowired
+	ApplicationContext context;
 
 	EntitiesList<T,ID> list;
 
@@ -68,6 +74,12 @@ public abstract class DelegateEntitiesListProvider<T,ID extends Serializable> im
 	@Override
 	public List<QuerySortOrder> getDefaultSortOrder() {
 		return list.getDefaultSortOrder();
+	}
+
+	@Override
+	public void shortcutDetails(T e) {
+		// TODO Auto-generated method stub
+
 	}
 
 

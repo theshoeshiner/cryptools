@@ -22,7 +22,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
 @SuppressWarnings("serial")
-public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLayout  implements EntitiesListProvider<T, ID> {
+public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLayout  {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(EntitiesView.class);
 
@@ -32,10 +32,32 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 	@Autowired
 	ApplicationContext appCtx;
 
+	Class<T> entityClass;
+	Class<? extends Component> entityView;
+	Class<? extends EntitiesList<T, ID>> entityListClass;
 	EntitiesList<T,ID> entitiesList;
 
-	public EntitiesView(Class<T> c, Class<? extends Component> ev) {
-		entitiesList = new EntitiesList<T,ID>(c, ev, this,FilterMode.Example);
+	//public EntitiesView(Class<T> c, Class<? extends Component> ev,Class<? extends EntitiesList<T,ID>> elc) {
+		//entitiesList = new EntitiesList<T,ID>(c, ev, this,FilterMode.Example);
+
+	//}
+
+	public EntitiesView(Class<? extends EntitiesList<T, ID>> entityList) {
+		super();
+		this.entityListClass = entityList;
+	}
+
+	public EntitiesView(Class<T> c, Class<? extends Component> ev,Class<? extends EntitiesList<T, ID>> entityList) {
+		super();
+		LOGGER.info("creating entities dialog for {}",c);
+		this.entityListClass = entityList;
+		this.entityClass = c;
+		this.entityView = ev;
+	}
+
+	public EntitiesList<T,ID> createEntitiesList(){
+		LOGGER.info("createEntitiesList");
+		return appCtx.getBean(entityListClass);
 	}
 
 	@PostConstruct
@@ -43,8 +65,8 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 
 		this.setHeight("100%");
 
+		if(entitiesList == null) entitiesList = createEntitiesList();
 
-		entitiesList.postConstruct(appCtx);
 		entitiesList.setHeight("100%");
 		add(entitiesList);
 
@@ -56,7 +78,7 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 
 	}
 
-	public T getFilterEntity() {
+	/*public T getFilterEntity() {
 		return entitiesList.filterEntity;
 	}
 
@@ -64,10 +86,10 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 
 		entitiesList.addButtonColumn(buttons, e);
 
-	}
+	}*/
 
 
-	public void delete(T entity) {
+	/*public void delete(T entity) {
 		getRepository().delete(entity);
 		refresh();
 	}
@@ -108,6 +130,13 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 
 	public void refresh() {
 		entitiesList.refresh();
+	}*/
+
+
+
+	/*@Override
+	public void shortcutDetails(T e) {
+		entitiesList.shortcutDetails(e);
 	}
 
 	public abstract void setupColumns(Grid<T> grid);
@@ -122,7 +151,7 @@ public abstract class EntitiesView<T,ID extends Serializable> extends VerticalLa
 	public ID getEntityId(T entity) {
 		if(entity instanceof IdedEntity) return (ID) ((IdedEntity)entity).getId();
 		else return null;
-	}
+	}*/
 
 
 

@@ -5,8 +5,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
@@ -15,8 +15,9 @@ import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.ChunkRequest;
-import org.thshsh.vaadin.ExampleFilterRepository;
 import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.vaadin.entity.EntityGrid;
+import org.thshsh.vaadin.entity.EntityGrid.FilterMode;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -30,34 +31,34 @@ import com.vaadin.flow.data.provider.DataProvider;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
+public class PortfolioBalanceGrid extends EntityGrid<Balance, Long> {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalancesList.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
-	@Autowired
-	ApplicationContext appContext;
+	//@Autowired
+	//ApplicationContext appContext;
 
 	@Autowired
 	BalanceRepository balanceRepo;
-
 	Portfolio portfolio;
 	ManagePortfolioView view;
 
-	public PortfolioBalancesList(ManagePortfolioView v) {
+	public PortfolioBalanceGrid(ManagePortfolioView v) {
 		super(Balance.class, BalanceDialog.class,FilterMode.None);
-		this.listOperationProvider = new PortfolioBalancesListProvider();
+
 		this.portfolio = v.entity;
 		LOGGER.info("PortfolioBalancesList: {}",this.portfolio);
 		this.showDeleteButton = true;
 		this.showButtonColumn = true;
 		this.view = v;
-		this.showc
+		this.showCount = false;
+
 
 	}
 
 	@PostConstruct
 	public void postConstruct() {
-		super.postConstruct(appContext);
+		super.postConstruct();
 	}
 
 	@Override
@@ -86,7 +87,93 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 
 
 
-	public class PortfolioBalancesListProvider extends DelegateEntitiesListProvider<Balance,Long> {
+
+
+	@Override
+	public PagingAndSortingRepository<Balance, Long> getRepository() {
+		return balanceRepo;
+	}
+
+	@Override
+	public void setupColumns(Grid<Balance> grid) {
+
+		Column<?> col = grid.addComponentColumn(entry -> {
+			if(entry.getExchange().getImageUrl()!=null) {
+				String imageUrl = "/image/"+entry.getExchange().getImageUrl();
+				Image image = new Image(imageUrl,"Icon");
+				image.setWidth(ManagePortfolioView.ICON_SIZE);
+				image.setHeight(ManagePortfolioView.ICON_SIZE);
+				return image;
+			}
+			else return new Span();
+
+		});
+		UiComponents.iconColumn(col);
+
+		Column<?> eName = grid.addColumn(FunctionUtils.nestedValue(Balance::getExchange, Exchange::getName))
+		.setHeader("Exchange")
+		.setSortProperty("exchange.name")
+		.setSortable(true)
+		.setWidth("150px")
+		.setFlexGrow(0)
+		;
+		UiComponents.iconLabelColumn(eName);
+
+		Column<?> curIcon = grid.addComponentColumn(entry -> {
+			if(entry.getCurrency().getImageUrl()!=null) {
+				String imageUrl = "/image/"+entry.getCurrency().getImageUrl();
+				Image image = new Image(imageUrl,"Icon");
+				image.setWidth(ManagePortfolioView.ICON_SIZE);
+				image.setHeight(ManagePortfolioView.ICON_SIZE);
+				return image;
+			}
+			else return new Span();
+
+		})
+		;
+		UiComponents.iconColumn(curIcon);
+
+		Column<?> label = grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getKey))
+		.setHeader("Currency")
+		.setSortProperty("currency.key")
+		.setSortable(true)
+		.setWidth("125px")
+		.setFlexGrow(0)
+		;
+		UiComponents.iconLabelColumn(label);
+
+		grid.addColumn(Balance::getBalance)
+		.setHeader("Balance")
+		.setSortProperty("balance")
+		.setSortable(true)
+		;
+
+	}
+
+	@Override
+	public String getEntityName(Balance t) {
+		return t.getBalance().toString() +" "+t.getCurrency().getKey();
+	}
+
+	@Override
+	public Long getEntityId(Balance entity) {
+		return entity.getId();
+	}
+
+	@Override
+	public void setFilter(String text) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void clearFilter() {
+		// TODO Auto-generated method stub
+
+	}
+
+	/*
+	public static class PortfolioBalancesListProvider extends DelegateEntitiesListProvider<Balance,Long> {
 
 		public PortfolioBalancesListProvider() {
 			this.list = PortfolioBalancesList.this;
@@ -176,6 +263,7 @@ public class PortfolioBalancesList extends EntitiesList<Balance, Long> {
 
 
 
-	}
+	}*/
+
 
 }

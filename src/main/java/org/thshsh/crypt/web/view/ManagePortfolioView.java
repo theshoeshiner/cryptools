@@ -120,6 +120,9 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	    }
 
 	    tabSheet = new BasicTabSheet();
+	    tabSheet.getContentLayout().setMargin(false);
+	    tabSheet.getContentLayout().setPadding(false);
+
 	    tabSheet.setHeightFull();
 	    tabSheet.getContentLayout().setHeight("100%");
 
@@ -163,7 +166,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	    ValueChart ex2 = new ValueChart();
 	    tabSheet.addTab(new Tab("Chart"), ex2);
 	    ex2.setVisible(true);
-	    ex2.addClassName("invisible");
+	    //ex2.addClassName("invisible");
 
 		/* tabsToPages = new HashMap<>();
 		tabsToPages.put(main,mainLayout);
@@ -212,14 +215,19 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 
 	}
 
-	PortfolioEntriesList entriesList;
+	PortfolioEntryGrid entriesList;
 
 	protected VerticalLayout createMainTab() {
 
 		LOGGER.info("createMainTab");
 
 		VerticalLayout layout = new VerticalLayout();
-		entriesList = appContext.getBean(PortfolioEntriesList.class,this);
+		layout.setPadding(false);
+		layout.setMargin(false);
+
+		entriesList = appContext.getBean(PortfolioEntryGrid.class,this);
+		entriesList.setPadding(false);
+		entriesList.setMargin(false);
 		entriesList.setHeight("100%");
 		layout.add(entriesList);
 		layout.setHeight("100%");
@@ -242,14 +250,16 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 
 	}
 
-	PortfolioBalancesList balancesList;
+	PortfolioBalanceGrid balancesList;
 
-	PortfolioAllocationsList allocationList;
+	PortfolioAllocationGrid allocationList;
 
 	protected VerticalLayout createBalancesTab() {
 		LOGGER.info("createBalancesTab");
 		VerticalLayout layout = new VerticalLayout();
-		balancesList = appContext.getBean(PortfolioBalancesList.class,this);
+		layout.setMargin(false);
+		layout.setPadding(false);
+		balancesList = appContext.getBean(PortfolioBalanceGrid.class,this);
 		balancesList.setHeight("100%");
 		layout.add(balancesList);
 		layout.setHeight("100%");
@@ -258,7 +268,9 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 
 	protected VerticalLayout createAllocationsTab() {
 		VerticalLayout layout = new VerticalLayout();
-		allocationList = appContext.getBean(PortfolioAllocationsList.class,this);
+		layout.setMargin(false);
+		layout.setPadding(false);
+		allocationList = appContext.getBean(PortfolioAllocationGrid.class,this);
 		allocationList.setHeight("100%");
 		layout.add(allocationList);
 		layout.setHeight("100%");
@@ -267,7 +279,10 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	}
 
 	protected VerticalLayout createFunctionsTab() {
+
 		VerticalLayout layout = new VerticalLayout();
+		layout.setMargin(false);
+		layout.setPadding(false);
 		layout.setVisible(false);
 		Button runJob = new Button("Run History Job",click -> {
 			try {
@@ -280,6 +295,15 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 			}
 		});
 		layout.add(runJob);
+		return layout;
+	}
+
+	protected VerticalLayout createSettingsTab() {
+		VerticalLayout layout = new VerticalLayout();
+		layout.setVisible(false);
+
+
+
 		return layout;
 	}
 

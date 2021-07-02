@@ -1,11 +1,11 @@
 package org.thshsh.crypt.web;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,7 +14,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -23,13 +23,18 @@ import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.ExchangeRepository;
 import org.thshsh.crypt.PlatformType;
+import org.thshsh.crypt.UserRepository;
 import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.serv.UserService;
 
 @Component
 public class DataGenerator {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(DataGenerator.class);
+
+	@Autowired
+	AppConfiguration appConfig;
 
 	@Autowired
 	ExchangeRepository exchangeRepo;
@@ -41,7 +46,7 @@ public class DataGenerator {
 	CryptoCompare compare;
 
 	@Autowired
-	TaskExecutor executor;
+	AsyncTaskExecutor executor;
 
 	@Autowired
 	DataConfiguration dataConfig;
@@ -51,6 +56,12 @@ public class DataGenerator {
 
 	@Autowired
 	ImageService imageService;
+
+	@Autowired
+	UserRepository userRepo;
+
+	@Autowired
+	UserService userService;
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -64,34 +75,40 @@ public class DataGenerator {
 
 		template = new TransactionTemplate(transactionManager);
 
-		executor.execute(() -> {
+		if(!appConfig.getProductionMode()) {
+			executor.execute(this::passwords);
+		}
 
-			//exchanges();
-
-			//currencies();
-
-			//fiat();
+		executor.execute(this::exchanges);
 
 
-		});
+		CompletableFuture
+			.runAsync(this::currencies, executor)
+			.thenRunAsync(this::fiat, executor);
+
+
 
 	}
 
 	protected void fiat() {
 
-		for(List<String> cur : dataConfig.getFiatcurrencies()) {
-			LOGGER.info("checking for {}",cur);
-			Currency c = currencyRepo.findByKey(cur.get(1));
-			if(c == null) c = new Currency(cur.get(0),cur.get(1),PlatformType.fiat);
-			else {
-				c.setName(cur.get(0));
-				c.setPlatformType(PlatformType.fiat);
+		template.executeWithoutResult(action -> {
+
+			for(List<String> cur : dataConfig.getFiatcurrencies()) {
+				LOGGER.info("checking for {}",cur);
+				Currency c = currencyRepo.findByKey(cur.get(1));
+				if(c == null) c = new Currency(cur.get(0),cur.get(1),PlatformType.fiat);
+				else {
+					c.setName(cur.get(0));
+					c.setPlatformType(PlatformType.fiat);
+				}
+				LOGGER.info("saving: {}",c);
+				currencyRepo.save(c);
+
 			}
-			LOGGER.info("saving: {}",c);
-			currencyRepo.save(c);
 
-		}
 
+		});
 	}
 
 	protected void currency(Coin coin) {
@@ -153,6 +170,21 @@ public class DataGenerator {
 			currency(coin);
 		});
 
+
+
+	}
+
+	protected void passwords() {
+
+		template.executeWithoutResult(action -> {
+
+			userRepo.findAll().forEach(user -> {
+				if(user.getPassword().equals("dev")) {
+					userService.setPassword(user, "dev");
+				}
+			});
+
+		});
 
 	}
 

@@ -181,10 +181,70 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
  margin-bottom:25px;
  }
 
- .invisible {
+ /* .invisible {
  	visibility:hidden;
  	display:none;
- }
+ } */
+
+#logo .logo-text {
+	color:var(--lumo-tint-70pct);
+	font-weight:400;
+	font-size:2.5em;
+}
+
+.login-view .logo-text {
+	margin-top:50px;
+	font-weight:400;
+	font-size:6em;
+}
+
+.login-view .message {
+
+}
+
+.logo-text {
+	 font-family: 'Righteous';
+	 display:flex;
+	align-items: center;
+    display: flex;
+}
+
+.logo-text span:nth-child(1) {
+	font-size:1.3em;
+	margin-bottom: -.15em;
+}
+
+
+
+/* input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active
+{
+ -webkit-box-shadow: 0 0 0 30px white inset !important;
+ background-color:Red !important;
+ color:Red !important;
+} */
+
+/* div[part="input-field"] input:-internal-autofill-selected,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:autofill
+{
+ -webkit-box-shadow: 0 0 0 30px white inset !important;
+ background-color:Red !important;
+ color:Red !important;
+} */
+
+
+/* input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px red inset !important;
+    box-shadow: 0 0 0 1000px red inset !important;
+}
+
+ */
 
 /*
 .slider{
