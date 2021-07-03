@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -24,8 +25,15 @@ public class Portfolio extends IdedEntity {
 	@Column
 	String name;
 
-	@OneToMany(mappedBy = "portfolio")
+	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
 	Set<Balance> balances;
+
+
+	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
+	Set<PortfolioHistory> histories;
+
+	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
+	Set<Allocation> allocations;
 
 	@ManyToOne(optional = false)
 	Currency reserve;

@@ -5,6 +5,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 
+import javax.sound.sampled.Port;
+
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
@@ -17,7 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.thshsh.crypt.NumberUtils;
 
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
@@ -49,6 +54,10 @@ public class HistoryJob implements InterruptableJob {
 	BigDecimal alertThreshold = BigDecimal.ONE;
 	//BigDecimal alertThreshold = new BigDecimal(.8d);
 
+	String subjectFormat = "%s Portfolio Imbalance Alert";
+	String textFormat = "Total Portfolio Imbalance %d%%";
+	String entryFormat = "%s Imbalance: %d%%";
+
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 
@@ -60,7 +69,7 @@ public class HistoryJob implements InterruptableJob {
 
 		LOGGER.info("ports: {}",ports);
 
-		ports.forEach(p -> {
+		ports.forEach((Portfolio p) -> {
 			runForPortfolio(p);
 		});
 
@@ -68,41 +77,72 @@ public class HistoryJob implements InterruptableJob {
 
 	protected void runForPortfolio(Portfolio p) {
 
-		//MutableObject<PortfolioSummary> sum = new MutableObject<>();
 
-		PortfolioHistory history = template.execute(action -> {
+
+		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
+
+			PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
+
 			Portfolio port = portRepo.findById(p.getId()).get();
 
+
 			PortfolioSummary summary = manageService.getSummary(port);
-			PortfolioHistory ps = new PortfolioHistory(port, summary);
-			ps.setValue(ps.getValue());
+			PortfolioHistory portHistory = new PortfolioHistory(port, summary);
+			portHistory.setValue(portHistory.getValue());
 			summary.getEntries().forEach(entry -> {
-				PortfolioEntryHistory hist = new PortfolioEntryHistory(ps, entry);
-				ps.addEntry(hist);
+				PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
+				portHistory.addEntry(hist);
 			});
 
-			ps.setValue(summary.getTotalValue());
 
-			portHistRepo.save(ps);
 
-			return ps;
+			portHistory.setValue(summary.getTotalValue());
+
+
+			portHistRepo.save(portHistory);
+
+			return portHistory;
 		});
+
+
 
 		if(history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
 			//fire alert
 
-			String subject = "Portfolio Imbalance Alert: "+format.format(history.getMaxToTriggerPercent().doubleValue());
-			String text = "Total Imbalance: "+format.format(history.getTotalImbalance().doubleValue());
+			//PortfolioEntryHistory max = history.getMaxTriggerEntry();
+
+			//String subject = "Portfolio '' Imbalance Alert: "+format.format(history.getMaxToTriggerPercent().doubleValue());
+			//String subject = String.format(subjectFormat, p.getName(),(int)(history.getMaxToTriggerPercent().doubleValue()*100));
+			String subject = String.format(subjectFormat, p.getName());
+			//String text = "Total Imbalance: "+format.format(history.getTotalImbalance().doubleValue()*100);\
+
+
+
+			StringBuilder emailText = new StringBuilder();
+			emailText.append(String.format(textFormat, NumberUtils.BigDecimalToPercentInt(history.getTotalImbalance())));
+
+			history.getEntries().forEach(entry -> {
+				LOGGER.info("entry: {}",entry.getThresholdPercent());
+				if(entry.getToTriggerPercent().compareTo(BigDecimal.ONE) > 0) {
+					String entryText = String.format(entryFormat, entry.getCurrency().getKey(),NumberUtils.BigDecimalToPercentInt(entry.getToTriggerPercent()));
+					emailText.append("\n");
+					emailText.append(entryText);
+				}
+			});
+
+			//String text = ;
 			SimpleMailMessage message = new SimpleMailMessage();
 	        message.setFrom("cryptools@thshsh.org");
 	        message.setTo("dcwatson84@gmail.com");
 	        message.setSubject(subject);
-	        message.setText(text);
+	        message.setText(emailText.toString());
 	        mailSender.send(message);
 
 		}
 
 	}
+
+
 
 	@Override
 	public void interrupt() throws UnableToInterruptJobException {

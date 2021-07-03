@@ -7,13 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.web.AppSession;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioRepository;
 import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 
 @SuppressWarnings("serial")
@@ -29,6 +29,9 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 
 	@Autowired
 	CurrencyRepository assetRepo;
+
+	@Autowired
+	AppSession session;
 
 	public PortfolioForm(Portfolio entity) {
 		super(Portfolio.class, entity);
@@ -76,6 +79,7 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 	protected Portfolio createEntity() {
 		Portfolio p = super.createEntity();
 		p.setReserve(assetRepo.findByKey("USD"));
+		p.setUser(session.getUser());
 		return p;
 	}
 

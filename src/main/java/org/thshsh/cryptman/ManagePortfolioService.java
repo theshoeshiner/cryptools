@@ -47,8 +47,7 @@ public class ManagePortfolioService {
 		List<PortfolioEntry> entries = new ArrayList<PortfolioEntry>();
 		summary.entries = entries;
 
-		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio);
-		if(sum == null) sum = BigDecimal.ZERO;
+		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElse(BigDecimal.ZERO);
 
 		BigDecimal remainder = BigDecimal.ONE.subtract(sum);
 		LOGGER.info("remainder: {}",remainder);

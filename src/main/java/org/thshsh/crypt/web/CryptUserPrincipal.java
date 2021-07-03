@@ -1,4 +1,4 @@
-package org.thshsh.crypt;
+package org.thshsh.crypt.web;
 
 import java.util.Collection;
 
@@ -6,13 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.thshsh.crypt.User;
 
 @SuppressWarnings("serial")
 public class CryptUserPrincipal implements UserDetails {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(CryptUserPrincipal.class);
 
-    private User user;
+    protected User user;
 
     public CryptUserPrincipal(User user) {
         this.user = user;
@@ -52,5 +53,11 @@ public class CryptUserPrincipal implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
+	public User getUser() {
+		return user;
+	}
+
+
 
 }

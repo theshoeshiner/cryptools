@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.web.repo.BaseRepository;
@@ -15,6 +17,10 @@ public interface AllocationRepository extends BaseRepository<Allocation, Long>, 
 
 	public List<Allocation> findByPortfolio(Portfolio p);
 
+	public Page<Allocation> findByPortfolio(Portfolio p,Pageable pg);
+
+	Long countByPortfolio(Portfolio p);
+
 	@Query("select sum(a.percent) from #{#entityName} a where a.portfolio = ?1")
-	public BigDecimal findAllocationSumByPortfolio(Portfolio p);
+	public Optional<BigDecimal> findAllocationSumByPortfolio(Portfolio p);
 }

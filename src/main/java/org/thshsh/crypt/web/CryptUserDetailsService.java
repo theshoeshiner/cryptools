@@ -1,4 +1,4 @@
-package org.thshsh.crypt;
+package org.thshsh.crypt.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.thshsh.crypt.web.SecurityConfiguration;
+import org.thshsh.crypt.User;
+import org.thshsh.crypt.UserRepository;
 
 //@Service
 public class CryptUserDetailsService implements UserDetailsService {

@@ -21,6 +21,8 @@ public class PortfolioDialog extends org.thshsh.vaadin.entity.EntityDialog<Portf
 		super(PortfolioForm.class,en);
 	}
 
+
+
 	/*
 	 * @PostConstruct public void PostConstruct() { super.postConstruct(portRepo); }
 	 *

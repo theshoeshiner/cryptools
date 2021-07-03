@@ -9,4 +9,6 @@ public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHis
 
 	List<PortfolioHistory> findByPortfolioOrderByTimestampAsc(Portfolio p);
 
+	PortfolioHistory findOneByPortfolioOrderByTimestampDesc(Portfolio p);
+
 }

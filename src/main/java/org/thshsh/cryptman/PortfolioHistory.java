@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.thshsh.crypt.IdedEntity;
 
 @Entity
@@ -80,6 +82,16 @@ public class PortfolioHistory extends IdedEntity {
 
 	public void setEntries(Set<PortfolioEntryHistory> entries) {
 		this.entries = entries;
+	}
+
+	public PortfolioEntryHistory getMaxTriggerEntry() {
+		MutableObject<PortfolioEntryHistory> max = new MutableObject<PortfolioEntryHistory>();
+		getEntries().forEach(entry -> {
+			if(max.getValue() == null || max.getValue().getToTriggerPercent().compareTo(entry.getToTriggerPercent()) < 0) {
+				max.setValue(entry);
+			}
+		});
+		return max.getValue();
 	}
 
 	/*public Set<BalanceHistory> getBalances() {

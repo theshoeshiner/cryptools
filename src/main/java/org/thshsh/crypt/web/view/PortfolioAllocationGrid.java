@@ -18,16 +18,20 @@ import org.thshsh.cryptman.AllocationRepository;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.Portfolio;
+import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.ExampleFilterRepository;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.entity.EntityGrid;
 
+import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 
 @SuppressWarnings("serial")
@@ -78,7 +82,7 @@ public class PortfolioAllocationGrid extends EntityGrid<Allocation, Long> {
 	//static BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100l);
 
 	protected void updateRemainder() {
-		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio);
+		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElse(BigDecimal.ZERO);
 		BigDecimal remainder = BigDecimal.ONE.subtract(sum);
 		this.remainder.setText("Remainder: " + PortfolioEntryGrid.PercentFormat.format(remainder));
 	}
@@ -94,6 +98,7 @@ public class PortfolioAllocationGrid extends EntityGrid<Allocation, Long> {
 	public void refresh() {
 		super.refresh();
 		view.refreshMainTab();
+		updateRemainder();
 	}
 
 	/*public class PortfolioAllocationsListProvider extends DelegateEntitiesListProvider<Allocation,Long> {
@@ -201,6 +206,15 @@ public class PortfolioAllocationGrid extends EntityGrid<Allocation, Long> {
 		.setWidth("150px")
 		;
 
+	}
+
+	@Override
+	public DataProvider<Allocation, ?> createDataProvider() {
+		CallbackDataProvider<Allocation, Void> dataProvider = DataProvider.fromCallbacks(
+				q -> alloRepo.findByPortfolio(portfolio,ChunkRequest.of(q, getDefaultSortOrder())).getContent().stream(),
+				q -> Ints.checkedCast(alloRepo.countByPortfolio(portfolio)));
+
+		return dataProvider;
 	}
 
 	@Override

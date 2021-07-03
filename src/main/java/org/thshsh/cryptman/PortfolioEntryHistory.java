@@ -37,6 +37,7 @@ public class PortfolioEntryHistory extends IdedEntity {
 	@Column(columnDefinition = "decimal")
 	BigDecimal adjustPercent;
 
+	public PortfolioEntryHistory() {}
 
 	public PortfolioEntryHistory(PortfolioHistory p, PortfolioEntry pe) {
 		this.currency = pe.getCurrency();
@@ -102,6 +103,11 @@ public class PortfolioEntryHistory extends IdedEntity {
 
 	public void setAdjustPercent(BigDecimal adjustPercent) {
 		this.adjustPercent = adjustPercent;
+	}
+
+	@Override
+	public String toString() {
+		return "[currency=" + currency + ", toTriggerPercent=" + toTriggerPercent + "]";
 	}
 
 
