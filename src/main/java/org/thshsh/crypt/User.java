@@ -34,6 +34,9 @@ public class User extends IdedEntity {
 
 	@Column
 	String email;
+	
+	@Column
+	String cryptoCompareApiKey;
 
 	@Column
 	String password;

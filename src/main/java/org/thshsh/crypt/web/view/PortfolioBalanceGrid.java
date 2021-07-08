@@ -31,7 +31,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioBalanceGrid extends EntityGrid<Balance, Long> {
+public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
@@ -59,6 +59,11 @@ public class PortfolioBalanceGrid extends EntityGrid<Balance, Long> {
 	@PostConstruct
 	public void postConstruct() {
 		super.postConstruct();
+		this.filter.setVisible(false);
+		//this.header.setMargin(false);
+		this.setPadding(false);
+		this.setSpacing(false);
+		this.setMargin(false);
 	}
 
 	@Override

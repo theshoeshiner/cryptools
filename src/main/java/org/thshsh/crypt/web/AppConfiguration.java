@@ -11,6 +11,9 @@ public class AppConfiguration {
 	@Value("${app.productionMode}")
 	Boolean productionMode;
 
+	@Value("${app.cryptocompare.sync}")
+	Boolean cryptoCompareSync;
+
 	@Value("${app.login.enabled}")
 	Boolean loginEnabled;
 
@@ -23,6 +26,14 @@ public class AppConfiguration {
 
 	public void setProductionMode(Boolean productionMode) {
 		this.productionMode = productionMode;
+	}
+
+	public Boolean getCryptoCompareSync() {
+		return cryptoCompareSync;
+	}
+
+	public void setCryptoCompareSync(Boolean cryptoCompareSync) {
+		this.cryptoCompareSync = cryptoCompareSync;
 	}
 
 

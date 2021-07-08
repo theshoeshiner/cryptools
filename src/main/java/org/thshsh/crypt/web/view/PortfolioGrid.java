@@ -33,7 +33,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioGrid extends EntityGrid<Portfolio,Long> {
+public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 
 	@Autowired
 	PortfolioRepository portRepo;

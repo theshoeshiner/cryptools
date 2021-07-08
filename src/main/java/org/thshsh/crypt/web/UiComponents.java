@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.repo.AppUserRepository;
-import org.thshsh.crypt.web.view.UserDialog;
 
 import com.vaadin.flow.component.grid.Grid.Column;
 
@@ -31,11 +28,11 @@ public class UiComponents {
 		return new FlowDialog(c);
 	}*/
 
-	@Bean
+	/*@Bean
 	@Scope("prototype")
 	public UserDialog getUserDialog(User c) {
 		return new UserDialog(c);
-	}
+	}*/
 
 	@Bean
 	@Qualifier("hundred")

@@ -257,9 +257,7 @@ public class MainLayout extends AppLayout {
 		*/
     	//RouterLink mdm = createMenuItem("MDM", MdmTestView.class);
     	//RouterLink load = createMenuItem(LoadTestView.PAGE_TITLE, LoadTestView.class);
-    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
 
-    	items.add(about);
 
     	//items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
@@ -273,6 +271,11 @@ public class MainLayout extends AppLayout {
 		Tab studies = createTab("Studies", StudiesView.class);
 		Tab spon = createTab("Sponsors", SponsorsView.class);
 		Tab load = createTab(LoadTestView.PAGE_TITLE, LoadTestView.class);*/
+
+
+
+    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
+    	items.add(about);
 
     	return items;
 

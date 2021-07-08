@@ -74,30 +74,11 @@ html {
    --bc-green: #6db43d;
    --bc-light-amber: #ffd24f;
    --bc-dark-amber: #faa634;
+
+   --money-green:#4fc27f;
 }
 
 [theme~="light"] {
-
-   /*
-   CDSIC green  174, yellow 40, red 1
-
-   	BC Blue 211
-
-   	BC blue 210, 54%, 25%
-   	BC light blue #ddf1f7
-
-   	BC colors
-
-   	Green: 6cb33f (6db43d)
-   	Dk Blue: 1e4164
-   	lt blue:	ddf1f7
-   	lt gray: cfd4d8
-   	dk gray: 455560
-   	lt amber: ffd24f
-   	dk amber:	faa634
-
-   	//light blue , #ddf1f7 , 194°, 62%, 92%
-   */
 
    /* bioclinica colors */
 

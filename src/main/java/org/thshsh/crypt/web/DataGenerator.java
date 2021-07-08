@@ -79,14 +79,16 @@ public class DataGenerator {
 			executor.execute(this::passwords);
 		}
 
-		executor.execute(this::exchanges);
+		if(appConfig.getCryptoCompareSync()) {
+
+			executor.execute(this::exchanges);
 
 
-		CompletableFuture
-			.runAsync(this::currencies, executor)
-			.thenRunAsync(this::fiat, executor);
+			CompletableFuture
+				.runAsync(this::currencies, executor)
+				.thenRunAsync(this::fiat, executor);
 
-
+		}
 
 	}
 

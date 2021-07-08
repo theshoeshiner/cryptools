@@ -51,7 +51,7 @@ public class ManagePortfolioService {
 
 		BigDecimal remainder = BigDecimal.ONE.subtract(sum);
 		LOGGER.info("remainder: {}",remainder);
-		Allocation remainderAllocation = new Allocation();
+		//Allocation remainderAllocation = new Allocation();
 		MutableInt remainderCount = new MutableInt(0);
 
 
@@ -77,30 +77,50 @@ public class ManagePortfolioService {
 
 
 		currencyBalances.forEach((cur,bal)-> {
+
+			LOGGER.info("cur: {}",cur);
+
 			BigDecimal value = bal.getAsBigDecimal().multiply(rates.get(cur).getRate());
 			currencyValues.put(cur, value);
 			totalValue.inc(value);
-			Allocation a;
+			Allocation allocation = null;
 			if(allocationMap.containsKey(cur)) {
-				a = allocationMap.get(cur);
+				allocation = allocationMap.get(cur);
 			}
-			else {
-				a = remainderAllocation;
+
+			if(allocation == null || allocation.getPercent() == null) {
 				remainderCount.increment();
 			}
-			PortfolioEntry pe = new PortfolioEntry(bal.getAsBigDecimal(), cur,a,rates.get(cur));
+			PortfolioEntry pe = new PortfolioEntry(portfolio,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
 			pe.setValueReserve(value);
 			entryMap.put(cur, pe);
 			entries.add(pe);
+
+			LOGGER.info("value: {}",value);
 		});
 
 		Long count = remainderCount.longValue();
 		if(count == 0) count++;
 		BigDecimal remainderPer = remainder.divide(BigDecimal.valueOf(count),4, RoundingMode.HALF_EVEN);
 		LOGGER.info("{} / {} = {}", remainder,remainderCount,remainderPer);
-		remainderAllocation.setPercent(remainderPer);
+		//remainderAllocation.setPercent(remainderPer);
 
-		LOGGER.info("remainderAllocation: {}",remainderAllocation);
+		entryMap.forEach(( currency,entry) -> {
+			if(entry.getAllocation() == null) {
+				Allocation a = new Allocation(remainderPer);
+				a.setUndefined(true);
+				a.setCurrency(currency);
+				a.setPortfolio(portfolio);
+				entry.setAllocation(a);
+			}
+			else if(entry.getAllocation().getPercent() == null) {
+				entry.getAllocation().setPercent(remainderPer);
+			}
+		});
+
+
+
+		//LOGGER.info("remainderAllocation: {}",remainderAllocation);
 		LOGGER.info("currencyBalances: {}",currencyBalances.keySet());
 
 		LOGGER.info("total value: {}",totalValue.getAsBigDecimal());
@@ -115,6 +135,7 @@ public class ManagePortfolioService {
 			PortfolioEntry pe = entryMap.get(cur);
 			BigDecimal percent = pe.getAllocation().getPercent();
 			BigDecimal targetValue = totalValue.getAsBigDecimal().multiply(percent);
+			LOGGER.info("targetValue: {}",targetValue);
 			pe.setTargetReserve(targetValue);
 
 			BigDecimal adjPerc = pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
@@ -133,15 +154,30 @@ public class ManagePortfolioService {
 			LOGGER.info("Threshold: {}",thresh);
 
 
+			if(pe.getAllocation().getPercent().compareTo(BigDecimal.ZERO) != 0) {
 
-			if(!pe.getAllocation().equals(remainderAllocation)) {
 				BigDecimal toTrigger = adjPerc.divide(thresh, RoundingMode.HALF_EVEN).abs();
 				LOGGER.info("toTrigger: {}",toTrigger);
+
+
+				if(portfolio.getSettings().getMinimumAdjust() != null) {
+					if(pe.getAdjustAbsolute().compareTo(portfolio.getSettings().getMinimumAdjust()) < 0) {
+						//adjust is less than minimum so change our to trigger
+						BigDecimal toMinTrigger = pe.getAdjustAbsolute().divide(portfolio.getSettings().getMinimumAdjust(),RoundingMode.HALF_EVEN);
+						if(toMinTrigger.compareTo(toTrigger) < 0) {
+							toTrigger = toMinTrigger;
+						}
+					}
+				}
+
+
 				pe.setToTriggerPercent(toTrigger);
 				if(toTrigger.compareTo(maxToTriggerPercent.getAsBigDecimal()) >0) {
 					maxToTriggerPercent.set(toTrigger);
 				}
+
 			}
+
 
 		});
 

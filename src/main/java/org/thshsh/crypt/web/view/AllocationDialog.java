@@ -27,6 +27,7 @@ import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.BigDecimalConverter;
 import org.thshsh.cryptman.Portfolio;
+import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.BigDecimalField;
@@ -39,10 +40,11 @@ import com.vaadin.flow.data.binder.ValidationException;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class AllocationDialog extends EntityDialog<Allocation> {
+public class AllocationDialog extends org.thshsh.vaadin.entity.EntityDialog<Allocation, Long> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(AllocationDialog.class);
 
+	/*
 	@Autowired
 	ApplicationContext context;
 
@@ -55,8 +57,6 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 	@Autowired
 	ExchangeRepository exeRepo;
 
-	/*@Autowired
-	BalanceRepository balRepo;*/
 
 	@Autowired
 	AllocationRepository alloRepo;
@@ -67,26 +67,63 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 	@Autowired
 	AppSession session;
 
-	Portfolio portfolio;
+
 
 	@Autowired
 	@Qualifier("hundred")
 	BigDecimal hundred;
 
-	public AllocationDialog(Allocation en,Portfolio p) {
-		super(en, Allocation.class);
+	*/
+
+	Portfolio portfolio;
+	Currency currency;
+
+	public AllocationDialog(Portfolio p,Currency c) {
+		super(AllocationForm.class,null);
+		this.portfolio = p;
+		this.currency = c;
+	}
+
+	public AllocationDialog(Allocation a,Portfolio p,Currency c) {
+		super(AllocationForm.class,a);
+		this.portfolio = p;
+		this.currency = c;
+	}
+
+	public AllocationDialog(Portfolio p) {
+		super(AllocationForm.class,null);
 		this.portfolio = p;
 	}
 
-
-
 	@Override
+	protected EntityForm<Allocation, Long> createEntityForm() {
+		//AllocationForm af;
+		if(this.entity == null) return this.appContext.getBean(AllocationForm.class,this.portfolio,this.currency);
+		else return this.appContext.getBean(AllocationForm.class,this.entity,this.portfolio,this.currency);
+	}
+
+	public void postConstruct() {
+		super.postConstruct();
+		this.entityForm.getTitle().setText("Allocation"+((this.currency!=null)?" for "+this.currency.getKey():""));
+	}
+
+	/*public AllocationDialog(Allocation en,Portfolio p,Currency c) {
+		super(en, Allocation.class);
+		this.portfolio = p;
+		this.currency = c;
+	}
+	*/
+
+
+
+	/*@Override
 	protected Allocation createEntity() {
 		LOGGER.info("createEntity: {}",this.portfolio);
 		Allocation b = super.createEntity();
 		if(portfolio!=null) b.setPortfolio(portfolio);
+		if(currency!=null) b.setCurrency(currency);
 		return b;
-	}
+	}*/
 
 
 
@@ -94,9 +131,10 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 		super(en, Balance.class);
 	}*/
 
-	@PostConstruct
+	/*@PostConstruct
 	public void postConstruct() {
 		super.postConstruct(alloRepo);
+		this.title.setVisible(false);
 	}
 
 	ComboBox<Exchange> exchangeField;
@@ -107,11 +145,7 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 
 		formLayout.startHorizontalLayout();
 
-		/*exchangeField = new ComboBox<>("Exchange");
-		exchangeField.setItemLabelGenerator(Exchange::getName);
-		exchangeField.setItems(context.getBean(HasNameDataProvider.class,exeRepo));
-		exchangeField.setWidth("250px");
-		formLayout.add(exchangeField);*/
+
 
 		BigDecimalField percent = new BigDecimalField("Percent");
 
@@ -120,30 +154,23 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 		formLayout.endLayout();
 		formLayout.startHorizontalLayout();
 
-		ComboBox<Currency> ass = new ComboBox<>("Currency");
-		ass.setItemLabelGenerator(c -> {
-			return c.getName() +" ("+c.getKey()+")";
-		});
-		ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
-		ass.setWidth("250px");
-		formLayout.add(ass);
+		if(currency == null) {
+			ComboBox<Currency> ass = new ComboBox<>("Currency");
+			ass.setItemLabelGenerator(c -> {
+				return c.getName() +" ("+c.getKey()+")";
+			});
+			ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
+			ass.setWidth("250px");
+			formLayout.add(ass);
 
-		/*TextField balance = new TextField("Balance");
-		formLayout.add(balance);*/
+			binder.forField(ass)
+			.asRequired()
+			.bind(Allocation::getCurrency, Allocation::setCurrency);
+		}
+
 
 		formLayout.endLayout();
 
-		/*binder.forField(exchangeField).asRequired().bind(b -> {
-			return null;
-			},
-			(b,e) -> {
-
-			}
-			);*/
-		//binder.forField(exchangeField).bind(Balance::getExchange,Balance::setExchange);
-		binder.forField(ass)
-		.asRequired()
-		.bind(Allocation::getCurrency, Allocation::setCurrency);
 
 		binder.forField(percent)
 		.asRequired()
@@ -172,6 +199,6 @@ public class AllocationDialog extends EntityDialog<Allocation> {
 				this.entity.setId(a.getId());
 			});
 		}
-	}
+	}*/
 
 }

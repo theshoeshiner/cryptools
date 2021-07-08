@@ -31,8 +31,9 @@ public class Allocation extends IdedEntity {
 	@ManyToOne
 	Portfolio portfolio;
 
-	public Allocation() {}
+	Boolean undefined;
 
+	public Allocation() {}
 
 	public Allocation(BigDecimal percent) {
 		super();
@@ -51,7 +52,14 @@ public class Allocation extends IdedEntity {
 		return percent;
 	}
 
+	public void setUndefined(Boolean t) {
+		this.undefined = t;
+	}
 
+	public Boolean isUndefined() {
+		if(undefined != null) return undefined;
+		else return percent == null;
+	}
 
 	/*public String getPercentString() {
 		return getPercentString(this.percent);

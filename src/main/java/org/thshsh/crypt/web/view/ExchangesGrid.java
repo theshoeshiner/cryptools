@@ -19,7 +19,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 @Component
 @Scope("prototype")
-public class ExchangesGrid extends EntityGrid<Exchange,Long> {
+public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 
 
 	@Autowired

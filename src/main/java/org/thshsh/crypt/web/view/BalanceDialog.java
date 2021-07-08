@@ -22,6 +22,7 @@ import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.BigDecimalConverter;
 import org.thshsh.cryptman.Portfolio;
+import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
@@ -30,15 +31,15 @@ import com.vaadin.flow.data.binder.ValidationException;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class BalanceDialog extends EntityDialog<Balance> {
+public class BalanceDialog extends org.thshsh.vaadin.entity.EntityDialog<Balance, Long> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(BalanceDialog.class);
 
 	@Autowired
 	ApplicationContext context;
 
-	//@Autowired
-	//AssetNameDataProvider assetNamePro;
+	// @Autowired
+	// AssetNameDataProvider assetNamePro;
 
 	@Autowired
 	CurrencyRepository assetRepo;
@@ -57,98 +58,78 @@ public class BalanceDialog extends EntityDialog<Balance> {
 
 	Portfolio portfolio;
 
-	public BalanceDialog(Balance en,Portfolio p) {
-		super(en, Balance.class);
+	public BalanceDialog(Balance en, Portfolio p) {
+		super(BalanceForm.class, en);
 		this.portfolio = p;
-		LOGGER.info("dialog portfolio: {}",p);
-	}
-
-
-
-	@Override
-	protected Balance createEntity() {
-		LOGGER.info("createEntity: {}",this.portfolio);
-		Balance b = super.createEntity();
-		if(portfolio!=null) b.setPortfolio(portfolio);
-		return b;
-	}
-
-
-
-	public BalanceDialog(Balance en) {
-		super(en, Balance.class);
-	}
-
-	@PostConstruct
-	public void PostConstruct() {
-		super.postConstruct(balRepo);
-	}
-
-	ComboBox<Exchange> exchangeField;
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void setupForm() {
-
-		formLayout.startHorizontalLayout();
-
-		exchangeField = new ComboBox<>("Exchange");
-		exchangeField.setItemLabelGenerator(Exchange::getName);
-		exchangeField.setItems(context.getBean(HasNameDataProvider.class,exeRepo));
-		exchangeField.setWidth("250px");
-		formLayout.add(exchangeField);
-
-		formLayout.endLayout();
-		formLayout.startHorizontalLayout();
-
-		ComboBox<Currency> ass = new ComboBox<>("Currency");
-		ass.setItemLabelGenerator(c -> {
-			return c.getName() +" ("+c.getKey()+")";
-		});
-		ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
-		ass.setWidth("250px");
-		formLayout.add(ass);
-
-		TextField balance = new TextField("Balance");
-		formLayout.add(balance);
-
-		formLayout.endLayout();
-
-		/*binder.forField(exchangeField).asRequired().bind(b -> {
-			return null;
-			},
-			(b,e) -> {
-
-			}
-			);*/
-		binder.forField(exchangeField).bind(Balance::getExchange,Balance::setExchange);
-		binder.forField(ass).asRequired().bind(Balance::getCurrency, Balance::setCurrency);
-		binder.forField(balance)
-		.asRequired()
-		.withNullRepresentation("")
-		.withConverter(new BigDecimalConverter())
-		.bind(Balance::getBalance, Balance::setBalance);
-
+		LOGGER.info("dialog portfolio: {}", p);
 	}
 
 	@Override
-	protected void bind() throws ValidationException {
-		super.bind();
-		//find default account for exchange
-		//List<Account> accounts = accountRepo.findByUser(session.getUser());
-		List<Account> accounts = accountRepo.findAll();
-		Optional<Account> acc = accounts.stream().filter(a -> a.getExchange().equals(exchangeField.getValue())).findFirst();
-		LOGGER.info("exchange account: {}",acc);
-		Account a = acc.orElseGet(() -> {
-			Account newAc = new Account();
-			//newAc.setUser(session.getUser());
-			newAc.setExchange(exchangeField.getValue());
-			LOGGER.info("saving: {}",newAc);
-			accountRepo.save(newAc);
-			return newAc;
-		});
-		this.getEntity().setAccount(a);
-
+	protected EntityForm<Balance, Long> createEntityForm() {
+		return context.getBean(BalanceForm.class,this.entity,this.portfolio);
 	}
+
+
+
+	/*
+	 * @Override protected Balance createEntity() {
+	 * LOGGER.info("createEntity: {}",this.portfolio); Balance b =
+	 * super.createEntity(); if(portfolio!=null) b.setPortfolio(portfolio); return
+	 * b; }
+	 *
+	 *
+	 *
+	 * public BalanceDialog(Balance en) { super(en, Balance.class); }
+	 *
+	 * @PostConstruct public void PostConstruct() { super.postConstruct(balRepo); }
+	 *
+	 * ComboBox<Exchange> exchangeField;
+	 *
+	 * @SuppressWarnings("unchecked")
+	 *
+	 * @Override protected void setupForm() {
+	 *
+	 * formLayout.startHorizontalLayout();
+	 *
+	 * exchangeField = new ComboBox<>("Exchange");
+	 * exchangeField.setItemLabelGenerator(Exchange::getName);
+	 * exchangeField.setItems(context.getBean(HasNameDataProvider.class,exeRepo));
+	 * exchangeField.setWidth("250px"); formLayout.add(exchangeField);
+	 *
+	 * formLayout.endLayout(); formLayout.startHorizontalLayout();
+	 *
+	 * ComboBox<Currency> ass = new ComboBox<>("Currency");
+	 * ass.setItemLabelGenerator(c -> { return c.getName() +" ("+c.getKey()+")"; });
+	 * ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
+	 * ass.setWidth("250px"); formLayout.add(ass);
+	 *
+	 * TextField balance = new TextField("Balance"); formLayout.add(balance);
+	 *
+	 * formLayout.endLayout();
+	 *
+	 * binder.forField(exchangeField).asRequired().bind(b -> { return null; }, (b,e)
+	 * -> {
+	 *
+	 * } );
+	 * binder.forField(exchangeField).bind(Balance::getExchange,Balance::setExchange
+	 * ); binder.forField(ass).asRequired().bind(Balance::getCurrency,
+	 * Balance::setCurrency); binder.forField(balance) .asRequired()
+	 * .withNullRepresentation("") .withConverter(new BigDecimalConverter())
+	 * .bind(Balance::getBalance, Balance::setBalance);
+	 *
+	 * }
+	 *
+	 * @Override protected void bind() throws ValidationException { super.bind();
+	 * //find default account for exchange //List<Account> accounts =
+	 * accountRepo.findByUser(session.getUser()); List<Account> accounts =
+	 * accountRepo.findAll(); Optional<Account> acc = accounts.stream().filter(a ->
+	 * a.getExchange().equals(exchangeField.getValue())).findFirst();
+	 * LOGGER.info("exchange account: {}",acc); Account a = acc.orElseGet(() -> {
+	 * Account newAc = new Account(); //newAc.setUser(session.getUser());
+	 * newAc.setExchange(exchangeField.getValue()); LOGGER.info("saving: {}",newAc);
+	 * accountRepo.save(newAc); return newAc; }); this.getEntity().setAccount(a);
+	 *
+	 * }
+	 */
 
 }

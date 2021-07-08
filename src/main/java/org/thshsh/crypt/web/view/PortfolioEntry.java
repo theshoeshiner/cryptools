@@ -6,17 +6,15 @@ import java.math.RoundingMode;
 import org.thshsh.crypt.Currency;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.MarketRate;
+import org.thshsh.cryptman.Portfolio;
 
 public class PortfolioEntry {
 
 	BigDecimal balance;
 
-
-
+	Portfolio portfolio;
 	Currency currency;
-
 	Allocation allocation;
-
 	MarketRate rate;
 
 	BigDecimal targetReserve;
@@ -38,8 +36,9 @@ public class PortfolioEntry {
 
 	public PortfolioEntry() {}
 
-	public PortfolioEntry(BigDecimal balance, Currency currency,Allocation a,MarketRate rate) {
+	public PortfolioEntry(Portfolio portfolio,BigDecimal balance, Currency currency,Allocation a,MarketRate rate) {
 		super();
+		this.portfolio = portfolio;
 		this.balance = balance;
 		this.currency = currency;
 		this.allocation = a;

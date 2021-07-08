@@ -81,7 +81,7 @@ public class HistoryJob implements InterruptableJob {
 
 		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
 
-			PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
+			//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
 
 			Portfolio port = portRepo.findById(p.getId()).get();
 

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import javax.annotation.PostConstruct;
+
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -21,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.Portfolio;
@@ -48,9 +52,11 @@ import com.github.appreciated.apexcharts.config.subtitle.Align;
 import com.github.appreciated.apexcharts.config.xaxis.XAxisType;
 import com.github.appreciated.apexcharts.config.xaxis.builder.LabelsBuilder;
 import com.github.appreciated.apexcharts.helper.Series;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -65,7 +71,7 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Manage Portfolio")
 public class ManagePortfolioView  extends VerticalLayout implements HasUrlParameter<String> {
 
-public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(ManagePortfolioView.class);
 
 	public static final String ID_PARAM = "id";
 
@@ -89,6 +95,11 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	@Autowired
 	Scheduler scheduler;
 
+	@Autowired
+	PlatformTransactionManager transactionManager;
+
+	TransactionTemplate template;
+
 	Long entityId;
 	Portfolio entity;
 
@@ -100,13 +111,15 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	//VerticalLayout pages;
 	//Map<Tab, Component> tabsToPages;
 	//Tab main;
-
+	Tab chartTab;
 
 
 	static NumberFormat usdFormat = new DecimalFormat("$#,##0.00");
 
 	@Override
 	public void setParameter(BeforeEvent event,@OptionalParameter String parameter) {
+
+
 
 		this.setHeight("100%");
 
@@ -160,12 +173,15 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	    VerticalLayout funcLayout = createFunctionsTab();
 	    tabSheet.addTab(new Tab("Functions"), funcLayout);
 
+	    VerticalLayout settingsLayout = createSettingsTab();
+	    tabSheet.addTab(new Tab("Settings"), settingsLayout);
+
 	    //VerticalLayout chartsLayout = createChartsTab();
 	    //tabSheet.addTab(new Tab("Charts"), chartsLayout);
 
-	    ValueChart ex2 = new ValueChart();
-	    tabSheet.addTab(new Tab("Chart"), ex2);
-	    ex2.setVisible(true);
+	    ValueChart chartTabContent = new ValueChart();
+	    chartTab = tabSheet.addTab(new Tab("Chart"), chartTabContent);
+	    chartTabContent.setVisible(true);
 	    //ex2.addClassName("invisible");
 
 		/* tabsToPages = new HashMap<>();
@@ -194,6 +210,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 		outer.add(new AreaChartExample());
 		add(outer);*/
 
+	    UI.getCurrent().getPage().setTitle("Manage Portfolio: "+entity.getName());
+
 
 	    breadcrumbs.resetBreadcrumbs()
 	    .addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
@@ -201,12 +219,25 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	    ;
 	}
 
+	@PostConstruct
+	public void postConstruct() {
+		template = new TransactionTemplate(transactionManager);
+	}
+
+	protected void refreshChartTab() {
+		 ValueChart newChartTab = new ValueChart();
+		 //tabSheet.addTab(new Tab("Chart"), ex2);
+		 newChartTab.setVisible(true);
+		 tabSheet.replaceTab(chartTab, newChartTab);
+
+	}
+
 	protected void refreshMainTab() {
 		LOGGER.info("refreshMainTab visible: {}",mainTab.isVisible());
-		VerticalLayout mainLayout = createMainTab();
-		mainLayout.setVisible(this.mainLayout.isVisible());
-		tabSheet.replaceTab(mainTab, mainLayout);
-		this.mainLayout = mainLayout;
+		VerticalLayout newMainTab = createMainTab();
+		newMainTab.setVisible(this.mainLayout.isVisible());
+		tabSheet.replaceTab(mainTab, newMainTab);
+		this.mainLayout = newMainTab;
 
 		//pages.replace(this.mainLayout, mainLayout);
 		//tabsToPages.put(main, mainLayout);
@@ -259,6 +290,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(false);
 		layout.setPadding(false);
+		layout.setSpacing(false);
 		balancesList = appContext.getBean(PortfolioBalanceGrid.class,this);
 		balancesList.setHeight("100%");
 		layout.add(balancesList);
@@ -284,6 +316,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 		layout.setMargin(false);
 		layout.setPadding(false);
 		layout.setVisible(false);
+
+
 		Button runJob = new Button("Run History Job",click -> {
 			try {
 				scheduler.getJobDetail(JobKey.jobKey(""));
@@ -295,6 +329,17 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 			}
 		});
 		layout.add(runJob);
+
+		Button clearHistory = new Button("Clear History",click -> {
+			this.template.executeWithoutResult(action -> {
+				histRepo.deleteAllByPortfolio(entity);
+				refreshChartTab();
+			});
+
+		});
+		layout.add(clearHistory);
+
+
 		return layout;
 	}
 
@@ -303,6 +348,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 		layout.setVisible(false);
 
 
+		PortfolioSettingsForm sf = appContext.getBean(PortfolioSettingsForm.class,this.entity);
+		layout.add(sf);
 
 		return layout;
 	}
@@ -416,8 +463,8 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	                        .withEnabled(false)
 	                        .build())
 	                .withStroke(StrokeBuilder.get()
-	                		.withCurve(Curve.straight)
-	                		.withColors("var(--lumo-accent-color-1)"
+	                		.withCurve(Curve.smooth)
+	                		.withColors("var(--money-green)"
 	                				,"var(--lumo-accent-color-2)"
 	                				)
 	                		.withWidth(3d)
@@ -471,7 +518,7 @@ public static final Logger LOGGER = LoggerFactory.getLogger(EntityView.class);
 	                		.withDecimalsInFloat(0d)
 	                		.withTickAmount(10d)
 	                        .withMin(0d)
-	                        .withMax(15000d)
+	                        //.withMax(15000d)
 	                        .build()
 	                        ,YAxisBuilder.get()
 	                        	.withOpposite(true)

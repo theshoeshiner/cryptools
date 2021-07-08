@@ -1,35 +1,30 @@
 package org.thshsh.crypt.web.view;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.vaadin.entity.EntityForm;
 
-@SuppressWarnings("serial")
-@Component
-@Scope("prototype")
-public class ExchangeDialog extends org.thshsh.vaadin.entity.EntityDialog<Exchange,Long> {
+import com.vaadin.flow.component.textfield.TextField;
 
-	public ExchangeDialog(Exchange entity) {
-		super(ExchangeForm.class, entity);
-	}
+public class ExchangeForm extends EntityForm<Exchange,Long> {
 
-
-/*	@Autowired
+	@Autowired
 	ExchangeRepository repo;
-
-	public ExchangeDialog(Exchange en) {
-		super(en,Exchange.class);
+	
+	public ExchangeForm(Exchange entity) {
+		super(Exchange.class, entity);
 	}
 
-	@PostConstruct
-	public void postConstruct() {
-		super.postConstruct(repo);
+	@Override
+	protected JpaRepository<Exchange, Long> getRepository() {
+		return repo;
 	}
 
 	@Override
 	protected void setupForm() {
-
-
+		
 
 		TextField name = new TextField("Name");
 		binder
@@ -71,8 +66,13 @@ public class ExchangeDialog extends org.thshsh.vaadin.entity.EntityDialog<Exchan
 		formLayout.startHorizontalLayout();
 		formLayout.add(image);
 		formLayout.endLayout();
-*/
 
+		
+	}
 
+	@Override
+	protected Long getEntityId(Exchange e) {
+		return e.getId();
+	}
 
 }

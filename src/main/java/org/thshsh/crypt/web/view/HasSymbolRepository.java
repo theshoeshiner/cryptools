@@ -19,10 +19,10 @@ public interface HasSymbolRepository<T> extends HasNameRepository<T> {
 	//@Query("select t from #{#entityName} t where (lower(t.symbol) like %?1% or lower(t.name) like %?1%) and t.platformType in (?#{T(org.thshsh.crypt.PlatformType).blockchain},?#{T(org.thshsh.crypt.PlatformType).fiat} )")
 	public Page<T> findByKeyContainsIgnoreCaseOrNameContainsIgnoreCase(String sym,String name,Pageable p);
 
-	@Query("select t from #{#entityName} t where (lower(t.key) like %?1% or lower(t.name) like %?1%) and t.platformType <> ?#{T(org.thshsh.crypt.PlatformType).derivative} ")
+	@Query("select t from #{#entityName} t where ( lower(t.key) like %?1% or lower(t.name) like %?1% ) and ( t.platformType <> ?#{T(org.thshsh.crypt.PlatformType).derivative} or t.platformType is null)")
 	public Page<T> findByString(String name,Pageable p);
 
-	@Query("select count(t) from #{#entityName} t where (lower(t.key) like %?1% or lower(t.name) like %?1%) and t.platformType <> ?#{T(org.thshsh.crypt.PlatformType).derivative} ")
+	@Query("select count(t) from #{#entityName} t where ( lower(t.key) like %?1% or lower(t.name) like %?1% ) and ( t.platformType <> ?#{T(org.thshsh.crypt.PlatformType).derivative} or t.platformType is null)")
 	public Integer countByString(String name);
 
 	//@Query("select count(t) from #{#entityName} t where (lower(t.symbol) like %?1% or lower(t.name) like %?1%) and t.platformType in (?#{T(org.thshsh.crypt.PlatformType).blockchain},?#{T(org.thshsh.crypt.PlatformType).fiat} )")

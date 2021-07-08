@@ -37,7 +37,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioAllocationGrid extends EntityGrid<Allocation, Long> {
+public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioAllocationGrid.class);
 

@@ -291,3 +291,8 @@ animation: decrease 2s 0.5s infinite;
         transform:rotate(360deg);
     }
 }
+
+span.auto {
+	margin-right: 8px;
+    font-size: var(--lumo-font-size-xxs);
+}

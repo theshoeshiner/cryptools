@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.IdedEntity;
 import org.thshsh.crypt.web.view.PortfolioEntry;
