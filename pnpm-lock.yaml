@@ -4,6 +4,7 @@ dependencies:
   '@polymer/iron-icon': 3.0.1
   '@polymer/iron-list': 3.1.0
   '@polymer/polymer': 3.2.0
+  '@vaadin-component-factory/vcf-popup': 1.2.5
   '@vaadin-component-factory/vcf-toggle-button': 1.0.3
   '@vaadin/flow-frontend': 'link:target/flow-frontend'
   '@vaadin/form': 'link:target/flow-frontend/form'
@@ -1079,6 +1080,21 @@ packages:
     dev: true
     resolution:
       integrity: sha512-gHUHI6pJaANIO2r6WcbT7+WMgbL9GZooR4tWpuBOETpDIqFNxwaJluE+6rj6VGYe8k6OkfhbHz2Fkm8kl06Igw==
+  /@vaadin-component-factory/vcf-popup/1.2.5:
+    dependencies:
+      '@polymer/iron-icon': 3.0.1
+      '@polymer/iron-media-query': 3.0.1
+      '@polymer/polymer': 3.2.0
+      '@vaadin/vaadin-button': 2.4.0
+      '@vaadin/vaadin-element-mixin': 2.4.2
+      '@vaadin/vaadin-icons': 4.3.2
+      '@vaadin/vaadin-license-checker': 2.1.2
+      '@vaadin/vaadin-lumo-styles': 1.6.1
+      '@vaadin/vaadin-overlay': 3.5.1
+      '@vaadin/vaadin-themable-mixin': 1.6.2
+    dev: false
+    resolution:
+      integrity: sha512-W2LdIn7Zt8uyJ07ufczDZXMTRkStcxc+IAC93+aMXq5v8yHpaxX6h7lVqKfqbCcoVQbrQ6jykH0WbFzFQ9zAag==
   /@vaadin-component-factory/vcf-toggle-button/1.0.3:
     dependencies:
       '@polymer/polymer': 3.2.0
@@ -7671,6 +7687,7 @@ specifiers:
   '@polymer/iron-list': 3.1.0
   '@polymer/polymer': 3.2.0
   '@types/validator': 13.1.0
+  '@vaadin-component-factory/vcf-popup': 1.2.5
   '@vaadin-component-factory/vcf-toggle-button': 1.0.3
   '@vaadin/flow-frontend': ./target/flow-frontend
   '@vaadin/form': ./target/flow-frontend/form

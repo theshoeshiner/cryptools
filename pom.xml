@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.thshsh</groupId>
-	<artifactId>cryptax-web</artifactId>
+	<artifactId>cryptools</artifactId>
 	<name></name>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -24,7 +24,7 @@
 	</parent>
 
 	<repositories>
-		<!-- The order of definitions matters. Explicitly defining central here
+		<!-- The order of definitions matters. Explicitly defining central here 
 			to make sure it has the highest priority. -->
 
 		<!-- Main Maven repository -->
@@ -56,7 +56,7 @@
 	</repositories>
 
 	<pluginRepositories>
-		<!-- The order of definitions matters. Explicitly defining central here
+		<!-- The order of definitions matters. Explicitly defining central here 
 			to make sure it has the highest priority. -->
 		<pluginRepository>
 			<id>central</id>
@@ -107,7 +107,7 @@
 			<artifactId>sortable-layout</artifactId>
 			<version>0.5.0</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.sun.mail</groupId> <artifactId>javax.mail</artifactId>
+		<!-- <dependency> <groupId>com.sun.mail</groupId> <artifactId>javax.mail</artifactId> 
 			<version>${javax.mail.version}</version> </dependency> -->
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -126,7 +126,7 @@
 		<dependency>
 			<groupId>com.github.appreciated</groupId>
 			<artifactId>apexcharts</artifactId>
-			<version>2.0.0-beta12</version>
+			<version>2.0.0-beta12-thshsh</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.carnet.kasparscherrer</groupId>
@@ -151,9 +151,21 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.ilay</groupId>
+			<artifactId>ilay</artifactId>
+			<version>3.0-Final</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.vaadin.componentfactory</groupId>
 			<artifactId>togglebutton</artifactId>
 			<version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin.componentfactory</groupId>
+			<artifactId>popup</artifactId>
+			<version>2.2.4</version>
 		</dependency>
 
 		<dependency>
@@ -163,12 +175,19 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.thshsh</groupId>
+			<artifactId>commons-color</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+
+		</dependency>
+
+		<dependency>
 			<groupId>org.claspina</groupId>
 			<artifactId>confirm-dialog</artifactId>
 			<version>2.0.0</version>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.h2database</groupId> <artifactId>h2</artifactId>
+		<!-- <dependency> <groupId>com.h2database</groupId> <artifactId>h2</artifactId> 
 			</dependency> -->
 
 		<dependency>
@@ -255,6 +274,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.thshsh</groupId>
+			<artifactId>crypto-compare-client</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-imaging</artifactId>
+			<version>1.0-alpha2</version>
+		</dependency>
+
+		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
 			<version>1.7</version>
@@ -269,7 +300,7 @@
 		<dependency>
 			<groupId>org.thshsh</groupId>
 			<artifactId>commons-jpa</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -322,6 +353,11 @@
 
 
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<distributionManagement>
@@ -330,12 +366,13 @@
 	</distributionManagement>
 
 	<build>
+		<finalName>cryptools</finalName>
 		<defaultGoal>spring-boot:run</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<!-- Clean build and startup time for Vaadin apps sometimes may exceed
+				<!-- Clean build and startup time for Vaadin apps sometimes may exceed 
 					the default Spring Boot's 30sec timeout. -->
 				<configuration>
 					<wait>500</wait>
@@ -343,7 +380,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- Take care of synchronizing java dependencies and imports in package.json
+			<!-- Take care of synchronizing java dependencies and imports in package.json 
 				and main.js files. It also creates webpack.config.js if not exists yet. -->
 
 			<plugin>
@@ -403,6 +440,82 @@
 			</build>
 		</profile>
 
+		<profile>
+			<!-- Production mode is activated using -Pproduction -->
+			<id>local</id>
+			<properties>
+				<active.profile>local</active.profile>
+			</properties>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<configuration>
+									<wait>500</wait>
+									<maxAttempts>5</maxAttempts>
+									<mainClass>org.thshsh.crypt.web.SpringVaadinApplication</mainClass>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.vaadin</groupId>
+						<artifactId>vaadin-maven-plugin</artifactId>
+						<version>${vaadin.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>build-frontend</goal>
+								</goals>
+								<phase>compile</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+
+		<profile>
+			<id>test</id>
+			<properties>
+				<vaadin.productionMode>true</vaadin.productionMode>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<configuration>
+									<wait>500</wait>
+									<maxAttempts>5</maxAttempts>
+									<mainClass>org.thshsh.crypt.web.SpringVaadinApplication</mainClass>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.vaadin</groupId>
+						<artifactId>vaadin-maven-plugin</artifactId>
+						<version>${vaadin.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>build-frontend</goal>
+								</goals>
+								<phase>compile</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
 		<profile>
 			<!-- Production mode is activated using -Pproduction -->
