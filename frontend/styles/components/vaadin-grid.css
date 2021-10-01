@@ -4,12 +4,12 @@
 
 /* last column only shows on hover */
 
-:host(.button-column) tr td[last-column] ::slotted(*) {
+:host(.button-column) tr td.grid-buttons-column ::slotted(*) {
 	opacity:0;
 	transition: opacity 0.1s;
 }
 
-:host(.button-column) tr:hover td[last-column] ::slotted(*) {
+:host(.button-column) tr:hover td.grid-buttons-column ::slotted(*) {
 	opacity:1;
 }
 

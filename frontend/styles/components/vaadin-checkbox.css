@@ -1,3 +1,26 @@
 :host label:hover {
  	cursor:pointer; 
 }
+
+:host [part="label"] {
+   font-size: var(--lumo-font-size-s);
+   font-weight: 500;
+   color: var(--lumo-secondary-text-color);
+}
+
+/* This makes checkboxes more closely match textfields in forms */
+
+:host {
+	padding-top:var(--lumo-space-m);
+}
+
+:host label {
+	flex-direction:column-reverse;
+}
+
+:host [part="label"] {
+ 	line-height: 13px;
+ 	padding-bottom:1em;
+ 	margin-top:0px;
+ 
+}
