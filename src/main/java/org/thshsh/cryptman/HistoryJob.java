@@ -106,7 +106,7 @@ public class HistoryJob implements InterruptableJob {
 
 
 
-		if(history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
+		if(!p.getSettings().isAlertsDisabled() && history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
 			//fire alert
 
 			//PortfolioEntryHistory max = history.getMaxTriggerEntry();

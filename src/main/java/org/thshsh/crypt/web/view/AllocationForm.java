@@ -17,12 +17,16 @@ import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.data.binder.Binder.Binding;
 
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
+@CssImport("./styles/allocation-form.css")
 public class AllocationForm extends EntityForm<Allocation, Long> {
 
 	@Autowired
@@ -43,9 +47,9 @@ public class AllocationForm extends EntityForm<Allocation, Long> {
 	Binding<?,?> percentBinding;
 
 
-	public AllocationForm(Allocation entity) {
+	/*public AllocationForm(Allocation entity) {
 		super(Allocation.class, entity);
-	}
+	}*/
 
 	public AllocationForm(Allocation entity,Portfolio p,Currency c) {
 		super(Allocation.class, entity);
@@ -53,21 +57,40 @@ public class AllocationForm extends EntityForm<Allocation, Long> {
 		this.currency = c;
 	}
 
-	public AllocationForm(Portfolio p,Currency c) {
+	/*public AllocationForm(Portfolio p,Currency c) {
 		super(Allocation.class, null);
 		this.portfolio=p;
 		this.currency = c;
-	}
+	}*/
 
 	@Override
 	protected JpaRepository<Allocation, Long> getRepository() {
 		return alloRepo;
 	}
+	
+	protected String getColor() {
+		LOGGER.info("get color c: {} e: {}",this.currency,this.entity);
+		if(this.currency != null) return this.currency.getColorHex();
+		else if(this.entity.getCurrency() != null) return this.entity.getCurrency().getColorHex();
+		else return null;
+	}
 
 	@Override
 	protected void setupForm() {
+		
+		formLayout.setPadding(false);
+		
+		Span info = new Span(this.entity.getCurrency().getName());
+		info.addClassName("helper-text");
+		//
+		String color = getColor();
+		
+		if(color != null) {
+			info.getElement().getStyle().set("color", "#"+color);
+		}
+		formLayout.add(info);
 
-		formLayout.startHorizontalLayout();
+		HorizontalLayout row = formLayout.startHorizontalLayout();
 
 		/*exchangeField = new ComboBox<>("Exchange");
 		exchangeField.setItemLabelGenerator(Exchange::getName);
@@ -75,21 +98,25 @@ public class AllocationForm extends EntityForm<Allocation, Long> {
 		exchangeField.setWidth("250px");
 		formLayout.add(exchangeField);*/
 
+		//row.setAlignItems(Alignment.CENTER);
+		
+		
 		BigDecimalField percent = new BigDecimalField("Percent");
 		formLayout.add(percent);
 
-		Checkbox undef = new Checkbox("Undefined");
+		Checkbox undef = new Checkbox("Auto Allocate");
 		formLayout.add(undef);
 		undef.addValueChangeListener(change -> {
 			if(change.getValue()) {
-				percent.setEnabled(false);
+				percent.setReadOnly(true);
 				percent.setValue(null);
 				percentBinding.setAsRequiredEnabled(false);
 			}
 			else {
-				percent.setEnabled(true);
+				percent.setReadOnly(false);
 			}
 		});
+		
 
 		formLayout.endLayout();
 		formLayout.startHorizontalLayout();
@@ -138,7 +165,9 @@ public class AllocationForm extends EntityForm<Allocation, Long> {
 
 		.bind(Allocation::getPercent, Allocation::setPercent);
 
-
+		if(entity.isUndefined()) {
+			undef.setValue(true);
+		}
 	}
 
 

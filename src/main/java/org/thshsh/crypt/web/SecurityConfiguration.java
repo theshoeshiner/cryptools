@@ -1,18 +1,30 @@
 package org.thshsh.crypt.web;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.thshsh.crypt.UserRepository;
 
 /**
@@ -32,12 +44,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private static final String LOGIN_FAILURE_URL = "/login?error";
 	private static final String LOGIN_URL = "/login";
 	private static final String LOGOUT_SUCCESS_URL = "/dashboard";
+	
+	public static final String ERROR_CREDENTIALS = "Username and Password do not match";
+	public static final String ERROR_USER = "Username not found";
+	
+	public static BidiMap<String,String> ERROR_MESSAGES = new DualHashBidiMap<>();
+	static {
+		//BidiMap<String, String> 
+		
+		ERROR_MESSAGES.put(ERROR_USER, Integer.toHexString(ERROR_USER.hashCode()));
+		ERROR_MESSAGES.put(ERROR_CREDENTIALS, Integer.toHexString(ERROR_CREDENTIALS.hashCode()));
+		//Hex.encodeHexString(((Integer)ERROR_USER.hashCode()).byteValue());
+		
+	}
 
 	@Autowired
 	UserRepository userRepo;
 
 	@Autowired
 	AppConfiguration appConfig;
+	
+	@Autowired
+	CryptUserDetailsService userDetailsService;
 
 	/**
 	 * Require login to access internal pages and configure login form.
@@ -56,23 +84,49 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				// Register our CustomRequestCache, that saves unauthorized access attempts, so
 				// the user is redirected after login.
 				.requestCache().requestCache(new CustomRequestCache())
-
 				// Restrict access to our application.
-				.and().authorizeRequests()
+				.and()
+				.authorizeRequests()
+					.antMatchers("/login").permitAll()
+					//.anyRequest().authenticated() 
 
-				// Allow all flow internal requests.
-				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+					// Allow all flow internal requests.
+					.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
 				// Allow all requests by logged in users.
-				.anyRequest().authenticated()
+					.anyRequest().authenticated()
 
 				// Configure the login page.
-				.and().formLogin().loginPage(LOGIN_URL).permitAll()
-				.loginProcessingUrl(LOGIN_PROCESSING_URL)
-				.failureUrl(LOGIN_FAILURE_URL)
-				.defaultSuccessUrl("/dashboard",true)
+				.and()
+				.formLogin()
+					.loginPage(LOGIN_URL).permitAll()
+				
+					.loginProcessingUrl(LOGIN_PROCESSING_URL)
+					.failureUrl(LOGIN_FAILURE_URL)
+					.failureHandler((req,res,exc) -> {
+					LOGGER.error("login failure",exc);
+						if(exc instanceof BadCredentialsException) {
+							res.sendRedirect(res.encodeRedirectURL("/login?error="+ERROR_MESSAGES.get(ERROR_CREDENTIALS)));
+						}
+						else {
+							res.sendRedirect(res.encodeRedirectURL("/login?error="+ERROR_MESSAGES.get(ERROR_USER)));
+						}
 
-				//.successForwardUrl("/dashboard")
+					})
+					//.defaultSuccessUrl("/dashboard",false)
+					.successHandler(new SavedRequestAwareAuthenticationSuccessHandler() {
+					    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+					            Authentication authentication) throws IOException, ServletException {
+					    	LOGGER.info("onAuthenticationSuccess");
+					    	
+					        // run custom logics upon successful login
+					        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+					        String username = userDetails.getUsername();
+					        System.out.println("The user " + username + " has logged in.");
+					         
+					        super.onAuthenticationSuccess(request, response, authentication);
+					    }                      
+					})
 
 				// Configure logout
 				.and()
@@ -98,12 +152,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
-		return new CryptUserDetailsService(userRepo);
+		return userDetailsService;
 	}
 
 	@Bean
 	public DaoAuthenticationProvider authProvider() {
 	    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+	    authProvider.setHideUserNotFoundExceptions(false);
 	    authProvider.setUserDetailsService(userDetailsService());
 	    authProvider.setPasswordEncoder(encoder());
 	    return authProvider;

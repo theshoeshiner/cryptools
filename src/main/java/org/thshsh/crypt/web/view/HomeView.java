@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -23,6 +24,7 @@ public class HomeView extends VerticalLayout {
 	public static final String PATH = "dashboard";
 	public static final String TITLE = "Dashboard";
 
+	public static final VaadinIcon ICON = VaadinIcon.DASHBOARD;
 
 	@Autowired
 	Breadcrumbs breadcrumbs;

@@ -63,6 +63,11 @@ public class MarketRate extends IdedEntity {
 		this.timestamp = timestamp;
 	}
 
+	@Override
+	public String toString() {
+		return "[currency=" + currency + ", rate=" + rate + ", timestamp=" + timestamp + "]";
+	}
+
 
 
 }

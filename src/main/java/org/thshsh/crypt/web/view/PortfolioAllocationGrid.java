@@ -63,6 +63,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 		this.showButtonColumn = true;
 		this.view = v;
 		this.showCount=false;
+		this.showFilter=false;
 
 	}
 
@@ -90,7 +91,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 	@Override
 	public Dialog createDialog(Allocation entity) {
 		LOGGER.info("createDialog: {}", this.portfolio);
-		Dialog cd = (Dialog) appCtx.getBean(entityView, entity, portfolio);
+		Dialog cd = (Dialog) appCtx.getBean(entityView, entity, portfolio,null);
 		return cd;
 	}
 

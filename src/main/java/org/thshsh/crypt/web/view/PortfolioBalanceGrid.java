@@ -52,18 +52,19 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 		this.showButtonColumn = true;
 		this.view = v;
 		this.showCount = false;
-
+		this.showFilter=false;
+		this.createText="Add";
 
 	}
 
 	@PostConstruct
 	public void postConstruct() {
 		super.postConstruct();
-		this.filter.setVisible(false);
 		//this.header.setMargin(false);
 		this.setPadding(false);
 		this.setSpacing(false);
 		this.setMargin(false);
+		
 	}
 
 	@Override

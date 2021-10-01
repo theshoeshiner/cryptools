@@ -48,6 +48,12 @@ public class MarketRateService {
 		usdRate = new MarketRate(usd, BigDecimal.ONE, null);
 	}
 
+	/**
+	 * Looks for market rates that are less than one hour old
+	 * @param currencies
+	 * @return
+	 */
+	
 	public Map<Currency,MarketRate> getUpToDateMarketRates(Collection<Currency> currencies){
 
 		currencies = new ArrayList<>(currencies);

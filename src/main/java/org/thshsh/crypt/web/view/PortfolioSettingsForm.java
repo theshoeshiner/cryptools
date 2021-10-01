@@ -18,6 +18,7 @@ import org.thshsh.cryptman.PortfolioRepository;
 import org.thshsh.cryptman.PortfolioSettings;
 import org.thshsh.vaadin.entity.EntityForm;
 
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -71,18 +72,22 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 				);
 
 
-		TextField balance = new TextField("Minimum Adjust");
+		TextField balance = new TextField("Minimum Adjustment");
 		binder.forField(balance)
 		.asRequired()
 		.withNullRepresentation("")
 		.withConverter(new BigDecimalConverter())
 		.bind(PortfolioSettings::getMinimumAdjust, PortfolioSettings::setMinimumAdjust);
+		
+		Checkbox alerts = new Checkbox("Disable Alerts");
+		binder.forField(alerts).bind(PortfolioSettings::getAlertsDisabled,PortfolioSettings::setAlertsDisabled);
 
 
 		formLayout.startVerticalLayout();
 		//formLayout.add(nameField);
 		formLayout.add(ass);
 		formLayout.add(balance);
+		formLayout.add(alerts);
 		formLayout.endLayout();
 
 

@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.thshsh.cryptman.CryptmanModel;
 
@@ -16,13 +17,13 @@ import org.thshsh.cryptman.CryptmanModel;
  *
  */
 @Entity
-@Table(schema = CryptModel.SCHEMA, name = "currency")
+@Table(schema = CryptModel.SCHEMA, name = "currency",uniqueConstraints = @UniqueConstraint(columnNames = "symbol"))
 public class Currency extends IdedEntity implements HasImage  {
 
 	@Column
 	String name;
 
-	@Column(name = "symbol")
+	@Column(name = "symbol",unique = true) 
 	String key;
 
 	@Column
@@ -34,8 +35,11 @@ public class Currency extends IdedEntity implements HasImage  {
 	@Column
 	String imageUrl;
 
-	//@Column
-	//Boolean fiat;
+	@Column
+	String colorHex;
+	
+	@Column
+	Boolean active;
 
 	@Column
 	@Enumerated(EnumType.STRING)
@@ -43,6 +47,10 @@ public class Currency extends IdedEntity implements HasImage  {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	Currency builtOn;
+	
+	@Column
+	@Enumerated(EnumType.ORDINAL)
+	Grade grade;
 
 	/*
 	 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - platformtypes: [null, blockchain, derivative, token]
@@ -110,8 +118,21 @@ public class Currency extends IdedEntity implements HasImage  {
 		this.builtOn = builtOn;
 	}
 
+	public Boolean getActive() {
+		return active;
+	}
 
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
 
+	public String getColorHex() {
+		return colorHex;
+	}
+
+	public void setColorHex(String colorHex) {
+		this.colorHex = colorHex;
+	}
 
 	public String getImageUrl() {
 		return imageUrl;
@@ -131,6 +152,16 @@ public class Currency extends IdedEntity implements HasImage  {
 		this.platformType = platformType;
 	}
 
+	
+	
+
+	public Grade getGrade() {
+		return grade;
+	}
+
+	public void setGrade(Grade grade) {
+		this.grade = grade;
+	}
 
 	@Override
 	public String toString() {

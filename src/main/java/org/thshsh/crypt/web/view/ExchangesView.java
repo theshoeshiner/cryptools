@@ -22,8 +22,6 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Exchanges")
 public class ExchangesView extends EntityGridView<Exchange, Long> {
 
-	//@Autowired
-	//ExchangeRepository exchangeRepo;
 
 	public ExchangesView() {
 		super(ExchangesGrid.class);
@@ -36,59 +34,6 @@ public class ExchangesView extends EntityGridView<Exchange, Long> {
 		//this.entitiesList.showButtonColumn = true;
 	}
 
-	/*@Override
-	public PagingAndSortingRepository<Exchange, Long> getRepository() {
-		return exchangeRepo;
-	}
-
-	@Override
-	public String getEntityName(Exchange t) {
-		return t.getName();
-	}
-
-	@Override
-	public void setupColumns(Grid<Exchange> grid) {
-
-		grid.addComponentColumn(e -> {
-			if(e.getImageUrl()!=null) {
-				String imageUrl = "/image/"+e.getImageUrl();
-				Image image = new Image(imageUrl,"Icon");
-				image.setWidth(ManagePortfolioView.ICON_SIZE);
-				image.setHeight(ManagePortfolioView.ICON_SIZE);
-				return image;
-			}
-			else return new Span();
-
-		})
-		.setWidth("48px")
-		.setFlexGrow(0)
-		.setSortable(false)
-		.setClassNameGenerator(pe -> {
-			return "icon";
-		})
-		;
-
-		 grid.addColumn(Exchange::getName)
-		 .setHeader("Name")
-		 .setSortProperty("name")
-		 ;
-
-		 grid.addColumn(Exchange::getKey)
-		 .setHeader("Key")
-		 .setSortProperty("key")
-		 ;
-
-	}
-
-	@Override
-	public void setFilter(String text) {
-
-	}
-
-	@Override
-	public void clearFilter() {
-
-	}*/
 
 
 

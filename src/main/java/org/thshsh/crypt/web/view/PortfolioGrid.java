@@ -6,17 +6,14 @@ import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.AppSession;
-import org.thshsh.crypt.web.CryptUserPrincipal;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioRepository;
 import org.thshsh.vaadin.ChunkRequest;
+import org.thshsh.vaadin.RouterLinkRenderer;
 import org.thshsh.vaadin.UIUtils;
-import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.UI;
@@ -44,6 +41,8 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 	public PortfolioGrid() {
 		super(Portfolio.class, PortfolioDialog.class, FilterMode.None);
 		this.showButtonColumn=true;
+		this.showCount=false;
+		this.showFilter=false;
 	}
 
 
@@ -73,10 +72,18 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 
 	@Override
 	public void setupColumns(Grid<Portfolio> grid) {
-		grid.addColumn(Portfolio::getName).setHeader("Name");
+		
+		//grid.addColumn(Portfolio::getName).setHeader("Name");
 
+		grid.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, Portfolio::getName, Portfolio::getId))
+		//.setHeader("Name")
+		;
+		
+		/*grid.getHeaderRows().forEach(hr -> {
+			
+		});*/
 	}
-
+	
 	@Override
 	public void addButtonColumn(HorizontalLayout buttons, Portfolio e) {
 		super.addButtonColumn(buttons, e);

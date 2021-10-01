@@ -6,8 +6,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -35,11 +38,11 @@ import org.thshsh.vaadin.BasicTabSheet;
 
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;
-import com.github.appreciated.apexcharts.config.Fill;
 import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
 import com.github.appreciated.apexcharts.config.builder.DataLabelsBuilder;
 import com.github.appreciated.apexcharts.config.builder.FillBuilder;
 import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
+import com.github.appreciated.apexcharts.config.builder.PlotOptionsBuilder;
 import com.github.appreciated.apexcharts.config.builder.StrokeBuilder;
 import com.github.appreciated.apexcharts.config.builder.TitleSubtitleBuilder;
 import com.github.appreciated.apexcharts.config.builder.XAxisBuilder;
@@ -47,24 +50,22 @@ import com.github.appreciated.apexcharts.config.builder.YAxisBuilder;
 import com.github.appreciated.apexcharts.config.chart.Type;
 import com.github.appreciated.apexcharts.config.chart.builder.ZoomBuilder;
 import com.github.appreciated.apexcharts.config.legend.HorizontalAlign;
+import com.github.appreciated.apexcharts.config.plotoptions.Treemap;
 import com.github.appreciated.apexcharts.config.stroke.Curve;
 import com.github.appreciated.apexcharts.config.subtitle.Align;
 import com.github.appreciated.apexcharts.config.xaxis.XAxisType;
 import com.github.appreciated.apexcharts.config.xaxis.builder.LabelsBuilder;
 import com.github.appreciated.apexcharts.helper.Series;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 
@@ -168,8 +169,8 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    tabSheet.addTab(new Tab("Balances"), balancesLayout);
 
 	   // Tab allTab = new Tab("Allocations");
-	    VerticalLayout allLayout = createAllocationsTab();
-	    tabSheet.addTab(new Tab("Allocations"), allLayout);
+	    //VerticalLayout allLayout = createAllocationsTab();
+	    //tabSheet.addTab(new Tab("Allocations"), allLayout);
 
 	    //Tab funcTab = new Tab("Functions");
 	    VerticalLayout funcLayout = createFunctionsTab();
@@ -184,6 +185,15 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    ValueChart chartTabContent = new ValueChart();
 	    chartTab = tabSheet.addTab(new Tab("Value"), chartTabContent);
 	    chartTabContent.setVisible(true);
+	    
+
+		/*   TreeMapChart balanceChart = new TreeMapChart();
+		Tab balanceTab = tabSheet.addTab(new Tab("Balance"), balanceChart);
+		balanceChart.setVisible(true);*/
+	    
+	    DistributionChart distroChart = new DistributionChart();
+	    Tab distro = tabSheet.addTab(new Tab("Distribution"), distroChart);
+	    distroChart.setVisible(true);
 	    //ex2.addClassName("invisible");
 
 		/* tabsToPages = new HashMap<>();
@@ -362,7 +372,9 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		VerticalLayout vl = new VerticalLayout();
 		vl.setSizeFull();
 
-		List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
+		ZonedDateTime zdt = ZonedDateTime.now().minusDays(30);
+		 
+		List<PortfolioHistory> ph = histRepo.findByPortfolioAndTimestampGreaterThanOrderByTimestampAsc(entity, zdt);
 
 		List<BigDecimal> valuePerHour = new ArrayList<>();
 		ph.forEach(hist -> {
@@ -416,7 +428,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	public class ValueChart extends Div {
 	    public ValueChart() {
 
-	    	List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
+	    	ZonedDateTime zdt = ZonedDateTime.now().minusDays(30);
+			 
+			List<PortfolioHistory> ph = histRepo.findByPortfolioAndTimestampGreaterThanOrderByTimestampAsc(entity, zdt);
+	    	//List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
 
 	    	List<String> dates = new ArrayList<>();
 			List<BigInteger> valuePerHour = new ArrayList<>();
@@ -469,17 +484,18 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	                        		.withFormat("MMM dd")
 	                        		.build())
 	                        .build())
-	                .withYaxis(YAxisBuilder.get()
-	                		.withDecimalsInFloat(0d)
-	                		.withTickAmount(10d)
-	                        .withMin(0d)
-	                        .build()
-	                        ,YAxisBuilder.get()
-	                        	.withOpposite(true)
-	                        	.withMax(1)
-	                        	.withMin(0)
-	                        	.withDecimalsInFloat(2d)
-	                        	.build()
+	                .withYaxis(
+	                		YAxisBuilder.get()
+		                		.withDecimalsInFloat(0d)
+		                		.withTickAmount(10d)
+		                        .withMin(0d)
+		                        .build()
+					/* ,YAxisBuilder.get()
+					 	.withOpposite(true)
+					 	.withMax(1)
+					 	.withMin(0)
+					 	.withDecimalsInFloat(2d)
+					 	.build()*/
 	                        )
 	                .withLegend(LegendBuilder.get().withHorizontalAlign(HorizontalAlign.left).build())
 	                .build();
@@ -492,17 +508,210 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	}
 
 	
+	public class DistributionChart extends Div {
+		
+		 public DistributionChart() {
+
+		    	//List<PortfolioEntry> entries = entriesList.entries;
+		    	//List<BigInteger> values = new ArrayList<BigInteger>();
+		    	//List<String> labels = new ArrayList<String>();
+		    	List<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
+		    	
+		    	List<Double> series = new ArrayList<>();
+		    	List<String> labels = new ArrayList<>();
+		    	List<String> colors = new ArrayList<>();
+		    	
+		    	List<PortfolioEntry> sorted = new ArrayList<PortfolioEntry>(entriesList.entries);
+		    	Collections.sort(sorted, (pe0,pe1) -> {
+		    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
+		    	});
+		    	
+		    	sorted.forEach(entry -> {
+		    		//values.add(entry.valueReserve.toBigInteger());
+		    		//labels.add(entry.getCurrency().getKey());
+		    		Map<String,Object> m = new HashMap<>();
+		    		m.put("x", entry.getCurrency().getKey());
+		    		m.put("y", entry.valueReserve.toBigInteger());
+		    		data.add(m);
+		    		labels.add(entry.getCurrency().getName());
+		    		series.add(entry.valueReserve.toBigInteger().doubleValue());
+		    		colors.add("#"+entry.getCurrency().getColorHex());
+		    	});
+		    	
+		    	LOGGER.info("colors: {}",colors);
+		    	
+		    /*	List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
+
+		    	List<String> dates = new ArrayList<>();
+				List<BigInteger> valuePerHour = new ArrayList<>();
+				List<BigDecimal> thresh = new ArrayList<>();
+
+
+				ph.forEach(hist -> {
+				//				valuePerHour.add(hist.getValue());
+					if(hist.getValue()!=null) {
+						valuePerHour.add(hist.getValue().toBigInteger());
+						//LOGGER.info("zone: {}",ZoneId.systemDefault());
+						thresh.add(hist.getMaxToTriggerPercent());
+						dates.add(dtf.format(hist.getTimestamp().withZoneSameInstant(ZoneId.systemDefault())));
+						//dates.add(dtf.format(hist.getTimestamp()));
+						LOGGER.info("adding: {}",hist);
+
+					}
+
+				});
+
+				LOGGER.info("valuePerHour: {}",valuePerHour);
+	*/
+				//List<BigInteger> values = valuePerHour;
+				//List<String> labels = dates;
+
+				//LOGGER.info("labels: {}",labels);
+
+
+		        ApexCharts chart = ApexChartsBuilder.get()
+		        		
+		                .withChart(ChartBuilder.get()
+		                		
+		                        .withType(Type.pie)
+		                        //.withZoom(ZoomBuilder.get()
+		                                //.withEnabled(false)
+		                                //.build()
+		                          //)
+		                        .build())
+		                
+		                .withLabels(labels.toArray(new String[0]))
+		                
+						/*.withDataLabels(DataLabelsBuilder.get()
+						        .withEnabled(false)
+						        .build())
+						*/	                
+		                
+						/*.withStroke(StrokeBuilder.get()
+								.withCurve(Curve.smooth)
+								.withColors("var(--money-green)"
+										,"var(--lumo-accent-color-2)"
+										)
+								.withWidth(3d)
+								.build()
+								)*/
+						/*.withFill(FillBuilder.get().withOpacity(0d).build())*/
+		                
+		                
+		                //.withSeries(new Series<>("STOCK ABC", 10.0, 41.0, 35.0, 51.0, 49.0, 62.0, 69.0, 91.0, 148.0))
+		                //.withSeries(new Series<>("USD Value", values.toArray()),
+		                //new Series<>("Alert Threshold", thresh.toArray()))
+		                .withSeries(
+		                		//new Series<>(data.toArray())
+		                		series.toArray(new Double[0])
+		                		)
+		                .withColors(colors.toArray(new String[] {})) 
+		                
+		                //.withPlotOptions(PlotOptionsBuilder
+		                	//	.get()
+		                		//.withTreemap(new Treemap(true, false))
+		                		//.build())
+		                
+		                //SeriesBuilder.get().withData(data)
+		                
+		                //.withDataLabels(DataLabelsBuilder.get().withFormatter(formatter).build())
+		                //.withDataLabels(DataLabelsBuilder.get().withFormatter("'dd/MM/yyyy hh:mm'").build())
+		                //.withDataLabels(DataLabelsBuilder.get().withFormatter(DatetimeFormatterBuilder.get().build()).build())
+
+		                //DataLabelsBuilder.get().withFormatter(DatetimeFormatterBuilder.get().build())
+		                //.withTitle(TitleSubtitleBuilder.get()
+		                        //.withText("Fundamental Analysis of Stocks")
+		                        //.withAlign(Align.left).build())
+//		                .withSubtitle(TitleSubtitleBuilder.get()
+		//                        .withText("Price Movements")
+		  //                      .withAlign(Align.left).build())
+		                //.withLabels(IntStream.range(1, 10).boxed().map(day -> LocalDate.of(2000, 1, day).toString()).toArray(String[]::new))
+		                //.withStroke(StrokeBuilder.get().withColors("var(--lumo-accent-color-1)").build())
+		              // .withLabels(labels.toArray(new String[labels.size()]))
+
+						/*.withXaxis(XAxisBuilder.get()
+						        .withType(XAxisType.datetime)
+						
+						        //.withTickAmount(new BigDecimal(50))
+						        .withLabels(LabelsBuilder
+						        		.get()
+						        		//.withFormat("MMM dd hh:mm TT")
+						        		.withFormat("MMM dd")
+						        		//.withDateTimeUTC(false)
+						        		.build())
+						
+						        //.withLabels(LabelsBuilder.get()
+						
+						        		//.withDatetimeFormatter(DatetimeFormatterBuilder.get()
+						        				//.withDay("dd")
+						        				//.withMonth("MM")
+						        				//.withHour("hh")
+						        				//.withMinute("mm")
+						        				//.build())
+						
+						        		//.build())
+						        .build())
+						.withYaxis(YAxisBuilder.get()
+						        //.withOpposite(true)
+						//	                		.withAxisTicks(null)
+						
+								.withDecimalsInFloat(0d)
+								.withTickAmount(10d)
+						        .withMin(0d)
+						        //.withMax(15000d)
+						        .build()
+						        ,YAxisBuilder.get()
+						        	.withOpposite(true)
+						        	.withMax(1)
+						        	.withMin(0)
+						        	.withDecimalsInFloat(2d)
+						        	//.withLabels(com.github.appreciated.apexcharts.config.yaxis.builder.LabelsBuilder.get().withFormatter(percentFormatter).build())
+						        	.build()
+						        )
+						// .withYaxis(YAxisBuilder.get().withOpposite(true).build())
+						//.withYaxis(YAxisBuilder.get().)
+						.withLegend(LegendBuilder.get().withHorizontalAlign(HorizontalAlign.left).build())*/
+
+		                //.withMarkers(MarkersBuilder.get().withSize(20d, 20d).build())
+
+		                //.withPlotOptions(PlotOptions)
+
+
+		                .build();
+		        add(chart);
+		        chart.setHeight("600px");
+		        setWidth("100% ");
+		        setHeight("800px");
+
+		    }
+		
+	}
+	
 	public class TreeMapChart extends Div {
 	    public TreeMapChart() {
 
-	    	List<PortfolioEntry> entries = entriesList.entries;
-	    	List<BigInteger> values = new ArrayList<BigInteger>();
-	    	List<String> labels = new ArrayList<String>();
+	    	//List<PortfolioEntry> entries = entriesList.entries;
+	    	//List<BigInteger> values = new ArrayList<BigInteger>();
+	    	//List<String> labels = new ArrayList<String>();
+	    	List<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
+	    	List<String> colors = new ArrayList<>();
 	    	
-	    	entries.forEach(entry -> {
-	    		values.add(entry.valueReserve.toBigInteger());
-	    		labels.add(entry.getCurrency().getKey());
+	    	List<PortfolioEntry> sorted = new ArrayList<PortfolioEntry>(entriesList.entries);
+	    	Collections.sort(sorted, (pe0,pe1) -> {
+	    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
 	    	});
+	    	
+	    	sorted.forEach(entry -> {
+	    		//values.add(entry.valueReserve.toBigInteger());
+	    		//labels.add(entry.getCurrency().getKey());
+	    		Map<String,Object> m = new HashMap<>();
+	    		m.put("x", entry.getCurrency().getKey());
+	    		m.put("y", entry.valueReserve.toBigInteger());
+	    		data.add(m);
+	    		colors.add("#"+entry.getCurrency().getColorHex());
+	    	});
+	    	
+	    	LOGGER.info("colors: {}",colors);
 	    	
 	    /*	List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
 
@@ -533,18 +742,22 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 			//LOGGER.info("labels: {}",labels);
 
 
-	        ApexCharts areaChart = ApexChartsBuilder.get()
-
+	        ApexCharts chart = ApexChartsBuilder.get()
+	        		
 	                .withChart(ChartBuilder.get()
-	                        .withType(Type.line)
+	                		
+	                        .withType(Type.treemap)
 	                        //.withZoom(ZoomBuilder.get()
 	                                //.withEnabled(false)
 	                                //.build()
 	                          //)
 	                        .build())
-	                .withDataLabels(DataLabelsBuilder.get()
-	                        .withEnabled(false)
-	                        .build())
+	                
+					/*.withDataLabels(DataLabelsBuilder.get()
+					        .withEnabled(false)
+					        .build())
+					*/	                
+	                
 					/*.withStroke(StrokeBuilder.get()
 							.withCurve(Curve.smooth)
 							.withColors("var(--money-green)"
@@ -559,7 +772,15 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	                //.withSeries(new Series<>("STOCK ABC", 10.0, 41.0, 35.0, 51.0, 49.0, 62.0, 69.0, 91.0, 148.0))
 	                //.withSeries(new Series<>("USD Value", values.toArray()),
 	                //new Series<>("Alert Threshold", thresh.toArray()))
-	                .withSeries(new Series<>(values.toArray()))
+	                .withSeries(
+	                		new Series<>(data.toArray())
+	                		)
+	                .withColors(colors.toArray(new String[] {})) 
+	                .withPlotOptions(PlotOptionsBuilder
+	                		.get()
+	                		.withTreemap(new Treemap(true, false))
+	                		.build())
+	                //SeriesBuilder.get().withData(data)
 	                
 	                //.withDataLabels(DataLabelsBuilder.get().withFormatter(formatter).build())
 	                //.withDataLabels(DataLabelsBuilder.get().withFormatter("'dd/MM/yyyy hh:mm'").build())
@@ -574,7 +795,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	  //                      .withAlign(Align.left).build())
 	                //.withLabels(IntStream.range(1, 10).boxed().map(day -> LocalDate.of(2000, 1, day).toString()).toArray(String[]::new))
 	                //.withStroke(StrokeBuilder.get().withColors("var(--lumo-accent-color-1)").build())
-	               .withLabels(labels.toArray(new String[labels.size()]))
+	              // .withLabels(labels.toArray(new String[labels.size()]))
 
 					/*.withXaxis(XAxisBuilder.get()
 					        .withType(XAxisType.datetime)
@@ -625,10 +846,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 
 	                .build();
-	        add(areaChart);
-	        areaChart.setHeight("600px");
+	        add(chart);
+	        chart.setHeight("400px");
 	        setWidth("100%");
-	        setHeight("600px");
+	        setHeight("400px");
 
 	    }
 	}

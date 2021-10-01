@@ -1,5 +1,7 @@
 package org.thshsh.crypt.web.view;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -17,6 +19,8 @@ import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValidationResult;
 
 @SuppressWarnings("serial")
 @Component
@@ -85,10 +89,19 @@ public class BalanceForm extends EntityForm<Balance, Long> {
 
 			}
 			);*/
-		binder.forField(exchangeField).bind(Balance::getExchange,Balance::setExchange);
+		binder.forField(exchangeField).asRequired().bind(Balance::getExchange,Balance::setExchange);
 		binder.forField(ass).asRequired().bind(Balance::getCurrency, Balance::setCurrency);
 		binder.forField(balance)
 		.asRequired()
+				/*.withValidator((s,c) -> {
+					try {
+						new BigDecimal(s);
+						return ValidationResult.ok();
+					}
+					catch (NumberFormatException e) {
+						return ValidationResult.error("Invalid Format");
+					}
+				})*/
 		.withNullRepresentation("")
 		.withConverter(new BigDecimalConverter())
 		.bind(Balance::getBalance, Balance::setBalance);

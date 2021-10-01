@@ -1,19 +1,33 @@
 package org.thshsh.crypt.web.view;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math.stat.inference.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.UserRepository;
+import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
+import org.thshsh.crypt.web.SecurityConfiguration;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
+import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -24,7 +38,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.data.validator.RegexpValidator;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -87,14 +100,20 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	    add(login);
 	}*/
+	
+	@Autowired
+	CryptoCompare cryptoCompare;
 
 	@Autowired
 	UserService userService;
 
 	@Autowired
 	UserRepository userRepo;
+	
+	@Autowired
+	ApplicationContext context;
 
-	TextField emailField;
+	//TextField emailField;
 	//VerticalLayout formLayout;
 	User registerUser;
 
@@ -114,6 +133,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	 VerticalLayout	formLayout;
 	 Element ironForm;
 
+	 
 	//VerticalLayout formsLayout;
 
 	public LoginView() {
@@ -221,6 +241,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		showLogin();
 	}
 
+	TextField emailLoginField;
 	Boolean login = true;
 
 	public static class LoginForm extends VerticalLayout {
@@ -275,15 +296,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 			passwordField.getElement().setAttribute("name", "password"); //
 			passwordField.setWidthFull();
 
-			/*userNameField = new TextField();
 
-			userNameField.setPlaceholder("Username (Optional)");
-			userNameField.setWidthFull();
-
-			confirmPasswordField = new PasswordField();
-			confirmPasswordField.setPlaceholder("Confirm Password");
-			confirmPasswordField.setWidthFull();
-			*/
 
 			HorizontalLayout buttons = new HorizontalLayout();
 			buttons.setWidthFull();
@@ -294,17 +307,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 			loginButton.setId("submitbutton"); //
 			buttons.add(loginButton);
 
-			/*backButton = new Button("Back");
-			buttons.add(backButton);
-			backButton.addClickListener(click -> {
-				showLogin();
-			});
-
-			register = new Button("Register");
-			buttons.add(register);
-			register.addClickListener(click -> {
-				showRegister();
-			});*/
 
 			this.add(emailField, passwordField, buttons);
 			//registerForm.add(names,userNameField,passwordField,confirmPasswordField,buttons);
@@ -339,6 +341,17 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	protected void showLogin() {
 		login = true;
+		
+		/*Button button = new Button("Push Me");
+		button.setId("push-me");
+		Popup popup = new Popup();
+		popup.setFor(button.getId().orElse(null));
+		Div text = new Div();
+		text.setText("element 1");
+		Div text2 = new Div();
+		text2.setText("element 2");
+		popup.add(text, text2);
+		add(button, popup);*/
 
 		if(registerLayout!=null) this.remove(registerLayout);
 
@@ -363,10 +376,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		names.setFlexGrow(1, firstName, lastName);*/
 
 
-		emailField = new TextField();
-		emailField.setPlaceholder("Email / Username");
-		emailField.getElement().setAttribute("name", "username"); //
-		emailField.setWidthFull();
+		emailLoginField = new TextField();
+		emailLoginField.setPlaceholder("Email / Username");
+		emailLoginField.getElement().setAttribute("name", "username"); //
+		emailLoginField.setWidthFull();
 
 
 		PasswordField passwordField = new PasswordField();
@@ -407,7 +420,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 			showRegisterForm();
 		});
 
-		formLayout.add(emailField,  passwordField,  buttons);
+		formLayout.add(emailLoginField,  passwordField,  buttons);
 
 
 		UI.getCurrent().getPage().executeJs(
@@ -473,9 +486,16 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		passwordField.setWidthFull();
 
 		TextField userNameField = new TextField();
-
 		userNameField.setPlaceholder("Username (Optional)");
 		userNameField.setWidthFull();
+		
+		TextField emailField = new TextField();
+		emailField.setPlaceholder("Email");
+		emailField.setWidthFull();
+		
+		TextField apiKey = new TextField();
+		apiKey.setPlaceholder("CryptoCompare API Key");
+		apiKey.setWidthFull();
 
 		PasswordField confirmPasswordField = new PasswordField();
 		confirmPasswordField.setPlaceholder("Confirm Password");
@@ -502,41 +522,70 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		Button register = new Button("Register");
 		buttons.add(register);
 		register.addClickListener(click -> {
-
-			try {
-				LOGGER.info("write bean");
-				binder.writeBean(registerUser);
-				try {
-					userService.registerUser(registerUser);
-					message.setText("Registration Successful");
-					message.setVisible(true);
-
-					showLogin();
-					LOGGER.info("registration success");
-					//UI.getCurrent().getPage().reload();
-
-				} catch (UserExistsException e) {
-
-				}
-			} catch (ValidationException e) {
-				LOGGER.error("validation error", e);
-			}
+			registerUser();
+			
 
 		});
+		
+		HorizontalLayout apikeyrow = new HorizontalLayout();
+		apikeyrow.setWidthFull();
+		apikeyrow.add(apiKey);
+		
+		
+		Button button = new Button("What's This?");
+		button.addClassName("helper-text");
+		button.addClassName("api-help");
+		button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		button.setId("api-help-button");
+		Popup popup = new Popup();
+		popup.setFor(button.getId().orElse(null));
+		Div text = new Div();
+		text.addClassName("helper-text");
+		text.addClassName("popup");
+		text.setWidth("250px");
+		Html h = new Html("<span>Price information for currencies is retrieved from the CryptoCompare API. Due to usage limits an API Key is necessary for each User. Keys can be obtained by following <a href='https://www.cryptocompare.com/coins/guides/how-to-use-our-api/' target='_blank'>this guide</a>.</span>");
+		//text.setText("Price data for portfolios is retrieved from the CryptoCompare API. An API Key can be obtained by following this guide.");
+		text.add(h);
+		/*Div text2 = new Div();
+		text2.setText("element 2");*/
+		popup.add(text);
+		
+		apikeyrow.add(button, popup);
+		
+		/*Button why = new Button("What's This?");
+		why.setId("why");
+		why.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		why.addClassName("helper-text");
+		apikeyrow.add(why);
+		
+		Popup popup = new Popup();
+		popup.addPopupOpenChangedEventListener(change -> {
+			LOGGER.info("change: {}",change.isOpened());
+		});
+		popup.setFor("why");
+		Div exp = new Div();
+		Span span = new Span("Price data for portfolios is retrieved from the CryptoCompare API. An API Key can be obtained by following this guide.");
+		exp.add(span);
+		popup.add(exp);
+		add(popup);*/
+		//https://www.cryptocompare.com/coins/guides/how-to-use-our-api/
 
-		registerLayout.add(names, userNameField, passwordField, confirmPasswordField, buttons);
+		registerLayout.add(names, userNameField,emailField,apikeyrow, passwordField, confirmPasswordField, buttons);
 		//registerForm.add(names,userNameField,passwordField,confirmPasswordField,buttons);
 
 		//formsLayout.getElement().appendChild(formLayout.getElement());
 
 
-		binder.forField(emailField).asRequired().withValidator(new EmailValidator("Invalid Email Address"))
+		binder.forField(emailField)
+		.asRequired()
+		.withValidator(new EmailValidator("Invalid Email Address"))
 		.withValidator((s, c) -> {
 			if (userRepo.findByEmail(s).isPresent())
 				return ValidationResult.error("Email Address already in use");
 			else
 				return ValidationResult.ok();
-		}).bind(User::getEmail, User::setEmail);
+		})
+		.bind(User::getEmail, User::setEmail);
 
 		binder.forField(userNameField).withNullRepresentation("")
 		.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++")).withValidator((s, c) -> {
@@ -547,6 +596,26 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		}).bind(User::getUserName, User::setUserName);
 
 		binder.forField(firstName).withNullRepresentation("").bind(User::getFirstName, User::setFirstName);
+		
+		binder
+		.forField(apiKey)
+		.asRequired()
+		.withNullRepresentation("")
+		.withValidator((s,c) -> {
+			
+			if(s.length()==64 && StringUtils.isAlphanumeric(s)) {
+				return ValidationResult.ok();
+			}
+			else {
+				return ValidationResult.error("Invalid API Key");
+			}
+			//CryptoCompare cc = context.getBean(CryptoCompare.class,s,null);
+			//CryptoCompare cc = new CryptoCompare(s);
+			//Map<String,BigDecimal> price = cc.getCurrentFiatPrice(Collections.singleton("BTC"));
+			//LOGGER.info("get price: {}",price);
+			
+		})
+		.bind(User::getApiKey, User::setApiKey);
 
 		binder.forField(lastName).withNullRepresentation("").bind(User::getLastName, User::setLastName);
 
@@ -561,6 +630,29 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		this.add(registerLayout);
 
 
+	}
+	
+	protected void registerUser() {
+		
+		try {
+			LOGGER.info("write bean");
+			binder.writeBean(registerUser);
+			try {
+				userService.registerUser(registerUser);
+				message.setText("Registration Successful. Check email for confirmation link.");
+				message.setVisible(true);
+
+				showLogin();
+				LOGGER.info("registration success");
+				//UI.getCurrent().getPage().reload();
+
+			} catch (UserExistsException e) {
+
+			}
+		} catch (ValidationException e) {
+			LOGGER.error("validation error", e);
+		}
+		
 	}
 
 	/*protected void showRegister() {
@@ -654,10 +746,39 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	public void beforeEnter(BeforeEnterEvent event) {
 		LOGGER.info("beforeEnter");
 		//login.setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
-		if (event.getLocation().getQueryParameters().getParameters().containsKey("error")) {
+		Map<String,List<String>> params = event.getLocation().getQueryParameters().getParameters();
+		if (params.containsKey("error")) {
+			
+			String hash = params.get("error").get(0);
+			
+			String msg = SecurityConfiguration.ERROR_MESSAGES.inverseBidiMap().get(hash);
+			
 			LOGGER.info("setting error");
-			emailField.setErrorMessage("Username and Password do not match");
-			emailField.setInvalid(true);
+			emailLoginField.setErrorMessage(msg);
+			emailLoginField.setInvalid(true);
+			//message.setText("Username and Password do not match");
+			//emailField.setValue("error");
+		}
+		if (params.containsKey("confirm")) {
+			
+			String token = params.get("confirm").get(0);
+			userRepo.findByConfirmToken(token).ifPresent(u -> {
+				
+				u.setConfirmed(true);
+				userRepo.save(u);
+				
+				
+				
+			});
+			
+			message.setText("Account confirmed. Login below.");
+			message.setVisible(true);
+			
+			//String msg = SecurityConfiguration.ERROR_MESSAGES.inverseBidiMap().get(hash);
+			
+			//LOGGER.info("setting error");
+			//emailLoginField.setErrorMessage(msg);
+			//emailLoginField.setInvalid(true);
 			//message.setText("Username and Password do not match");
 			//emailField.setValue("error");
 		}

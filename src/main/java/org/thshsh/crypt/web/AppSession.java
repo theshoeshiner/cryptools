@@ -52,6 +52,8 @@ public class AppSession {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			LOGGER.info("Authentication: {}",authentication);
 			LOGGER.info("Authentication: {}",authentication.getPrincipal());
+			CryptUserPrincipal p = (CryptUserPrincipal) authentication.getPrincipal();
+			user = p.getUser();
 		}
 		else {
 			user = userRepo.findByUserNameIgnoreCase(appConfig.username).orElseThrow(() -> new ApplicationException("No user configured"));

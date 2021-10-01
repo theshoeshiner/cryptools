@@ -1,22 +1,22 @@
 package org.thshsh.cryptman;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.IdedEntity;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "allocation")
 public class Allocation extends IdedEntity {
+	
+	public static final Logger LOGGER = LoggerFactory.getLogger(Allocation.class);
 
 	//protected static MathContext CONTEXT = new MathContext(4);
 
@@ -57,6 +57,7 @@ public class Allocation extends IdedEntity {
 	}
 
 	public Boolean isUndefined() {
+		LOGGER.info("isUndefined: {}",this);
 		if(undefined != null) return undefined;
 		else return percent == null;
 	}
@@ -80,7 +81,7 @@ public class Allocation extends IdedEntity {
 
 	@Override
 	public String toString() {
-		return "[portfolio=" + portfolio + ", currency=" + currency + ", percent=" + percent + "]";
+		return "[id=" + id + ", currency=" + currency + ", percent=" + percent + "]";
 	}
 
 	/*public static String getPercentString(BigDecimal bd) {

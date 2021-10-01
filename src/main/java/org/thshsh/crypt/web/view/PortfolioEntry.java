@@ -3,12 +3,16 @@ package org.thshsh.crypt.web.view;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.Currency;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.MarketRate;
 import org.thshsh.cryptman.Portfolio;
 
 public class PortfolioEntry {
+	
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioEntry.class);
 
 	BigDecimal balance;
 
@@ -84,7 +88,15 @@ public class PortfolioEntry {
 	public void setTargetReserve(BigDecimal target) {
 		this.targetReserve = target;
 		this.setAdjustReserve(this.targetReserve.subtract(this.valueReserve));
-		this.adjust = this.adjustReserve.divide(rate.getRate(),RoundingMode.HALF_EVEN);
+		LOGGER.info("rate: {}",rate);
+		
+		if(rate.getRate().compareTo(BigDecimal.ZERO) == 0) {
+			this.adjust = null;
+		}
+		else {
+			this.adjust = this.adjustReserve.divide(rate.getRate(),RoundingMode.HALF_EVEN);
+		}
+		
 	}
 
 	public BigDecimal getValueReserve() {

@@ -105,17 +105,28 @@ public class ManagePortfolioService {
 		LOGGER.info("{} / {} = {}", remainder,remainderCount,remainderPer);
 		//remainderAllocation.setPercent(remainderPer);
 
+		
+		
 		entryMap.forEach(( currency,entry) -> {
-			if(entry.getAllocation() == null) {
-				Allocation a = new Allocation(remainderPer);
-				a.setUndefined(true);
-				a.setCurrency(currency);
-				a.setPortfolio(portfolio);
-				entry.setAllocation(a);
+			
+			if(entry.getAllocation() == null || entry.getAllocation().getPercent() == null) {
+				//Allocation a = new Allocation(remainderPer);
+				Allocation temp = new Allocation();
+				temp.setPercent(remainderPer);
+				temp.setUndefined(true);
+				temp.setCurrency(currency);
+				temp.setPortfolio(portfolio);
+				if(entry.getAllocation()!=null)temp.setId(entry.getAllocation().getId());
+				entry.setAllocation(temp);
+				
 			}
-			else if(entry.getAllocation().getPercent() == null) {
-				entry.getAllocation().setPercent(remainderPer);
-			}
+			//else if(entry.getAllocation().getPercent() == null) {
+				//temp.setUndefined(true);
+				//temp.setPercent(remainderPer);
+				
+			//	temp.setId(entry.getAllocation().getId());
+			//}
+			
 		});
 
 

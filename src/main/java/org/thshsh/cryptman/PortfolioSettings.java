@@ -16,6 +16,9 @@ public class PortfolioSettings {
 
 	@Column(columnDefinition = "decimal")
 	BigDecimal minimumAdjust;
+	
+	@Column()
+	Boolean alertsDisabled;
 
 	public Currency getReserve() {
 		return reserve;
@@ -33,6 +36,19 @@ public class PortfolioSettings {
 		this.minimumAdjust = alertMinimumThreshold;
 	}
 
+	public Boolean getAlertsDisabled() {
+		return alertsDisabled;
+	}
+	
+	public Boolean isAlertsDisabled() {
+		return Boolean.TRUE.equals(alertsDisabled);
+	}
 
+	public void setAlertsDisabled(Boolean alertsDisabled) {
+		this.alertsDisabled = alertsDisabled;
+	}
+
+
+	
 
 }

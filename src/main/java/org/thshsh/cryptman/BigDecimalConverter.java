@@ -17,10 +17,12 @@ public class BigDecimalConverter implements Converter<String,BigDecimal> {
 	public Result<BigDecimal> convertToModel(String value, ValueContext context) {
 		try {
 			if(value == null) return Result.ok(null);
+			value = value.replaceAll(",", "");
 			return Result.ok(new BigDecimal(value));
 		}
 		catch (NumberFormatException e) {
-			throw new IllegalArgumentException(e);
+			return Result.error("Invalid Format");
+			//throw new IllegalArgumentException(e);
 		}
 	}
 

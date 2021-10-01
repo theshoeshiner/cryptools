@@ -14,10 +14,12 @@ import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.view.AboutView;
 import org.thshsh.crypt.web.view.Breadcrumbs;
+import org.thshsh.crypt.web.view.CurrenciesView;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
 import org.thshsh.crypt.web.view.PortfoliosView;
+import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
 
 import com.vaadin.flow.component.Component;
@@ -35,7 +37,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.dom.ThemeList;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.spring.annotation.UIScope;
 
@@ -48,11 +49,14 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport("./styles/menu.css")
 @CssImport("./styles/vaadin-grid.css")
 @CssImport("./styles/link.css")
+@CssImport("./styles/login.css")
 @CssImport(value = "./styles/components/vaadin-grid.css",themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/vaadin-checkbox.css",themeFor = "vaadin-checkbox")
 @CssImport(value = "./styles/components/vaadin-button.css",themeFor = "vaadin-button")
 @CssImport(value = "./styles/components/vaadin-textfield.css",themeFor = "vaadin-textfield")
 @CssImport(value = "./styles/components/vaadin-textfield.css",themeFor = "vaadin-text-field")
+@CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup")
+@CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup-overlay")
 @UIScope
 public class MainLayout extends AppLayout {
 
@@ -69,10 +73,13 @@ public class MainLayout extends AppLayout {
     @Autowired
     AppSession appSession;
 
-    @Autowired
-    Breadcrumbs breadcrumbs;
+    //@Autowired
+    //Breadcrumbs breadcrumbs;
     //String themeVariant = Material.LIGHT;
 
+    @Autowired
+    Navbar navbar;
+    
     public MainLayout() {
 
     	LOGGER.info("MainLayout()");
@@ -83,14 +90,14 @@ public class MainLayout extends AppLayout {
     public void postConstruct() {
     	setPrimarySection(Section.DRAWER);
 
-        VerticalLayout navbar = new VerticalLayout();
+        //VerticalLayout navbar = new VerticalLayout();
 
-        navbar.add(createHeaderContent());
+       // navbar.add(createHeaderContent());
 
         //Breadcrumbs bc = new Breadcrumbs();
         //HorizontalLayout test = new HorizontalLayout();
         //test.add(new Span("Home"),new Span("/"),new Span("Here"));
-        navbar.add(breadcrumbs);
+        //navbar.add(breadcrumbs);
 
         addToNavbar(true, navbar);
 
@@ -261,10 +268,14 @@ public class MainLayout extends AppLayout {
 
     	//items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
+    	items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
+    	
     	items.add(createMenuItem(VaadinIcon.INSTITUTION.create(),"Exchanges", ExchangesView.class));
 
-    	items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
-
+    	
+    	
+    	items.add(createMenuItem(VaadinIcon.MONEY.create(),"Currencies", CurrenciesView.class));
+ 
 		/*Tab home = createTab("Home", HomeView.class);
 		Tab browse = createTab("Browser", MetaDataBrowser.class);
 		Tab about = createTab("About", AboutView.class);
@@ -272,7 +283,9 @@ public class MainLayout extends AppLayout {
 		Tab spon = createTab("Sponsors", SponsorsView.class);
 		Tab load = createTab(LoadTestView.PAGE_TITLE, LoadTestView.class);*/
 
+    	//TestingView
 
+    	items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
 
     	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
     	items.add(about);
@@ -320,7 +333,9 @@ public class MainLayout extends AppLayout {
     protected void afterNavigation() {
         super.afterNavigation();
        // getTabForComponent(getContent()).ifPresent(menu::setSelectedTab);
-        viewTitle.setText(getCurrentPageTitle());
+        //viewTitle.setText(getCurrentPageTitle());
+        navbar.setTitle(getCurrentPageTitle());
+        
     }
 
     private Optional<Tab> getTabForComponent(Component component) {
@@ -329,7 +344,8 @@ public class MainLayout extends AppLayout {
     }
 
     private String getCurrentPageTitle() {
-        return getContent().getClass().getAnnotation(PageTitle.class).value();
+    	return "";
+        //return getContent().getClass().getAnnotation(PageTitle.class).value();
     }
 
     //TODO figure out a way to register this instance as a UIScoped bean

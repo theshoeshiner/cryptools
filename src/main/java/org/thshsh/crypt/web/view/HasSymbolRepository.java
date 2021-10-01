@@ -11,6 +11,7 @@ public interface HasSymbolRepository<T> extends HasNameRepository<T> {
 
 	public Integer countByNameOrSymbolContainsIgnoreCase(String name);*/
 
+	public T findByKeyIgnoreCase(String key);
 
 	public Page<T> findByKeyContainsIgnoreCase(String name,Pageable p);
 

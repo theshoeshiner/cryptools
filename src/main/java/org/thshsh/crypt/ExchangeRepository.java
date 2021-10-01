@@ -6,4 +6,6 @@ import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface ExchangeRepository extends BaseRepository<Exchange, Long>, HasNameRepository<Exchange>, ExampleFilterRepository<Exchange, Long> {
 
+	
+	
 }

@@ -5,39 +5,38 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.ExchangeRepository;
 import org.thshsh.crypt.web.UiComponents;
-import org.thshsh.cryptman.Balance;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
+@SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
+public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 
 
 	@Autowired
-	ExchangeRepository repo;
+	CurrencyRepository repo;
 
-	public ExchangesGrid() {
-		super(Exchange.class, null, FilterMode.Example);
+	public CurrenciesGrid() {
+		super(Currency.class, null, FilterMode.Example);
 		this.showButtonColumn=true;
 	}
 
 	@Override
-	public PagingAndSortingRepository<Exchange, Long> getRepository() {
+	public PagingAndSortingRepository<Currency, Long> getRepository() {
 		return repo;
 	}
 
 	@Override
-	public void setupColumns(Grid<Exchange> grid) {
+	public void setupColumns(Grid<Currency> grid) {
 
 		Column<?> col = grid.addComponentColumn(entry -> {
 			if(entry.getImageUrl()!=null) {
@@ -52,7 +51,7 @@ public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 		});
 		UiComponents.iconColumn(col);
 
-		Column<?> eName = grid.addColumn(Exchange::getName)
+		Column<?> eName = grid.addColumn(Currency::getName)
 		.setHeader("Name")
 		.setSortProperty("name")
 		.setSortable(true)
@@ -61,21 +60,52 @@ public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 		;
 		UiComponents.iconLabelColumn(eName);
 
-
-		grid.addColumn(Exchange::getGrade).setHeader("Grade")
-		.setWidth("200px")
+		grid
+		.addColumn(Currency::getKey)
+		.setHeader("Symbol")
+		.setWidth("125px")
+		.setFlexGrow(0)
+		;
+		
+		
+		grid
+		.addColumn(Currency::getActive)
+		.setWidth("125px")
+		.setFlexGrow(0)
+		.setHeader("Active");
+		
+		grid.addColumn(Currency::getGrade).setHeader("Grade")
+		.setWidth("125px")
 		.setSortable(true)
 		.setSortProperty("grade")
 		.setFlexGrow(0);
 		
-		grid.addColumn((e) -> {
+		grid.addColumn(Currency::getPlatformType).setHeader("Platform")
+		.setWidth("200px")
+		.setFlexGrow(0);
+		
+		grid.addComponentColumn(c -> {
+			Anchor a = new Anchor("https://www.cryptocompare.com/coins/"+c.getKey(),"https://www.cryptocompare.com/coins/"+c.getKey());
+			return a;
+		})
+		.setFlexGrow(1)
+		.setHeader("Link");
+		
+
+		
+		
+	
+		
+		//grid.addColumn(FunctionUtils.nestedValue(Currency::getBuiltOn, Currency::getName)).setHeader("Built On");
+		
+		/*grid.addColumn((e) -> {
 			return "";
 		})
-		;
+		;*/
 	}
 
 	@Override
-	public void addButtonColumn(HorizontalLayout buttons, Exchange e) {
+	public void addButtonColumn(HorizontalLayout buttons, Currency e) {
 		super.addButtonColumn(buttons, e);
 
 		/*Button manageButton = new Button(VaadinIcon.FOLDER_OPEN.create());
@@ -92,14 +122,11 @@ public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 	}*/
 
 	@Override
-	public String getEntityName(Exchange t) {
+	public String getEntityName(Currency t) {
 		return t.getName();
 	}
 
-	@Override
-	public Long getEntityId(Exchange entity) {
-		return entity.getId();
-	}
+	
 
 	@Override
 	public void setFilter(String text) {

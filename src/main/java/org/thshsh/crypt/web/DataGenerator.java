@@ -1,16 +1,23 @@
 package org.thshsh.crypt.web;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +25,21 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.thshsh.color.AbstractColor;
+import org.thshsh.color.ColorSpaceConverter;
+import org.thshsh.color.ColorUtils;
+import org.thshsh.color.LchColor;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.PlatformType;
 import org.thshsh.crypt.UserRepository;
 import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.cryptocompare.ExchangePairs;
+import org.thshsh.crypt.cryptocompare.ExchangesCurrencyPairs;
 import org.thshsh.crypt.serv.UserService;
 
 @Component
@@ -75,24 +89,187 @@ public class DataGenerator {
 
 		template = new TransactionTemplate(transactionManager);
 
+		//CompletableFuture<?> future = CompletableFuture.runAsync(() -> {}, executor);
+		//future.complete(null);
+		
+		
 		if(!appConfig.getProductionMode()) {
-			executor.execute(this::passwords);
+		
+			 CompletableFuture.runAsync(this::resetDevPasswords, executor);
+			//future = future.thenRunAsync(this::resetDevPasswords);
+			//executor.execute(this::resetDevPasswords);
+			
+			//executor.execute(this::checkForLocalImages);
+			
+			/*future = CompletableFuture
+			.runAsync(this::checkForLocalImages, executor)
+			.thenRunAsync(this::getColors, executor);*/
 		}
+		else {
+			
+		}
+		
+		CompletableFuture<?> future = CompletableFuture.runAsync(() -> {}, executor);
 
-		if(appConfig.getCryptoCompareSync()) {
+		if(appConfig.syncExchanges) {
+			future = future.thenRunAsync(this::syncExchanges,executor);
+		}
+		
+		if(appConfig.syncCoins) {
+			future = future.thenRunAsync(this::syncCurrencies,executor);
+		}
+		
+		if(appConfig.syncGrades) {
+			future = future.thenRunAsync(this::syncGrades,executor);
+		}
+		
+		if(appConfig.syncImages) {
+			future = future
+					.thenRunAsync(this::checkForLocalImages, executor)
+					.thenRunAsync(this::getColors, executor);
+		}
+		
+		//if(appConfig.getCryptoCompareSync()) {
+			
+			
+			
 
-			executor.execute(this::exchanges);
-
-
-			CompletableFuture
+			//if(images != null) {
+				/*future
+				.thenRunAsync(this::updateCurrencies, executor)
+				.thenRunAsync(this::fiat, executor);*/
+			//}
+			/*CompletableFuture
 				.runAsync(this::currencies, executor)
-				.thenRunAsync(this::fiat, executor);
+				.thenRunAsync(this::fiat, executor);*/
+		//}
+		
+		
 
-		}
+	}
+	
+	protected void checkForLocalImages() {
+		
+		template.executeWithoutResult(action -> {
+			
+			currencyRepo.findAll().forEach(cur -> {
+				if(cur.getImageUrl() == null) {
+					String checkName = cur.getKey().toLowerCase()+".png";
+					if(imageService.checkForImage(checkName)) {
+						cur.setImageUrl(checkName);
+					}
+				}
+			});
+			
+		});
+	}
+	
+	protected void getColors() {
+
+			List<Currency> save = new ArrayList<>();
+			
+			ColorSpaceConverter csc = new ColorSpaceConverter();
+			currencyRepo.findAll().forEach(cur -> {
+				
+				if(Thread.currentThread().isInterrupted()) return;
+				
+				template.executeWithoutResult(action -> {
+				
+				
+					
+				if(StringUtils.isNotBlank(cur.getColorHex())
+				//&& !cur.getColorHex().equals("000000")		
+				) return;
+				
+				//LOGGER.info("checking image for: {}",cur.getKey());
+				try {
+					LOGGER.info("image: {}",cur.getImageUrl());
+					InputStream image = imageService.getImage(cur);
+					
+					if(image == null) return;
+					
+					LOGGER.info("checking image for: {} = {}",cur.getKey(),cur.getColorHex());
+					
+					BufferedImage bi = null;
+					try {
+						bi = Imaging.getBufferedImage(image);
+					}
+					catch(Exception iae) {
+						//LOGGER.error("",iae);
+						image = imageService.getImage(cur);
+						try {
+							bi = ImageIO.read(image);
+						} 
+						catch (Exception e) {
+							//LOGGER.error("",e);
+						}
+					}
+					
+					if(bi == null) {
+						LOGGER.error("Could not load image");
+						return;
+						//throw new IllegalStateException("Could not load image");
+					}
+					
+		
+					List<AbstractColor> toAvg = new ArrayList<>();
+					for(int x=0;x<bi.getWidth();x++) {
+						for(int y=0;y<bi.getHeight();y++) {
+							int color = bi.getRGB(x, y);
+							
+							LchColor lch = new LchColor(csc.InttoLCH(color));
+							//CieLabColor c = new CieLabColor(csc.InttoLAB(color));
+								/*if(cur.getKey().equalsIgnoreCase("usd")) {
+									LOGGER.info("color: {}",lch); 
+								}*/
+							if(lch.getL()<90 && lch.getL() > 10) {
+								
+								if(lch.getC() > 10) {
+								//LOGGER.info("color: {}",lch);
+									toAvg.add(lch);
+								}
+							}
+							
+							
+						}
+					}
+					
+					if(toAvg.size()>0) {
+						LchColor average = (LchColor) ColorUtils.averageColors(toAvg);
+						LOGGER.info("average: {}",average); 
+						int[] rgb = csc.LABtoRGB(csc.LCHtoLAB(average.getComponentsPrimitive()));
+						byte[] rbgb = new byte[] {(byte) rgb[0],(byte) rgb[1],(byte) rgb[2]};
+						LOGGER.info("rbg: {}",new Object[] {rgb}); 
+						String hex = Hex.encodeHexString(rbgb);
+						LOGGER.info("hex: {}",hex);
+						cur.setColorHex(hex);
+						save.add(cur);
+						currencyRepo.save(cur);
+					}
+					else {
+						LOGGER.info("NO COLORS TO AVERAGE");
+						cur.setColorHex("000000");
+						save.add(cur);
+						currencyRepo.save(cur);
+					}
+					
+				} catch (Exception e) {
+					LOGGER.error("",e);
+				} 
+					
+				
+					
+				//}
+				
+			});
+			
+		});
+			
+			LOGGER.info("Done with all colors");
 
 	}
 
-	protected void fiat() {
+	protected void updateFiats() {
 
 		template.executeWithoutResult(action -> {
 
@@ -113,24 +290,38 @@ public class DataGenerator {
 		});
 	}
 
-	protected void currency(Coin coin) {
+	protected void updateCurrency(Coin coin) {
+		
+		LOGGER.info("updateCurrency coin: {}",coin);
 
 		template.executeWithoutResult(action -> {
 
-			Currency c = currMap.get(coin.getId());
-			if(c == null) c = new Currency(null, null, coin.getId());
-			c.setName(coin.getName());
-			c.setKey(coin.getSymbol());
+			Currency currency = currMap.get(coin.getId());
+			if(currency == null) currency = new Currency(null, null, coin.getId());
+			currency.setName(coin.getName());
+			currency.setKey(coin.getSymbol());
+			
+			LOGGER.info("Coin: {}",coin);
+			LOGGER.info("supply: {}",coin.getCirculatingSupply());
+			LOGGER.info("rating: {}",coin.getRating());
+					
+			
+			if((coin.getCirculatingSupply()!= null && coin.getCirculatingSupply().compareTo(BigDecimal.ZERO) > 0) || coin.hasRating()) {
+				currency.setActive(true);
+			}
+			else {
+				currency.setActive(false);
+			}
 
 			if(coin.getBuiltOn()!=null) {
 				Currency b = currencyRepo.findByKey(coin.getBuiltOn());
-				c.setBuiltOn(b);
+				currency.setBuiltOn(b);
 			}
-			c.setPlatformType(coin.getPlatformType()==null?null:PlatformType.valueOf(coin.getPlatformType()));
+			currency.setPlatformType(coin.getPlatformType()==null?null:PlatformType.valueOf(coin.getPlatformType()));
 
 
 			try {
-				imageService.syncImage(c, coin.getImageUrl());
+				imageService.syncImage(currency, coin.getImageUrl());
 
 			}
 			catch (IOException ioe) {
@@ -157,26 +348,85 @@ public class DataGenerator {
 				}
 			}*/
 
-			currencyRepo.save(c);
+			currencyRepo.save(currency);
 
 		});
 
 	}
 
-	protected void currencies() {
+	protected void syncCurrencies() {
+		
+		LOGGER.info("updateCurrencies");
 
 		currMap = currencyRepo.findByRemoteIdNotNull().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
 
 		Collection<Coin> coins = compare.getCoins();
+		LOGGER.info("coins: {}",coins.size());
 		coins.forEach(coin -> {
-			currency(coin);
+			updateCurrency(coin);
 		});
 
+
+	}
+	
+	protected void syncGrades() {
+		
+		LOGGER.info("updateGrades");
+		
+		ExchangesCurrencyPairs response = compare.getExchangeCurrencyPairs(false);
+		Map<String,ExchangePairs> map = response.getExchangeNamePairsMap();
+		
+		//LOGGER.info("map: {}",map.size());
+			
+		List<Currency> currencies = currencyRepo.findAll();
+		Map<String,Currency> keyMap = currencies.stream().collect(Collectors.toMap(c -> {
+			return c.getKey().toLowerCase();
+		}, Function.identity()));
+
+		map.forEach((name,pairs) -> {
+			
+			template.executeWithoutResult(action -> {
+			
+				//LOGGER.info("exchange: {}",name);
+				Exchange e = exchangeRepo.findByRemoteName(name);
+					
+				if(e != null && e.getGrade() != null) {
+					//LOGGER.info("update pairs for: {} with grade: {}",e,e.getGrade());
+					pairs.getPairsMap().forEach((currencyKey,otherPairs) -> {
+						//LOGGER.info("currencyKey: {}",currencyKey);
+						//Currency curr = currencyRepo.findByKeyIgnoreCase(currencyKey);
+						Currency curr = keyMap.get(currencyKey.toLowerCase());
+						//LOGGER.info("curr: {}",curr);
+						if(curr != null && (curr.getGrade() == null || curr.getGrade().compareTo(e.getGrade())>0 )) {
+							//LOGGER.info("Update grade for {} to {}",curr,e.getGrade());
+							curr.setGrade(e.getGrade());
+							currencyRepo.save(curr);
+						}
+						
+					});
+				}
+				//}
+				
+				
+				
+			});
+			
+
+		});
+		/*currMap = currencyRepo.findByRemoteIdNotNull().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
+		
+		Collection<Coin> coins = compare.getCoins();
+		LOGGER.info("coins: {}",coins.size());
+		coins.forEach(coin -> {
+			updateCurrency(coin);
+		});*/
 
 
 	}
 
-	protected void passwords() {
+	protected void resetDevPasswords() {
+		
+		LOGGER.info("resetDevPasswords");
 
 		template.executeWithoutResult(action -> {
 
@@ -190,7 +440,9 @@ public class DataGenerator {
 
 	}
 
-	protected void exchanges() {
+	protected void syncExchanges() {
+		
+		LOGGER.info("updateExchanges");
 
 		Map<String,Exchange> idMap = exchangeRepo.findAll().stream().collect(Collectors.toMap(
 				Exchange::getRemoteId,
@@ -204,15 +456,18 @@ public class DataGenerator {
 
 			template.executeWithoutResult(action -> {
 				Exchange e;
+				
 				if(!idMap.containsKey(ex.getId())) {
-					e = new Exchange(ex.getName(), ex.getId(), ex.getInternalName(),null);
+					e = new Exchange(ex.getName(), ex.getId(), ex.getInternalName(),null,null);
 					LOGGER.info("Creating Exchange: {}",e);
 
 				}
 				else {
 					e = idMap.get(ex.getId());
 				}
+				e.setGrade(Grade.from(ex.getGrade()));
 				e.setKey(e.getName().replaceAll("[^\\p{Alnum}]+?", "").toLowerCase());
+				
 				try {
 					imageService.syncImage(e, ex.getLogoUrl());
 				}

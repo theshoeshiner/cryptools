@@ -23,6 +23,9 @@ public class PortfoliosView extends EntityGridView<Portfolio, Long> {
 	@Autowired
 	PortfolioRepository portRepo;
 
+	@Autowired
+	Breadcrumbs breadcrumbs;
+	
 	public PortfoliosView() {
 		super(PortfolioGrid.class);
 	}
@@ -50,6 +53,10 @@ public class PortfoliosView extends EntityGridView<Portfolio, Long> {
 		LOGGER.info("post construct");
 		//this.entitiesList.showButtonColumn=true;
 		super.postConstruct();
+		
+		 breadcrumbs.resetBreadcrumbs()
+		    .addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
+		    ;
 	}
 
 	/*@Override

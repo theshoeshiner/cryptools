@@ -13,11 +13,23 @@ public class AppConfiguration {
 
 	@Value("${app.cryptocompare.sync}")
 	Boolean cryptoCompareSync;
+	
+	@Value("${app.cryptocompare.sync.exchanges}")
+	Boolean syncExchanges;
+	
+	@Value("${app.cryptocompare.sync.coins}")
+	Boolean syncCoins;
+	
+	@Value("${app.cryptocompare.sync.images}")
+	Boolean syncImages;
+	
+	@Value("${app.cryptocompare.sync.grades}")
+	Boolean syncGrades;
 
 	@Value("${app.login.enabled}")
 	Boolean loginEnabled;
 
-	@Value("${app.login.username}")
+	@Value("${app.login.username:}")
 	String username;
 
 	public Boolean getProductionMode() {
@@ -28,13 +40,13 @@ public class AppConfiguration {
 		this.productionMode = productionMode;
 	}
 
-	public Boolean getCryptoCompareSync() {
-		return cryptoCompareSync;
-	}
-
-	public void setCryptoCompareSync(Boolean cryptoCompareSync) {
-		this.cryptoCompareSync = cryptoCompareSync;
-	}
+	/*	public Boolean getCryptoCompareSync() {
+			return cryptoCompareSync;
+		}
+	
+		public void setCryptoCompareSync(Boolean cryptoCompareSync) {
+			this.cryptoCompareSync = cryptoCompareSync;
+		}*/
 
 
 

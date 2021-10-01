@@ -36,10 +36,16 @@ public class User extends IdedEntity {
 	String email;
 	
 	@Column
-	String cryptoCompareApiKey;
+	String apiKey;
 
 	@Column
 	String password;
+	
+	@Column
+	Boolean confirmed;
+	
+	@Column
+	String confirmToken;
 
 	public User() {}
 
@@ -87,6 +93,30 @@ public class User extends IdedEntity {
 
 
 
+
+	public String getApiKey() {
+		return apiKey;
+	}
+
+	public void setApiKey(String cryptoCompareApiKey) {
+		this.apiKey = cryptoCompareApiKey;
+	}
+
+	public Boolean getConfirmed() {
+		return confirmed;
+	}
+
+	public void setConfirmed(Boolean confirmed) {
+		this.confirmed = confirmed;
+	}
+
+	public String getConfirmToken() {
+		return confirmToken;
+	}
+
+	public void setConfirmToken(String confirmToken) {
+		this.confirmToken = confirmToken;
+	}
 
 	public String getUserName() {
 		return userName;

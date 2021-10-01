@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.thshsh.crypt.ExchangeRepository;
 import org.thshsh.crypt.HasImage;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+
+import com.vaadin.flow.component.html.Image;
 
 @Service
 @RestController
@@ -39,20 +43,29 @@ public class ImageService {
 
 	@Autowired
 	CryptoCompare compare;
+	
+	@Value("${app.media.archive}")
+	String mediaPath;
 
-	//String imageArchive = "./media/images";
-	File imageArchive = new File("../cryptools_media/images");
+	File mediaFolder;
+	File imageFolder;
 
 
 	@PostConstruct
 	public void postConstruct() {
-		//File archive = new File(imageArchive);
-		if(!imageArchive.exists()) {
-			imageArchive.mkdirs();
+		mediaFolder = new File(mediaPath);
+		imageFolder = new File(mediaPath,"images");
+		
+		if(!imageFolder.exists()) {
+			imageFolder.mkdirs();
 		}
 	}
 
 
+	public String getImageUrl(HasImage img) {
+		String imageUrl = "image/" + img.getImageUrl();
+		return imageUrl;
+	}
 
 	public void syncImage(HasImage entity, String mediaUrl) throws IOException {
 		LOGGER.info("sync image: {} , {}",entity,mediaUrl);
@@ -61,7 +74,7 @@ public class ImageService {
 
 		if(entity.getImageUrl()!=null) {
 			LOGGER.info("Checking for file: {}",entity.getImageUrl());
-			File imageFile = new File(imageArchive,entity.getImageUrl());
+			File imageFile = new File(imageFolder,entity.getImageUrl());
 			if(!imageFile.exists()) {
 				//check for old file
 				//String adjusted = mediaUrl.replaceAll(mediaUrl, imageName);
@@ -85,7 +98,7 @@ public class ImageService {
 		}
 
 		if(entity.getImageUrl()==null) {
-			File imageFile = new File(imageArchive,imageName);
+			File imageFile = new File(imageFolder,imageName);
 
 			if(copyFromApi(mediaUrl, imageFile)) {
 				LOGGER.info("saving image: {}",imageFile);
@@ -107,11 +120,19 @@ public class ImageService {
 
 	public InputStream getImage(HasImage hi) throws FileNotFoundException {
 		String imageName = hi.getImageUrl();
+		if(imageName == null) {
+			return null;
+		}
 		return getImage(imageName);
+	}
+	
+	public Boolean checkForImage(String imageName) {
+		File imageFile = new File(imageFolder,imageName);
+		return imageFile.exists();
 	}
 
 	public FileInputStream getImage(String imageName) throws FileNotFoundException {
-		File imageFile = new File(imageArchive,imageName);
+		File imageFile = new File(imageFolder,imageName);
 		FileInputStream fis = new FileInputStream(imageFile);
 		return fis;
 	}

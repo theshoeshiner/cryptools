@@ -2,6 +2,8 @@ package org.thshsh.crypt;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 import org.thshsh.cryptman.CryptmanModel;
@@ -29,16 +31,21 @@ public class Exchange extends IdedEntity implements HasImage {
 
 	@Column
 	String imageUrl;
+	
+	@Column
+	@Enumerated(EnumType.ORDINAL)
+	Grade grade;
 
 	public Exchange() {}
 
 
-	public Exchange(String name, String remoteId, String remoteName, String image) {
+	public Exchange(String name, String remoteId, String remoteName, String image,Grade g) {
 		super();
 		this.name = name;
 		this.remoteId = remoteId;
 		this.remoteName = remoteName;
 		this.imageUrl = image;
+		this.grade = g;
 	}
 
 	public String getName() {
@@ -90,6 +97,16 @@ public class Exchange extends IdedEntity implements HasImage {
 
 	public void setKey(String key) {
 		this.key = key;
+	}
+
+
+	public Grade getGrade() {
+		return grade;
+	}
+
+
+	public void setGrade(Grade grade) {
+		this.grade = grade;
 	}
 
 
