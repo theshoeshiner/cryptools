@@ -1,8 +1,8 @@
 
 @font-face {
   font-family: 'Righteous';
-  src: url('/fonts/Righteous-Regular.woff') format('woff'), /* Pretty Modern Browsers */
-       url('/fonts/Righteous-Regular.ttf')  format('truetype') /* Safari, Android, iOS */
+  src: url('/styles/fonts/Righteous-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+       url('/styles/fonts/Righteous-Regular.ttf')  format('truetype') /* Safari, Android, iOS */
       ;
 }
 

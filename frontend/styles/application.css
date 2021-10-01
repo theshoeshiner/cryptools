@@ -1,4 +1,4 @@
-
+/* 
 #header {
   height: var(--lumo-size-xl);
   margin-top:0px;
@@ -20,7 +20,7 @@
 	width:var(--lumo-size-xxs);
 	height:var(--lumo-size-xxs);
 }
-
+ */
 /*
 vaadin-tab {
   font-size: var(--lumo-font-size-s);
@@ -95,6 +95,11 @@ iron-icon.primary {
     line-height: var(--lumo-line-height-xs);
     transition: color 0.2s;
 }
+
+.helper-text.popup {;
+    color: unset;
+}
+
 
 
 vaadin-details[theme=stacktrace] :not([slot=summary]) {
@@ -214,6 +219,10 @@ vaadin-notification-card[theme=error] vaadin-details span[slot=summary]{
 	margin-bottom: -.15em;
 }
 
+img.allocation-icon {
+	height: var(--lumo-size-m);
+    vertical-align: bottom;
+}
 
 
 /* input:-webkit-autofill,

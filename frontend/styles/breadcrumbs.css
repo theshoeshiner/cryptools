@@ -9,4 +9,35 @@
 
 .breadcrumbs .separator {
 	font-size:var(--lumo-font-size-l);
+	margin-left: var(--lumo-space-s);
+	margin-right: var(--lumo-space-s);
+	font-weight: 500;
 }
+
+
+html {
+	--slash-size: 18px;
+	--slash-background: rgb(246,248,249);
+}
+
+.slash{
+    position:relative;
+    width: var(--slash-size); height: var(--slash-size);
+    background: var(--lumo-header-text-color);
+}
+.slash:before, .slash:after{
+    content: '';
+    position: absolute;
+}
+
+.slash:before{
+    top: 0; left: 0;
+    border-left: 14px solid var(--slash-background); 
+    border-bottom: 20px solid transparent;
+}
+.slash:after{
+    bottom: 0; right: 0;
+    border-right: 15px solid var(--slash-background);
+    border-top: 22px solid transparent;
+}
+

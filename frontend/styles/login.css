@@ -1,0 +1,9 @@
+.login-view span.message {
+	font-size: var(--lumo-font-size-m);
+    font-weight: 500;
+    color: var(--lumo-accent-color-1);
+}
+
+.api-help {
+	padding-left:8px;
+}
