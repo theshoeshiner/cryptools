@@ -7,24 +7,26 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.thshsh.crypt.web.model.LoaderModel;
-import org.thshsh.crypt.web.view.LdapUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Table(schema = CryptModel.SCHEMA, name = "user_account")
 @Entity
 public class User extends IdedEntity {
+	
+	public static final Logger LOGGER = LoggerFactory.getLogger(User.class);
 
-	@Column
+	/*@Column
 	String firstName;
-
+	
 	@Column
-	String lastName;
+	String lastName;*/
 
 	@Column
 	String displayName;
@@ -46,13 +48,20 @@ public class User extends IdedEntity {
 	
 	@Column
 	String confirmToken;
+	
+	@ManyToMany()
+	@JoinTable(schema = CryptModel.SCHEMA,name="user_account_role",
+	joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="role_id"))
+	Set<Role> roles;
+	
+	@Transient
+	Map<Feature,Access> permissionsMap;
 
 	public User() {}
 
-	public User(String firstName, String lastName, String email, String un, String pass) {
+	public User(String name, String email, String un, String pass) {
 		super();
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.displayName = name;
 		this.userName = un;
 		this.email = email;
 		this.password = pass;
@@ -67,21 +76,21 @@ public class User extends IdedEntity {
 		this.displayName = displayName;
 	}
 
-	public String getFirstName() {
+	/*public String getFirstName() {
 		return firstName;
 	}
-
+	
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
-
+	
 	public String getLastName() {
 		return lastName;
 	}
-
+	
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
-	}
+	}*/
 
 	public String getEmail() {
 		return email;
@@ -133,7 +142,36 @@ public class User extends IdedEntity {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	
 
+	public Set<Role> getRoles() {
+		if(roles == null) roles = new HashSet<>();
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+	
+	
+
+	public Map<Feature,Access> getPermissionsMap() {
+		LOGGER.info("getPermissionsMap");
+		if(permissionsMap == null) {
+			permissionsMap = new HashMap<>();
+			getRoles().forEach(role -> {
+				LOGGER.info("role: {}",role);
+				role.getPermissions().forEach(perm -> {
+					LOGGER.info("perm: {}",perm);
+					if(!permissionsMap.containsKey(perm.getFeature())) permissionsMap.put(perm.getFeature(), perm.getAccess());
+					else if(!permissionsMap.get(perm.getFeature()).isGreaterThanOrEqual(perm.getAccess())) permissionsMap.put(perm.getFeature(), perm.getAccess());
+				});
+			});
+		}
+		return permissionsMap;
+	}
+	
 	@Override
 	public String toString() {
 		return "[id=" + id + ", email=" + email + "]";
