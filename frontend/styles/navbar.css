@@ -73,9 +73,9 @@ vaadin-context-menu-item .profile {
 	
 }
 
+ 
 
-
-#header .right .profile {
+#header .right vaadin-button.profile {
 	 color:var(--lumo-primary-contrast-color);
 	font-weight:600;
 	 font-size:var(--lumo-font-size-s);
@@ -83,11 +83,10 @@ vaadin-context-menu-item .profile {
 } 
 
 
-#header .profile iron-icon {
-	color:var(--lumo-accent-color-4);
-	background-color:var(--lumo-base-color);
+#header  iron-icon.profile {
+
 	margin-left:10px;
-	border-radius:2em;
+
 	width:var(--lumo-size-s);
 	height:var(--lumo-size-s);
 }

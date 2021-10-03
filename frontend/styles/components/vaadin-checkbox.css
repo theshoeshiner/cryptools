@@ -24,3 +24,13 @@
  	margin-top:0px;
  
 }
+
+/* for vcf-toggle-button */
+
+:host(.toggle-button) label {
+	display:unset;
+}
+
+:host(.toggle-button) {
+	padding-bottom:0px;
+}

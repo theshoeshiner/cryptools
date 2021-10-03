@@ -3,15 +3,6 @@ vaadin-vertical-layout[slot="drawer"]{
 	background-color:var(--lumo-primary-color-80pct);
 }
 
-vaadin-vertical-layout[slot="navbar"]{
-
-}
-
-vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
-	color:var(--lumo-accent-color-4);
-}
-
-
 .menu {
 	margin-left:0px;
 	margin-right:0px;
@@ -30,10 +21,10 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 
 .menu a[router-link] {
 	text-decoration-line:unset;
-
+	
 	padding-top:var(--lumo-space-m);
 	padding-bottom:var(--lumo-space-m);
-	padding-left:var(--lumo-space-l);
+	padding-left:var(--lumo-space-s);
 	margin:0px;
 	border-left:10px solid transparent;
 }
@@ -41,9 +32,9 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 .menu a[router-link][highlight] {
 
 	transition: background-color 0.25s ease;
-	font-weight:500;
+	/* font-weight:500; */
 
-	 border-left:10px solid var(--lumo-accent-color-1);
+	 border-left:10px solid var(--lumo-accent-color-1); 
 }
 
 .menu a[router-link][highlight], .menu a[router-link][highlight] iron-icon {
@@ -64,13 +55,13 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 .menu a[router-link] {
 	display: flex;
     align-items: center;
-    font-weight: 600;
+    font-weight: 400;
 }
 .menu a[router-link] iron-icon {
 	width:20px;
-	height:20px;
+	height:20px; 
 	padding-right:8px;
-
+	
 }
 
 .menu a.h3 {
@@ -78,7 +69,7 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
 }
 
 .menu hr {
-	background-color: var(--lumo-accent-color-1);
+	background-color: var(--lumo-accent-color-1); 
 	margin-left:10px;
 	margin-right:10px;
 }
@@ -88,33 +79,35 @@ vaadin-vertical-layout[slot="navbar"] a.home iron-icon {
   box-sizing: border-box;
   box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
   /* padding: var(--lumo-space-xl) var(--lumo-space-m); */
-  padding: var(--lumo-space-m);
+  /* padding: var(--lumo-space-m); */
   background-color:var(--lumo-primary-color);
-  padding-bottom:var(--lumo-space-l);
-
+  padding-bottom:var(--lumo-space-m);
+ 	 
 }
-
-#logo .logo-text span:nth-child(1) {
-	margin-bottom: -.08em;
-}
-
+ 
  #logo .name {
  	border-top:1px solid var(--lumo-primary-contrast-color);
  	border-bottom:1px solid var(--lumo-primary-contrast-color);
  }
 #logo iron-icon {
-
+	
 	 color:var(--lumo-accent-color-3);
 	 height:32px;
 	 width:32px;
+	
+	} 
 
-	}
-
- /* #logo .h2 {
+ #logo .h2 {
   	color: var(--lumo-primary-contrast-color);
-	font-weight:700;
+	/* font-weight:700; */
 	font-size:2em;
-} */
+}
 
-
+vaadin-app-layout::part(drawer) {
+	width: var(--vaadin-app-layout-drawer-offset-size);
+	border-right: 0px !important;
+}
+vaadin-app-layout {
+	--vaadin-app-layout-drawer-offset-size: 200px;
+}
 

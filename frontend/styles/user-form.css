@@ -1,0 +1,22 @@
+.user-entity-form .buttons {
+	margin-top:var(--lumo-space-l); 
+} 
+
+.user-entity-form .form-layout {
+	margin-top:0px;
+	padding:0px;
+}
+
+.user-entity-form .title-layout {
+	margin:0px;
+}
+
+.user-entity-form .title-layout span {
+	font-size:var(--lumo-font-size-xxxl);
+	font-weight:700;
+}
+
+.user-entity-form .title-layout iron-icon.profile {
+	width:var(--lumo-size-m);
+	height:var(--lumo-size-m);
+}

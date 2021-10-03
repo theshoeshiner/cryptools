@@ -118,3 +118,11 @@ vaadin-tab {
     font-weight: 500;
 }
 
+iron-icon.profile {
+	color:var(--lumo-accent-color-4);
+	background-color:var(--lumo-base-color);
+	/* margin-left:10px; */
+	border-radius:2em;
+	/* width:var(--lumo-size-s);
+	height:var(--lumo-size-s); */
+}

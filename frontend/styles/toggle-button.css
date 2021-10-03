@@ -5,3 +5,8 @@
 .toggle-button.off:hover iron-icon {
 	color: unset;
 }
+
+
+vaadin-checkbox.toggle-button {
+	padding-bottom:0px;
+}

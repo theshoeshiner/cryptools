@@ -1,0 +1,10 @@
+
+
+:host vaadin-checkbox {
+    padding-top:0px;
+}
+
+
+:host(.active) vaadin-checkbox[aria-checked='true']::part(checkbox) {
+	background-color:var(--lumo-accent-color-3);
+}
