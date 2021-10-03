@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.repo;
 
 public interface HasNameAndGradeRepository<T> extends HasNameRepository<T> {
 	

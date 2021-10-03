@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.web.repo.BaseRepository;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface UserRepository extends BaseRepository<User, Long >, ExampleFilterRepository<User, Long> {

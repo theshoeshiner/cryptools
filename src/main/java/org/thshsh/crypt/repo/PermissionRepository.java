@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.repo;
+package org.thshsh.crypt.repo;
 
 public interface PermissionRepository {
 

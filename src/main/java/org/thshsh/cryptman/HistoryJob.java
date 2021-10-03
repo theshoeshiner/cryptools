@@ -23,6 +23,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.NumberUtils;
+import org.thshsh.crypt.repo.PortfolioHistoryRepository;
+import org.thshsh.crypt.repo.PortfolioRepository;
 
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution

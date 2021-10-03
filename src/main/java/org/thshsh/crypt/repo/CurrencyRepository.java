@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.web.repo.BaseRepository;
 import org.thshsh.crypt.web.view.HasSymbolRepository;
 import org.thshsh.vaadin.ExampleFilterRepository;
 

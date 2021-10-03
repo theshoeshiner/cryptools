@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.repo;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -8,7 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.web.repo.BaseRepository;
+import org.thshsh.cryptman.Allocation;
+import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface AllocationRepository extends BaseRepository<Allocation, Long>, ExampleFilterRepository<Allocation, Long>  {

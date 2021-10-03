@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.repo.AllocationRepository;
+import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.web.view.PortfolioEntry;
 
 import com.helger.commons.mutable.MutableBigDecimal;

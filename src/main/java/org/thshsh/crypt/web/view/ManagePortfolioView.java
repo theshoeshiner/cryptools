@@ -28,12 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.thshsh.crypt.repo.BalanceRepository;
+import org.thshsh.crypt.repo.PortfolioHistoryRepository;
+import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioHistory;
-import org.thshsh.cryptman.PortfolioHistoryRepository;
-import org.thshsh.cryptman.PortfolioRepository;
 import org.thshsh.vaadin.BasicTabSheet;
 
 import com.github.appreciated.apexcharts.ApexCharts;

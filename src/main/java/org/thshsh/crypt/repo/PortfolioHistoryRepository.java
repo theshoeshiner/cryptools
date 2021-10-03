@@ -1,11 +1,12 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.repo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.thshsh.crypt.web.repo.BaseRepository;
+import org.thshsh.cryptman.Portfolio;
+import org.thshsh.cryptman.PortfolioHistory;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHistory, Long>, ExampleFilterRepository<PortfolioHistory, Long>  {

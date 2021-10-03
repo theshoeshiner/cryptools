@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.repo;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.web.repo.BaseRepository;
+import org.thshsh.cryptman.MarketRate;
 
 public interface MarketRateRepository extends BaseRepository<MarketRate, Long> {
 

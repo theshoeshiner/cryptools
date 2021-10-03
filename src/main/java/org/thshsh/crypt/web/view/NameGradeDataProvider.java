@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.thshsh.cryptman.HasNameAndGradeRepository;
-import org.thshsh.cryptman.HasNameRepository;
+import org.thshsh.crypt.repo.HasNameAndGradeRepository;
+import org.thshsh.crypt.repo.HasNameRepository;
 import org.vaadin.artur.spring.dataprovider.PageableDataProvider;
 
 import com.vaadin.flow.data.provider.Query;

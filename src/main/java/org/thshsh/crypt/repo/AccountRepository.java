@@ -1,9 +1,9 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.repo;
 
 import java.util.List;
 
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.web.repo.BaseRepository;
+import org.thshsh.cryptman.Account;
 
 public interface AccountRepository extends BaseRepository<Account, Long> {
 

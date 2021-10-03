@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.repo.MarketRateRepository;
 
 @Service
 @Component

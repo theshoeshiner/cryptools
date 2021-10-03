@@ -3,7 +3,7 @@ package org.thshsh.crypt.web.view;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.thshsh.cryptman.HasNameRepository;
+import org.thshsh.crypt.repo.HasNameRepository;
 
 public interface HasSymbolRepository<T> extends HasNameRepository<T> {
 

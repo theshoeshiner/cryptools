@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.cryptman.Allocation;
-import org.thshsh.cryptman.AllocationRepository;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.entity.EntityForm;
 
