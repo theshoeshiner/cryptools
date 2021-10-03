@@ -1,5 +1,7 @@
 package org.thshsh.crypt.web;
 
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -9,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.web.repo.AppUserRepository;
+import org.thshsh.crypt.repo.UserRepository;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -35,13 +39,13 @@ public class AppSession {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AppSession.class);
 
 	@Autowired
-	AppUserRepository userRepo;
+	UserRepository userRepo;
 
 	@Autowired
 	AppConfiguration appConfig;
 
 	User user;
-
+	Map<Feature,Access> permissionsMap;
 
 
 
@@ -147,9 +151,22 @@ public class AppSession {
 		this.user = user;
 	}
 
+	public static User getCurrentUser() {
+		return getCurrent().getUser();
+	}
+	
+	public static AppSession getCurrent() {
+		return ApplicationContextService.getApplicationContext().getBean(AppSession.class);
+	}
 
-
-
+	public Boolean hasAccess(Feature feature, Access ac) {
+		if(user == null) return false;
+		Access has = user.getPermissionsMap().get(feature);
+		LOGGER.info("hasAccess {} = {}",feature,has);
+		Boolean r = ac.isLessThanOrEqual(has);
+		LOGGER.info("hasAccess {} / {} = {}",feature,ac,r);
+		return r;
+	}
 
 
 }

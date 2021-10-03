@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.UserRepository;
+import org.thshsh.crypt.repo.UserRepository;
 
 @Service
 public class CryptUserDetailsService implements UserDetailsService {

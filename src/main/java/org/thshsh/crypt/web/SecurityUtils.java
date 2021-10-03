@@ -1,14 +1,18 @@
 package org.thshsh.crypt.web;
 
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-//import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.shared.ApplicationConstants;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.stream.Stream;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+//import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * SecurityUtils takes care of all such static operations that have to do with
@@ -51,4 +55,19 @@ public final class SecurityUtils {
 				&& !(authentication instanceof AnonymousAuthenticationToken)
 				&& authentication.isAuthenticated();
 	}
+	
+	
+	public static Boolean hasAccess(Feature feature, Access ac) {
+		return AppSession.getCurrent().hasAccess(feature, ac);
+	}
+	
+	public static Boolean hasAccess(Class<?> entity, Access ac) {
+		Feature f = Feature.getFeatureForEntity(entity);
+		if(f == null) return false;
+		else {
+			return hasAccess(f, ac);
+		}
+	}
+
+
 }
