@@ -88,11 +88,11 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 	public void addButtonColumn(HorizontalLayout buttons, Portfolio e) {
 		super.addButtonColumn(buttons, e);
 
-		Button manageButton = new Button(VaadinIcon.FOLDER_OPEN.create());
-		manageButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-		buttons.add(manageButton);
-		UIUtils.setTitle(manageButton, "Manage");
-		manageButton.addClickListener(click -> manage(e));
+		/*	Button manageButton = new Button(VaadinIcon.FOLDER_OPEN.create());
+			manageButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			buttons.add(manageButton);
+			UIUtils.setTitle(manageButton, "Manage");
+			manageButton.addClickListener(click -> manage(e));*/
 	}
 
 	protected void manage(Portfolio e) {

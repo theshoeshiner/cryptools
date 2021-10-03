@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.cryptman.HasNameRepository;
 import org.vaadin.artur.spring.dataprovider.PageableDataProvider;
 

@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.UiComponents;
 
 import com.vaadin.flow.component.grid.Grid;

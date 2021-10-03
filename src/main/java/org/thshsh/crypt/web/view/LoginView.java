@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.UserRepository;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
 import org.thshsh.crypt.web.SecurityConfiguration;
@@ -112,6 +112,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	
 	@Autowired
 	ApplicationContext context;
+	
+	@Autowired
+	UserNameValidator userNameValidator;
 
 	//TextField emailField;
 	//VerticalLayout formLayout;
@@ -462,17 +465,17 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		HorizontalLayout names = new HorizontalLayout();
 		names.setWidthFull();
 
-		TextField firstName = new TextField();
-		firstName.setMinWidth("0px");
-		firstName.setPlaceholder("First Name");
+		TextField nameField = new TextField();
+		nameField.setMinWidth("0px");
+		nameField.setPlaceholder("Name");
 
 
-		TextField lastName = new TextField();
+		/*TextField lastName = new TextField();
 		lastName.setMinWidth("0px");
-		lastName.setPlaceholder("Last Name");
+		lastName.setPlaceholder("Last Name");*/
 
-		names.add(firstName, lastName);
-		names.setFlexGrow(1, firstName, lastName);
+		names.add(nameField);
+		names.setFlexGrow(1, nameField);
 
 
 		/*emailField = new TextField();
@@ -587,15 +590,19 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		})
 		.bind(User::getEmail, User::setEmail);
 
-		binder.forField(userNameField).withNullRepresentation("")
-		.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++")).withValidator((s, c) -> {
+		binder.forField(userNameField)
+		.withNullRepresentation("")
+		/*.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
+		.withValidator((s, c) -> {
 			if (s != null && userRepo.findByUserNameIgnoreCase(s).isPresent())
 				return ValidationResult.error("Username already in use");
 			else
 				return ValidationResult.ok();
-		}).bind(User::getUserName, User::setUserName);
+		})*/
+		.withValidator(userNameValidator)
+		.bind(User::getUserName, User::setUserName);
 
-		binder.forField(firstName).withNullRepresentation("").bind(User::getFirstName, User::setFirstName);
+		binder.forField(nameField).withNullRepresentation("").bind(User::getDisplayName, User::setDisplayName);
 		
 		binder
 		.forField(apiKey)
@@ -617,7 +624,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		})
 		.bind(User::getApiKey, User::setApiKey);
 
-		binder.forField(lastName).withNullRepresentation("").bind(User::getLastName, User::setLastName);
+		//binder.forField(lastName).withNullRepresentation("").bind(User::getLastName, User::setLastName);
 
 		binder.forField(confirmPasswordField).asRequired().withValidator((u, s) -> {
 			LOGGER.info("validate password {} vs {}", u, passwordField.getValue());

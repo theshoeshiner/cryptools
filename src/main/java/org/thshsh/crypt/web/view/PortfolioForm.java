@@ -5,9 +5,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.SecurityUtils;
+import org.thshsh.crypt.web.UsernameEmailDataProvider;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioRepository;
 import org.thshsh.cryptman.PortfolioSettings;
@@ -47,7 +52,7 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 	@Override
 	protected void setupForm() {
 
-
+		formLayout.startVerticalLayout();
 
 		TextField nameField = new TextField("Name");
 		nameField.setWidth("200px");
@@ -55,6 +60,7 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 		.asRequired()
 		.withValidator(new StringLengthValidator("", 3, 64))
 		.bind(Portfolio::getName, Portfolio::setName);
+		formLayout.add(nameField);
 
 		ComboBox<Currency> ass = new ComboBox<>("Reserve Currency");
 		ass.setItemLabelGenerator(c -> {
@@ -66,13 +72,27 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 				FunctionUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
 				FunctionUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
 				);
-
-
-
-
-		formLayout.startVerticalLayout();
-		formLayout.add(nameField);
 		formLayout.add(ass);
+		
+		if(SecurityUtils.hasAccess(Feature.User, Access.ReadWrite)) {
+
+			ComboBox<User> user = new ComboBox<>("User");
+			user.setItemLabelGenerator(c -> {
+				return c.getUserName() +" ("+c.getEmail()+")";
+			});
+			user.setItems(appContext.getBean(UsernameEmailDataProvider.class));
+			user.setWidth("300px");
+			binder.forField(user).asRequired().bind(
+					Portfolio::getUser,Portfolio::setUser
+					);
+			
+			formLayout.add(user);
+
+		}
+
+		
+		
+		
 		formLayout.endLayout();
 
 	}

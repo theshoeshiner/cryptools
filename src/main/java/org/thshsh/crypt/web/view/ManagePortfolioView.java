@@ -173,8 +173,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //tabSheet.addTab(new Tab("Allocations"), allLayout);
 
 	    //Tab funcTab = new Tab("Functions");
-	    VerticalLayout funcLayout = createFunctionsTab();
-	    tabSheet.addTab(new Tab("Functions"), funcLayout);
+	  
 
 	    VerticalLayout settingsLayout = createSettingsTab();
 	    tabSheet.addTab(new Tab("Settings"), settingsLayout);
@@ -214,6 +213,11 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 		add(tabs, pages);
 		*/
+	    
+	    
+	    VerticalLayout funcLayout = createFunctionsTab();
+	    tabSheet.addTab(new Tab("Functions"), funcLayout);
+	    
 	    add(tabSheet);
 	    //add(new AreaChartExample());
 

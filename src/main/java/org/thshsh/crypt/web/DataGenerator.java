@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,17 +30,22 @@ import org.thshsh.color.AbstractColor;
 import org.thshsh.color.ColorSpaceConverter;
 import org.thshsh.color.ColorUtils;
 import org.thshsh.color.LchColor;
+import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Grade;
+import org.thshsh.crypt.Permission;
 import org.thshsh.crypt.PlatformType;
-import org.thshsh.crypt.UserRepository;
+import org.thshsh.crypt.Role;
 import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.cryptocompare.ExchangePairs;
 import org.thshsh.crypt.cryptocompare.ExchangesCurrencyPairs;
+import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.repo.ExchangeRepository;
+import org.thshsh.crypt.repo.RoleRepository;
+import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 
 @Component
@@ -55,6 +61,9 @@ public class DataGenerator {
 
 	@Autowired
 	CurrencyRepository currencyRepo;
+	
+	@Autowired
+	RoleRepository roleRepo;
 
 	@Autowired
 	CryptoCompare compare;
@@ -110,6 +119,8 @@ public class DataGenerator {
 		}
 		
 		CompletableFuture<?> future = CompletableFuture.runAsync(() -> {}, executor);
+		
+		future = future.thenRunAsync(this::updateRoles);
 
 		if(appConfig.syncExchanges) {
 			future = future.thenRunAsync(this::syncExchanges,executor);
@@ -267,6 +278,45 @@ public class DataGenerator {
 			
 			LOGGER.info("Done with all colors");
 
+	}
+	
+	protected void updateRoles() {
+		
+		template.executeWithoutResult(action -> {
+		
+			Role user = new Role("User");
+			user.updatePermissions(
+					Permission.of(Feature.Portfolio, Access.ReadWriteDelete),
+					Permission.of(Feature.Currency, Access.Read),
+					Permission.of(Feature.Exchange, Access.Read)
+			);
+			updateRole(user);
+			
+			Role admin = new Role("Administrator");
+			admin.updateAllPermissions(Access.Super);
+			
+			updateRole(admin);
+			
+		
+		});
+	}
+	
+	protected void updateRole(Role r) {
+		
+		try {
+			LOGGER.info("updateRole: {}",r);
+			Optional<Role> role = roleRepo.findByKey(r.getKey());
+			LOGGER.info("found: {}",role);
+			if(role.isPresent()) role.get().update(r);
+			else {
+				LOGGER.info("Saving role: {}",r);
+				roleRepo.save(r);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	protected void updateFiats() {

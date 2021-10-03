@@ -11,7 +11,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.UserRepository;
+import org.thshsh.crypt.repo.UserRepository;
 
 @Service
 public class UserService {

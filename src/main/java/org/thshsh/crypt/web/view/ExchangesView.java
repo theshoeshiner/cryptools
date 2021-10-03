@@ -5,7 +5,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.EntityGridView;
 

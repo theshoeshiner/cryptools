@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.thshsh.cryptman.MarketRateService;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioSummary;
 import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.vaadin.GridUtils;
 import org.thshsh.vaadin.ImageRenderer;
 import org.thshsh.vaadin.UIUtils;
 
@@ -91,6 +93,8 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 
 	BigDecimal indThreshold = new BigDecimal(".15");
 	BigDecimal portThreshold = new BigDecimal(".04");
+	FooterRow footer;
+	PortfolioSummary summary;
 
 	public PortfolioEntryGrid(ManagePortfolioView v) {
 		super(PortfolioEntry.class, null, FilterMode.None);
@@ -102,20 +106,23 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		this.showButtonColumn = false;
 		this.view = v;
 		this.entries = new ArrayList<PortfolioEntry>();
-		this.showHeader = false;
+		this.showHeader = true;
 	}
 
 	@PostConstruct
 	public void postConstruct() {
 
-		PortfolioSummary summary = portService.getSummary(portfolio);
+		summary = portService.getSummary(portfolio);
 		entries = summary.getEntries();
 		BigDecimal tot = summary.getTotalValue();
 		dataProvider = new ListDataProvider<>(entries);
 		super.postConstruct();
 
 		totalValueCell.setText(ReserveFormat.format(tot));
-		totalAdjustCell.setText(PercentFormat.format(summary.getTotalAdjustPercent()));
+		
+		advancedButton.setVisible(true);
+		count.setVisible(false);
+		filter.setVisible(false);
 		
 
 	}
@@ -191,7 +198,8 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		UiComponents.iconColumn(curCol);
 
 		Column<?> sym = grid.addColumn(FunctionUtils.nestedValue(PortfolioEntry::getCurrency, Currency::getKey))
-				.setHeader("Currency").setWidth("100px")
+				.setHeader("Currency")
+				.setWidth("90px")
 				.setFlexGrow(0)
 				.setSortProperty("currency.symbol");
 		UiComponents.iconLabelColumn(sym);
@@ -215,7 +223,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		.setTextAlign(ColumnTextAlign.END)
 		.setComparator(Comparator
 				.comparing(FunctionUtils.nestedValue(PortfolioEntry::getAllocation, Allocation::getPercent)))
-		.setWidth("110px")
+		.setWidth("100px")
 		.setFlexGrow(0);
 		;
 
@@ -246,57 +254,62 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		.setWidth("40px");
 		
 
-		grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntry::getRate, MarketRate::getRate),
-				ReserveFormat)).setHeader("Price")
-		.setTextAlign(ColumnTextAlign.END)
-		//.setSortProperty("rate.rate")
-				.setComparator(
-						Comparator.comparing(FunctionUtils.nestedValue(PortfolioEntry::getRate, MarketRate::getRate)))
-				.setWidth("100px")
-				.setFlexGrow(0);
+		grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntry::getRate, MarketRate::getRate),ReserveFormat))
+			.setHeader("Price")
+			.setTextAlign(ColumnTextAlign.END)
+			.setComparator(Comparator.comparing(FunctionUtils.nestedValue(PortfolioEntry::getRate, MarketRate::getRate)))
+			.setWidth("100px")
+			.setFlexGrow(0);
 
-		grid.addColumn(PortfolioEntry::getBalance).setSortProperty("balance")
-				.setComparator(Comparator.comparing(PortfolioEntry::getBalance)).setHeader("Balance").setWidth("125px")
-				.setFlexGrow(0);
+		grid.addColumn(PortfolioEntry::getBalance)
+			.setSortProperty("balance")
+			.setTextAlign(ColumnTextAlign.END)
+			.setComparator(Comparator.comparing(PortfolioEntry::getBalance))
+			.setHeader("Balance")
+			.setWidth("125px")
+			.setFlexGrow(0);
 
 		Column<?> valueColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntry::getValueReserve, ReserveFormat))
-				.setHeader("Value").setTextAlign(ColumnTextAlign.END).setSortProperty("value")
-				.setComparator(Comparator.comparing(PortfolioEntry::getValueReserve)).setWidth("110px").setFlexGrow(0);
+			.setHeader("Value")
+			.setTextAlign(ColumnTextAlign.END)
+			.setSortProperty("value")
+			.setComparator(Comparator.comparing(PortfolioEntry::getValueReserve))
+			.setWidth("110px")
+			.setFlexGrow(0);
 
-		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getTargetReserve, ReserveFormat)).setHeader("Target")
-				.setTextAlign(ColumnTextAlign.END).setComparator(Comparator.comparing(PortfolioEntry::getTargetReserve))
-				.setWidth("110px").setFlexGrow(0);
+		
 
-		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjustReserve, ReserveFormat)).setHeader("Adjust $")
-				.setTextAlign(ColumnTextAlign.END)
-				.setComparator(Comparator.comparing(PortfolioEntry::getAdjustAbsolute)).setWidth("125px")
-				.setFlexGrow(0);
+		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjustReserve, ReserveFormat))
+			.setHeader("Adjust $")
+			.setTextAlign(ColumnTextAlign.END)
+			.setComparator(Comparator.comparing(PortfolioEntry::getAdjustAbsolute))
+			.setWidth("125px")
+			.setFlexGrow(0);
 
 		//CoinFormat
 
 
 
 		//grid.addColumn(PortfolioEntry::getAdjust)
-		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjust, CoinFormat)).setHeader("Adjust ©")
-				//.setTextAlign(ColumnTextAlign.END)
-				.setComparator(Comparator.comparing(PortfolioEntry::getAdjust))
-				//.setWidth("100px")
-				//.setFlexGrow(0)
-				.setWidth("110px").setFlexGrow(0);
+		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjust, CoinFormat))
+			.setHeader("Adjust ©")
+			.setTextAlign(ColumnTextAlign.END)
+			.setComparator(Comparator.comparing(PortfolioEntry::getAdjust))
+			//.setWidth("100px")
+			//.setFlexGrow(0)
+			.setWidth("110px")
+			.setFlexGrow(0);
 
-		Column<?> adjustColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjustPercent, PercentFormat))
-				.setHeader("Adjust %").setTextAlign(ColumnTextAlign.END)
-				.setComparator(Comparator.comparing(PortfolioEntry::getAdjustPercentAbsolute))
-				.setWidth("100px")
-				.setFlexGrow(0);
+		
 
 	
 
-		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getToTriggerPercent, PercentFormat)).setHeader("Alert %")
-				.setTextAlign(ColumnTextAlign.END)
-				.setComparator(Comparator.comparing(PortfolioEntry::getToTriggerPercentOrZero)).setWidth("110px")
-				.setFlexGrow(0)
-
+		grid.addColumn(new NumberRenderer<>(PortfolioEntry::getToTriggerPercent, PercentFormat))
+			.setHeader("Alert %")
+			.setTextAlign(ColumnTextAlign.END)
+			.setComparator(Comparator.comparing(PortfolioEntry::getToTriggerPercentOrZero))
+			.setWidth("110px")
+			.setFlexGrow(0)
 		;
 
 		grid.addColumn(e -> {
@@ -326,10 +339,39 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 			//return new StringJoiner(" ",)
 		});
 
-		FooterRow footer = grid.appendFooterRow();
+		footer = grid.appendFooterRow();
 		totalValueCell = footer.getCell(valueColumn);
-		totalAdjustCell = footer.getCell(adjustColumn);
+		
 
+	}
+	
+	
+
+	@Override
+	public void setupAdvancedColumns(Grid<PortfolioEntry> grid, Collection<Column<PortfolioEntry>> coll) {
+		
+		Column<PortfolioEntry> c = grid.addColumn(new NumberRenderer<>(PortfolioEntry::getTargetReserve, ReserveFormat))
+				.setHeader("Target")
+				.setTextAlign(ColumnTextAlign.END)
+				.setComparator(Comparator.comparing(PortfolioEntry::getTargetReserve))
+				.setWidth("110px")
+				.setFlexGrow(0);
+		
+		coll.add(c);
+
+		Column<PortfolioEntry> adjustColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntry::getAdjustPercent, PercentFormat))
+				.setHeader("Adjust %")
+				.setTextAlign(ColumnTextAlign.END)
+				.setComparator(Comparator.comparing(PortfolioEntry::getAdjustPercentAbsolute))
+				.setWidth("100px")
+				.setFlexGrow(0);
+		
+		coll.add(adjustColumn);
+		
+		GridUtils.reorderColumns(grid, c,6,adjustColumn,8);
+		
+		totalAdjustCell = footer.getCell(adjustColumn);
+		totalAdjustCell.setText(PercentFormat.format(summary.getTotalAdjustPercent()));
 	}
 
 	@Override

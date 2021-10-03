@@ -67,7 +67,7 @@ public class ManagePortfolioService {
 
 		LOGGER.info("currencyBalances: {}",currencyBalances.keySet());
 
-		Map<Currency,MarketRate> rates = rateService.getUpToDateMarketRates(currencyBalances.keySet());
+		Map<Currency,MarketRate> rates = rateService.getUpToDateMarketRates(portfolio.getUser().getApiKey(),currencyBalances.keySet());
 		LOGGER.info("got rates: {}",rates);
 
 		Map<Currency,BigDecimal> currencyValues = new HashMap<>();

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.repo.CurrencyRepository;
 
 @Service
 public class CurrencyService {

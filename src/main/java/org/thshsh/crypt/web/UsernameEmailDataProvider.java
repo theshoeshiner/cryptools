@@ -1,7 +1,9 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
@@ -17,26 +19,33 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 @SuppressWarnings("serial")
 @Component()
 @Scope("prototype")
-final class UserNameDataProvider extends PageableDataProvider<User, String> {
+public class UsernameEmailDataProvider extends PageableDataProvider<User, String> {
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(UsernameEmailDataProvider.class);
 
 	@Autowired
-	UserRepository userRepo;
+	protected UserRepository repo;
 
-	UserNameDataProvider() {}
-	
+	UsernameEmailDataProvider() {
+
+	}
 
 	@Override
 	protected Page<User> fetchFromBackEnd(Query<User, String> q, Pageable p) {
-		return userRepo.findByDisplayNameContainsIgnoreCase(q.getFilter().orElse(""), p);
+		String f = q.getFilter().orElse("").toLowerCase();
+		Page<User> page = repo.findByUserNameContainsOrEmailContains(f,f, p);
+		return page;
 	}
 
 	@Override
 	protected List<QuerySortOrder> getDefaultSortOrders() {
-		return QuerySortOrder.asc("displayName").build();
+		return QuerySortOrder.asc("userName").build();
 	}
 
 	@Override
 	protected int sizeInBackEnd(Query<User, String> q) {
-		return userRepo.countByDisplayNameContainsIgnoreCase(q.getFilter().orElse(""));
+		String f = q.getFilter().orElse("").toLowerCase();
+		int count = repo.countByUserNameContainsOrEmailContains(f,f);
+		return count;
 	}
 }

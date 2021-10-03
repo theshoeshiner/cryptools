@@ -6,7 +6,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.vaadin.FunctionUtils;

@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.spring.annotation.UIScope;
 
+@SuppressWarnings("serial")
 @CssImport("./styles/breadcrumbs.css") 
 @UIScope
 @Component
@@ -22,15 +23,9 @@ public class Breadcrumbs extends HorizontalLayout {
 		breadcrumbs = new LinkedList<>();
 		this.addClassName("breadcrumbs");
 		this.setMargin(false);
-		//RouterLink home = new RouterLink("Home",HomeView.class);
-		//RouterLink middle = new RouterLink("Middle",AboutView.class);
-		//RouterLink end = new RouterLink("End",FlowsView.class);
-		/*
-		this.add(home);
-		this.addSeparator();
-		this.add(middle);
-		this.addSeparator();
-		this.add(end);*/
+		this.setAlignItems(Alignment.CENTER);
+		this.setSpacing(false);
+		
 		
 	}
 	
@@ -64,7 +59,14 @@ public class Breadcrumbs extends HorizontalLayout {
 	}
 	
 	public void addSeparator() {
-		this.add(new Span("/"));
+		Span sep = new Span("/");
+		sep.addClassName("separator");
+		this.add(sep);
+		
+		/*Span sep = new Span();
+		sep.addClassName("separator");
+		sep.addClassName("slash");
+		this.add(sep);*/
 	}
 	
 	public static class Breadcrumb {

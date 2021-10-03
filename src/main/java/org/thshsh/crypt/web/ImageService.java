@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.thshsh.crypt.ExchangeRepository;
 import org.thshsh.crypt.HasImage;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.web.view.ManagePortfolioView;
 
 import com.vaadin.flow.component.html.Image;
@@ -71,6 +71,8 @@ public class ImageService {
 		LOGGER.info("sync image: {} , {}",entity,mediaUrl);
 
 		String imageName = entity.getKey().toLowerCase()+"."+FilenameUtils.getExtension(mediaUrl);
+		
+		LOGGER.info("sync image: {}",imageName);
 
 		if(entity.getImageUrl()!=null) {
 			LOGGER.info("Checking for file: {}",entity.getImageUrl());
@@ -94,15 +96,20 @@ public class ImageService {
 					entity.setImageUrl(null);
 				}
 			}
-
+		
 		}
 
 		if(entity.getImageUrl()==null) {
 			File imageFile = new File(imageFolder,imageName);
 
-			if(copyFromApi(mediaUrl, imageFile)) {
-				LOGGER.info("saving image: {}",imageFile);
+			if(imageFile.exists()) {
 				entity.setImageUrl(imageName);
+			}
+			else {
+				if(copyFromApi(mediaUrl, imageFile)) {
+					LOGGER.info("saving image: {}",imageFile);
+					entity.setImageUrl(imageName);
+				}
 			}
 		}
 

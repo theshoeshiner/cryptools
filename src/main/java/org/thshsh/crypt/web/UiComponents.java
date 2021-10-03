@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.thshsh.crypt.web.repo.AppUserRepository;
+import org.thshsh.crypt.repo.UserRepository;
 
 import com.vaadin.flow.component.grid.Grid.Column;
 
@@ -18,7 +18,7 @@ import com.vaadin.flow.component.grid.Grid.Column;
 public class UiComponents {
 
 	@Autowired
-	AppUserRepository userRepo;
+	UserRepository userRepo;
 
 
 
@@ -39,7 +39,7 @@ public class UiComponents {
 	public BigDecimal hundred() {
 		return new BigDecimal(100l);
 	}
-
+	
 
 
 	/*	@Bean

@@ -22,7 +22,7 @@ import org.thshsh.color.ColorSpaceConverter;
 import org.thshsh.color.ColorUtils;
 import org.thshsh.color.LchColor;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.ImageService;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.UIUtils;

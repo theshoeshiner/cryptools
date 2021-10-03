@@ -5,17 +5,19 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.view.UserDialog;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
@@ -31,6 +33,9 @@ public class UserMenu extends HorizontalLayout {
 	@Autowired
 	AppSession appSession;
 	
+	@Autowired
+	ApplicationContext context;
+	
 
 	@Autowired
 	TaskExecutor executor;
@@ -41,8 +46,9 @@ public class UserMenu extends HorizontalLayout {
          this.setPadding(false);
          this.setAlignItems(Alignment.CENTER);
           
-
-         Button userMenuButton = new Button(appSession.getUser().getDisplayName(), VaadinIcon.USER.create());
+         Icon i = VaadinIcon.USER.create();
+         i.addClassName("profile");
+         Button userMenuButton = new Button(appSession.getUser().getDisplayName(), i);
          userMenuButton.setIconAfterText(true);
          userMenuButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
          userMenuButton.addClassName("profile");
@@ -67,13 +73,25 @@ public class UserMenu extends HorizontalLayout {
 			  MenuItem profileItem = cm.addItem(profileButton);*/
           
 
+         Button profile = new Button("Profile");
+         profile.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+         profile.addClickListener(click -> {        	  
+       	  //UI.getCurrent().getPage().setLocation("/logout");
+        	
+         });
+         MenuItem mi = cm.addItem(profile);
+         mi.addClickListener(click -> {
+        	 UserDialog ud = context.getBean(UserDialog.class,appSession.getUser(),true);
+        	 ud.open();
+         });
           
           Button b = new Button("Sign out");
           b.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-          b.addClickListener(click -> {        	  
-        	  UI.getCurrent().getPage().setLocation("/saml/logout");
+         
+          MenuItem signout = cm.addItem(b);
+          signout.addClickListener(click -> {        	  
+        	  UI.getCurrent().getPage().setLocation("/logout");
           });
-          cm.addItem(b);
           
           add(userMenuButton,cm);
 		

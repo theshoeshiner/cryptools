@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.GenericWebApplicationContext;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.SecurityUtils;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.view.AboutView;
-import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.view.CurrenciesView;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
@@ -21,6 +23,7 @@ import org.thshsh.crypt.web.view.HomeView;
 import org.thshsh.crypt.web.view.PortfoliosView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
+import org.thshsh.crypt.web.view.UsersView;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -50,6 +53,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport("./styles/vaadin-grid.css")
 @CssImport("./styles/link.css")
 @CssImport("./styles/login.css")
+@CssImport("./styles/toggle-button.css")
 @CssImport(value = "./styles/components/vaadin-grid.css",themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/vaadin-checkbox.css",themeFor = "vaadin-checkbox")
 @CssImport(value = "./styles/components/vaadin-button.css",themeFor = "vaadin-button")
@@ -57,6 +61,8 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport(value = "./styles/components/vaadin-textfield.css",themeFor = "vaadin-text-field")
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup")
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup-overlay")
+@CssImport(value = "./styles/components/vcf-toggle-button.css", themeFor = "vcf-toggle-button")
+
 @UIScope
 public class MainLayout extends AppLayout {
 
@@ -275,6 +281,8 @@ public class MainLayout extends AppLayout {
     	
     	
     	items.add(createMenuItem(VaadinIcon.MONEY.create(),"Currencies", CurrenciesView.class));
+    	
+    	if(SecurityUtils.hasAccess(Feature.User, Access.Read)) items.add(createMenuItem(VaadinIcon.USERS.create(),"Users", UsersView.class));
  
 		/*Tab home = createTab("Home", HomeView.class);
 		Tab browse = createTab("Browser", MetaDataBrowser.class);

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
+import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.cryptman.BigDecimalConverter;
 import org.thshsh.cryptman.Portfolio;

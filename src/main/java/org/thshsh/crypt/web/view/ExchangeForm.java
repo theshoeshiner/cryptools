@@ -3,7 +3,7 @@ package org.thshsh.crypt.web.view;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.ExchangeRepository;
+import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.textfield.TextField;

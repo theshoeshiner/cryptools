@@ -19,8 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.CurrencyRepository;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.repo.CurrencyRepository;
 
 @Service
 @Component
@@ -54,8 +54,10 @@ public class MarketRateService {
 	 * @return
 	 */
 	
-	public Map<Currency,MarketRate> getUpToDateMarketRates(Collection<Currency> currencies){
+	public Map<Currency,MarketRate> getUpToDateMarketRates(String apiKey,Collection<Currency> currencies){
 
+		LOGGER.info("getUpToDateMarketRates api: {} currencies: {}",apiKey,currencies);
+		
 		currencies = new ArrayList<>(currencies);
 
 		currencies.remove(usd);
@@ -95,16 +97,22 @@ public class MarketRateService {
 
 		if(get.size() > 0) {
 
-			Map<String,Currency> symMap = get.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
-			Map<String,BigDecimal> prices = compare.getCurrentFiatPrice(symMap.keySet());
-
-
-			prices.forEach((s,v) -> {
-				Currency c = symMap.get(s);
-				MarketRate mr = new MarketRate(c,v,now);
-				rateRepo.save(mr);
-				map.put(c, mr);
-			});
+			String oldApi = compare.getApiKey();
+			try {
+				if(apiKey != null) compare.setApiKey(apiKey);
+				Map<String,Currency> symMap = get.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
+				Map<String,BigDecimal> prices = compare.getCurrentFiatPrice(symMap.keySet());
+	
+				prices.forEach((s,v) -> {
+					Currency c = symMap.get(s);
+					MarketRate mr = new MarketRate(c,v,now);
+					rateRepo.save(mr);
+					map.put(c, mr);
+				});
+			}
+			finally {
+				compare.setApiKey(oldApi);
+			}
 
 		}
 
