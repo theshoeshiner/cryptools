@@ -67,6 +67,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
 	CryptUserDetailsService userDetailsService;
 
+	public static String PASSWORD_PARAM = "password";
+	
 	/**
 	 * Require login to access internal pages and configure login form.
 	 */
@@ -100,7 +102,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.and()
 				.formLogin()
 					.loginPage(LOGIN_URL).permitAll()
-				
+					.passwordParameter(PASSWORD_PARAM)
 					.loginProcessingUrl(LOGIN_PROCESSING_URL)
 					.failureUrl(LOGIN_FAILURE_URL)
 					.failureHandler((req,res,exc) -> {
@@ -175,6 +177,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 				// the standard favicon URI
 				"/favicon.ico",
+				
+				//FIXME REMOVE 
+				"/lv","/login2","/form", 				
+				
 
 				// the robots exclusion standard
 				"/robots.txt",

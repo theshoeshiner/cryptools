@@ -3,8 +3,9 @@
 #header {
   /* height: var(--lumo-size-xl); */
   margin-top:0px;
-  padding: var(--lumo-space-s);
- background-color: var(--lumo-primary-color); 
+  /* padding: var(--lumo-space-s); */
+ background-color: var(--lumo-primary-color);
+ height:52px; 
 }
 
 #header h1 {

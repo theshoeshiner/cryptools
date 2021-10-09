@@ -54,6 +54,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport("./styles/link.css")
 @CssImport("./styles/login.css")
 @CssImport("./styles/toggle-button.css")
+@CssImport("./styles/dashboard.css")
 @CssImport(value = "./styles/components/vaadin-grid.css",themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/vaadin-checkbox.css",themeFor = "vaadin-checkbox")
 @CssImport(value = "./styles/components/vaadin-button.css",themeFor = "vaadin-button")
@@ -62,7 +63,6 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup")
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup-overlay")
 @CssImport(value = "./styles/components/vcf-toggle-button.css", themeFor = "vcf-toggle-button")
-
 @UIScope
 public class MainLayout extends AppLayout {
 
@@ -105,6 +105,7 @@ public class MainLayout extends AppLayout {
         //test.add(new Span("Home"),new Span("/"),new Span("Here"));
         //navbar.add(breadcrumbs);
 
+    	LOGGER.info("navbar: {}",navbar);
         addToNavbar(true, navbar);
 
 
@@ -274,15 +275,23 @@ public class MainLayout extends AppLayout {
 
     	//items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
-    	items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
+    	if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Read)) {
     	
-    	items.add(createMenuItem(VaadinIcon.INSTITUTION.create(),"Exchanges", ExchangesView.class));
+    		items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
+    	
+    	}
+    	
+    	if(SecurityUtils.hasAccess(Feature.Exchange, Access.ReadWrite)) {
+    		items.add(createMenuItem(VaadinIcon.INSTITUTION.create(),"Exchanges", ExchangesView.class));
+    	}
 
+    	if(SecurityUtils.hasAccess(Feature.Currency, Access.ReadWrite)) {
     	
+    		items.add(createMenuItem(VaadinIcon.MONEY.create(),"Currencies", CurrenciesView.class));
     	
-    	items.add(createMenuItem(VaadinIcon.MONEY.create(),"Currencies", CurrenciesView.class));
+    	}
     	
-    	if(SecurityUtils.hasAccess(Feature.User, Access.Read)) items.add(createMenuItem(VaadinIcon.USERS.create(),"Users", UsersView.class));
+    	if(SecurityUtils.hasAccess(Feature.User, Access.ReadWrite)) items.add(createMenuItem(VaadinIcon.USERS.create(),"Users", UsersView.class));
  
 		/*Tab home = createTab("Home", HomeView.class);
 		Tab browse = createTab("Browser", MetaDataBrowser.class);
@@ -293,10 +302,14 @@ public class MainLayout extends AppLayout {
 
     	//TestingView
 
-    	items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
-
-    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
-    	items.add(about);
+    	if(SecurityUtils.hasAccess(Feature.System, Access.Read)) {
+    	
+	    	items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
+	
+	    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
+	    	items.add(about);
+    	
+    	}
 
     	return items;
 

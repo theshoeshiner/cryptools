@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
+import org.thshsh.crypt.cryptocompare.CryptoCompareException;
+import org.thshsh.crypt.cryptocompare.CurrentPricesResponse;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.MarketRateRepository;
 
@@ -56,6 +58,10 @@ public class MarketRateService {
 	 */
 	
 	public Map<Currency,MarketRate> getUpToDateMarketRates(String apiKey,Collection<Currency> currencies){
+		return getUpToDateMarketRates(apiKey, currencies, false);
+	}
+	
+	public Map<Currency,MarketRate> getUpToDateMarketRates(String apiKey,Collection<Currency> currencies, Boolean force){
 
 		LOGGER.info("getUpToDateMarketRates api: {} currencies: {}",apiKey,currencies);
 		
@@ -63,7 +69,7 @@ public class MarketRateService {
 
 		currencies.remove(usd);
 
-		Map<Currency,MarketRate> map = new HashMap<>();
+		Map<Currency,MarketRate> marketRateMap = new HashMap<>();
 
 		/*currencies.forEach(c -> {
 			MarketRate mr = rateRepo.findTopByCurrencyOrderByTimestampDesc(c);
@@ -77,39 +83,48 @@ public class MarketRateService {
 
 		ZonedDateTime hourAgo = now.minus(HOUR);
 
-		List<Currency> get = new ArrayList<>();
+		List<Currency> getRatesFor = new ArrayList<>();
 
 		currencies.forEach(cur -> {
 
-			MarketRate mr = rateRepo.findTopByCurrencyOrderByTimestampDesc(cur);
+			MarketRate lastRate = rateRepo.findTopByCurrencyOrderByTimestampDesc(cur);
 
-			if(mr == null) {
-				get.add(cur);
+			if(lastRate == null || force) {
+				getRatesFor.add(cur);
 			}
-			else if(!mr.getTimestamp().isAfter(hourAgo)) {
-				get.add(cur);
+			else if(!lastRate.getTimestamp().isAfter(hourAgo)) {
+				getRatesFor.add(cur);
 			}
-			else map.put(cur, mr);
+			else marketRateMap.put(cur, lastRate);
 		});
 
-		map.put(usd, usdRate);
+		marketRateMap.put(usd, usdRate);
 
-		LOGGER.info("Need to get rates for: {}",get);
+		LOGGER.info("Need to get rates for: {}",getRatesFor);
 
-		if(get.size() > 0) {
+		if(getRatesFor.size() > 0) {
 
 			String oldApi = compare.getApiKey();
 			try {
 				if(apiKey != null) compare.setApiKey(apiKey);
-				Map<String,Currency> symMap = get.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
-				Map<String,BigDecimal> prices = compare.getCurrentFiatPrice(symMap.keySet());
-	
-				prices.forEach((s,v) -> {
+				Map<String,Currency> symMap = getRatesFor.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
+				CurrentPricesResponse prices = compare.getCurrentPrice(usd.getKey(),symMap.keySet());
+				symMap.keySet().forEach(sym -> {
+					BigDecimal price = prices.getPrice(sym);
+					Currency c = symMap.get(sym);
+					MarketRate mr = new MarketRate(c,price,now);
+					rateRepo.save(mr);
+					marketRateMap.put(c, mr);
+				});
+				/*prices.forEach((s,v) -> {
 					Currency c = symMap.get(s);
 					MarketRate mr = new MarketRate(c,v,now);
 					rateRepo.save(mr);
 					map.put(c, mr);
-				});
+				});*/
+			}
+			catch(CryptoCompareException ex) {
+				LOGGER.warn("Error getting rates",ex);
 			}
 			finally {
 				compare.setApiKey(oldApi);
@@ -117,8 +132,10 @@ public class MarketRateService {
 
 		}
 
-		return map;
+		return marketRateMap;
 
 	}
+
+	
 
 }

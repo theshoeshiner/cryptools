@@ -81,8 +81,8 @@ vaadin-vertical-layout[slot="drawer"]{
   /* padding: var(--lumo-space-xl) var(--lumo-space-m); */
   /* padding: var(--lumo-space-m); */
   background-color:var(--lumo-primary-color);
-  padding-bottom:var(--lumo-space-m);
- 	 
+  /* padding-bottom:var(--lumo-space-m); */
+ 	 height:52px;
 }
  
  #logo .name {

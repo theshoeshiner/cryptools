@@ -29,15 +29,20 @@ public class Portfolio extends IdedEntity {
 	String name;
 
 	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
-	Set<Balance> balances;
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	Set<Balance> balances; 
 
 
 	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	Set<PortfolioHistory> histories;
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	PortfolioHistory latest;
 
 	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
-	Set<Allocation> allocations;
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	Set<Allocation> allocations; 
 
 	@Embedded
 	PortfolioSettings settings;
@@ -78,11 +83,14 @@ public class Portfolio extends IdedEntity {
 		else this.balances = new HashSet<>(balances);
 	}
 
-	/*
-	 * public Currency getReserve() { return reserve; }
-	 *
-	 * public void setReserve(Currency reserve) { this.reserve = reserve; }
-	 */
+
+	public PortfolioHistory getLatest() {
+		return latest;
+	}
+
+	public void setLatest(PortfolioHistory latest) {
+		this.latest = latest;
+	}
 
 	@Override
 	public String toString() {

@@ -58,6 +58,7 @@ public class AppSession {
 			LOGGER.info("Authentication: {}",authentication.getPrincipal());
 			CryptUserPrincipal p = (CryptUserPrincipal) authentication.getPrincipal();
 			user = p.getUser();
+			user = userRepo.findById(user.getId()).get();
 		}
 		else {
 			user = userRepo.findByUserNameIgnoreCase(appConfig.username).orElseThrow(() -> new ApplicationException("No user configured"));
@@ -162,9 +163,7 @@ public class AppSession {
 	public Boolean hasAccess(Feature feature, Access ac) {
 		if(user == null) return false;
 		Access has = user.getPermissionsMap().get(feature);
-		LOGGER.info("hasAccess {} = {}",feature,has);
 		Boolean r = ac.isLessThanOrEqual(has);
-		LOGGER.info("hasAccess {} / {} = {}",feature,ac,r);
 		return r;
 	}
 

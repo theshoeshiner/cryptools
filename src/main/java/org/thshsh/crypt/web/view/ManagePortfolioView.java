@@ -31,7 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.serv.PortfolioHistoryService;
 import org.thshsh.crypt.web.views.main.MainLayout;
+import org.thshsh.cryptman.HistoryJob;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.cryptman.PortfolioHistory;
 import org.thshsh.vaadin.BasicTabSheet;
@@ -70,7 +72,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 
 @SuppressWarnings("serial")
-@Route(value = "manage", layout = MainLayout.class)
+@Route(value = "portfolio", layout = MainLayout.class)
 @CssImport("./styles/portfolio.css")
 public class ManagePortfolioView  extends VerticalLayout implements HasUrlParameter<String>, HasDynamicTitle {
 
@@ -80,6 +82,9 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	public static final String ICON_SIZE = "24px";
 
+	@Autowired
+	PortfolioHistoryService historyService;
+	
 	@Autowired
 	ApplicationContext appContext;
 
@@ -229,8 +234,9 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	   
 
 
-	    breadcrumbs.resetBreadcrumbs()
-	    .addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
+	    breadcrumbs
+	    //.resetBreadcrumbs()
+	    //.addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
 	    .addBreadcrumb(entity.getName(), null)
 	    ;
 	}
@@ -325,6 +331,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		layout.setVisible(false);
 		return layout;
 	}
+	
+	protected void runHistoryJob() {
+		historyService.runHistoryJob(entity);
+	}
 
 	protected VerticalLayout createFunctionsTab() {
 
@@ -335,14 +345,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 
 		Button runJob = new Button("Run History Job",click -> {
-			try {
-				scheduler.getJobDetail(JobKey.jobKey(""));
-				Trigger t = TriggerBuilder.newTrigger().forJob("history-job").startNow().build();
-				scheduler.scheduleJob(t);
-			}
-			catch (SchedulerException e) {
-				throw new IllegalStateException(e);
-			}
+			runHistoryJob();
 		});
 		layout.add(runJob);
 
@@ -445,16 +448,16 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 					valuePerHour.add(hist.getValue().toBigInteger());
 					thresh.add(hist.getMaxToTriggerPercent());
 					dates.add(dtf.format(hist.getTimestamp().withZoneSameInstant(ZoneId.systemDefault())));
-					LOGGER.info("adding: {}",hist);
+					LOGGER.debug("adding: {}",hist);
 				}
 			});
 
-			LOGGER.info("valuePerHour: {}",valuePerHour);
+			LOGGER.debug("valuePerHour: {}",valuePerHour);
 
 			List<BigInteger> values = valuePerHour;
 			List<String> labels = dates;
 
-			LOGGER.info("labels: {}",labels);
+			LOGGER.debug("labels: {}",labels);
 
 
 	        ApexCharts areaChart = ApexChartsBuilder.get()

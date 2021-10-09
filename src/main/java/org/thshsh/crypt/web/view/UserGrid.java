@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.web.SecurityUtils;
 
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -21,6 +24,8 @@ public class UserGrid extends AppEntityGrid<User, Long> {
 	public UserGrid() {
 		super(User.class, UserDialog.class, FilterMode.Example);
 		this.showButtonColumn = true;
+		this.showEditButton = SecurityUtils.hasAccess(User.class, Access.ReadWrite);
+		this.showDeleteButton = SecurityUtils.hasAccess(User.class, Access.ReadWriteDelete);
 	}
 
 	@Override
@@ -33,7 +38,10 @@ public class UserGrid extends AppEntityGrid<User, Long> {
 		
 		grid
 		.addColumn(User::getId)
-		.setHeader("Id");
+		.setHeader("Id")
+		.setWidth("100px")
+		.setFlexGrow(0)
+		;
 		
 		grid
 		.addColumn(User::getDisplayName)
@@ -41,7 +49,9 @@ public class UserGrid extends AppEntityGrid<User, Long> {
 		
 		grid
 		.addColumn(User::getUserName)
-		.setHeader("Username");
+		.setHeader("Username")
+		
+		;
 		
 		grid
 		.addColumn(User::getEmail)
@@ -49,7 +59,10 @@ public class UserGrid extends AppEntityGrid<User, Long> {
 		
 		grid
 		.addColumn(User::getConfirmed)
-		.setHeader("Confirmed");
+		.setHeader("Confirmed")
+		.setWidth("100px")
+		.setFlexGrow(0)
+		;
 		
 		
 	}

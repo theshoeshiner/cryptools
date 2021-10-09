@@ -20,10 +20,11 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.spring.annotation.UIScope;
 
 @SuppressWarnings("serial")
+@UIScope
 @Component
-@Scope("prototype")
 public class UserMenu extends HorizontalLayout {
 	
 	
@@ -35,7 +36,7 @@ public class UserMenu extends HorizontalLayout {
 	
 	@Autowired
 	ApplicationContext context;
-	
+
 
 	@Autowired
 	TaskExecutor executor;

@@ -3,6 +3,7 @@ package org.thshsh.cryptman;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.sound.sampled.Port;
@@ -31,6 +32,8 @@ import org.thshsh.crypt.repo.PortfolioRepository;
 public class HistoryJob implements InterruptableJob {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(HistoryJob.class);
+	
+	public static final String PORTFOLIO_ID_PROP = "PORTFOLIO_ID";
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -64,10 +67,20 @@ public class HistoryJob implements InterruptableJob {
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 
 		LOGGER.info("Running Job");
+		
+		Object portId = context.getMergedJobDataMap().get(PORTFOLIO_ID_PROP);
+		
+		List<Portfolio> ports;
+		
+		if(portId == null) {
+			ports = portRepo.findAll();
+		}
+		else {
+			ports = Arrays.asList(portRepo.findById(Long.valueOf(portId.toString())).get());
+		}
 
 		template = new TransactionTemplate(transactionManager);
 
-		List<Portfolio> ports = portRepo.findAll();
 
 		LOGGER.info("ports: {}",ports);
 
@@ -99,7 +112,7 @@ public class HistoryJob implements InterruptableJob {
 
 
 			portHistory.setValue(summary.getTotalValue());
-
+			port.setLatest(portHistory);
 
 			portHistRepo.save(portHistory);
 

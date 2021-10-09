@@ -1,19 +1,28 @@
 package org.thshsh.crypt.web.view;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.SecurityUtils;
 import org.thshsh.crypt.web.UiComponents;
+import org.thshsh.cryptman.MarketRateService;
+import org.thshsh.vaadin.UIUtils;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 @SuppressWarnings("serial")
@@ -24,10 +33,15 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 
 	@Autowired
 	CurrencyRepository repo;
+	
+	@Autowired
+	MarketRateService rateService;
 
 	public CurrenciesGrid() {
 		super(Currency.class, null, FilterMode.Example);
 		this.showButtonColumn=true;
+		this.showEditButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWrite);
+		this.showDeleteButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete);
 	}
 
 	@Override
@@ -81,7 +95,7 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 		.setFlexGrow(0);
 		
 		grid.addColumn(Currency::getPlatformType).setHeader("Platform")
-		.setWidth("200px")
+		.setWidth("125px")
 		.setFlexGrow(0);
 		
 		grid.addComponentColumn(c -> {
@@ -108,13 +122,17 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 	public void addButtonColumn(HorizontalLayout buttons, Currency e) {
 		super.addButtonColumn(buttons, e);
 
-		/*Button manageButton = new Button(VaadinIcon.FOLDER_OPEN.create());
-		manageButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-		buttons.add(manageButton);
-		UIUtils.setTitle(manageButton, "Manage");
-		manageButton.addClickListener(click -> manage(e));*/
+		Button refresh = new Button(VaadinIcon.REFRESH.create());
+		refresh.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		buttons.add(refresh);
+		UIUtils.setTitle(refresh, "Refresh");
+		refresh.addClickListener(click -> refreshRate(e));
 	}
 
+	protected void refreshRate(Currency c) {
+		rateService.getUpToDateMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c));
+	}
+	
 	/*protected void manage(Portfolio e) {
 		String route = RouteConfiguration.forSessionScope().getUrl(ManagePortfolioView.class);
 		QueryParameters queryParameters = new QueryParameters(Collections.singletonMap("id",Arrays.asList(e.getId().toString())));

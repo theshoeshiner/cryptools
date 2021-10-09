@@ -10,7 +10,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thshsh.crypt.Role;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
 
 @Service
@@ -24,6 +26,9 @@ public class UserService {
 
 	@Autowired
 	JavaMailSender mailSender;
+	
+	@Autowired
+	RoleRepository roleRepo;
 	
 	@Value("${app.url}")
 	String baseUrl;
@@ -41,6 +46,7 @@ public class UserService {
 		u.setConfirmed(false);
 		String confirmToken = RandomStringUtils.randomAlphanumeric(32); 
 		u.setConfirmToken(confirmToken);
+		u.getRoles().add(roleRepo.findByKey(Role.USER_ROLE_KEY).get());
 		
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -78,6 +84,8 @@ public class UserService {
 	public void setPassword(User u, String pass) {
 		u.setPassword(encoder.encode(pass));
 	}
+	
+	
 
 	@SuppressWarnings("serial")
 	public static class UserExistsException extends Exception {

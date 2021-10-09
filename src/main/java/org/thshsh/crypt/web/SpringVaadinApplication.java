@@ -15,6 +15,7 @@ import org.vaadin.artur.helpers.LaunchUtil;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.Theme;
@@ -28,10 +29,8 @@ import com.vaadin.flow.theme.material.Material;
 		CryptModel.class
 },
 exclude = ErrorMvcAutoConfiguration.class)
-//@EnableJpaRepositories
 @Theme(value = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)
-//@Theme(value = Material.class, variant = Material.LIGHT)
-@PWA(name = "Sample Web", shortName = "Sample Web")
+@PWA(name = "Cryptools", shortName = "Cryptools",iconPath = "icons/cryptools-icon.png")
 @Push(transport = Transport.LONG_POLLING)
 public class SpringVaadinApplication extends SpringBootServletInitializer implements AppShellConfigurator {
 
@@ -55,6 +54,13 @@ public class SpringVaadinApplication extends SpringBootServletInitializer implem
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 		return builder.sources(SpringVaadinApplication.class);
+	}
+
+	@Override
+	public void configurePage(AppShellSettings settings) {
+		AppShellConfigurator.super.configurePage(settings);
+		 settings.addLink("shortcut icon", "icons/icon.png");
+		settings.addFavIcon("icon", "icons/icon.png", "280x280");
 	}
 
 

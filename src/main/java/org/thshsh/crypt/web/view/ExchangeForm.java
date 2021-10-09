@@ -1,13 +1,20 @@
 package org.thshsh.crypt.web.view;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.vaadin.entity.EntityForm;
 
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
 
+@SuppressWarnings("serial")
+@Component
+@Scope("prototype")
 public class ExchangeForm extends EntityForm<Exchange,Long> {
 
 	@Autowired
@@ -37,6 +44,12 @@ public class ExchangeForm extends EntityForm<Exchange,Long> {
 		.forField(key)
 		.asRequired()
 		.bind(Exchange::getKey, Exchange::setKey);
+		
+		ComboBox<Grade> grade = new ComboBox<>("Grade");
+		grade.setItems(Grade.values());
+		binder
+		.forField(grade)
+		.bind(Exchange::getGrade, Exchange::setGrade);
 
 		TextField remname = new TextField("Remote Name");
 		binder
@@ -56,6 +69,10 @@ public class ExchangeForm extends EntityForm<Exchange,Long> {
 		formLayout.startHorizontalLayout();
 		formLayout.add(name);
 		formLayout.add(key);
+		formLayout.endLayout();
+		
+		formLayout.startHorizontalLayout();
+		formLayout.add(grade);
 		formLayout.endLayout();
 
 		formLayout.startHorizontalLayout();

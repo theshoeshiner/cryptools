@@ -21,9 +21,12 @@ import org.thshsh.color.AbstractColor;
 import org.thshsh.color.ColorSpaceConverter;
 import org.thshsh.color.ColorUtils;
 import org.thshsh.color.LchColor;
+import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.ImageService;
+import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.UIUtils;
 
@@ -41,6 +44,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "testing", layout = MainLayout.class)
 @PageTitle("Testing")
+@SecuredByFeatureAccess(feature=Feature.System,access=Access.Read)
 public class TestingView extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(TestingView.class);

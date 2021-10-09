@@ -2,6 +2,8 @@ package org.thshsh.crypt.web.view;
 
 import java.io.Serializable;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
 
@@ -48,6 +52,12 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 		super(PortfolioSettings.class, entity.getSettings());
 		this.portfolio = entity;
 	}
+	
+	@PostConstruct
+	public void postConstruct() {
+		super.postConstruct();
+		this.save.setEnabled(false);
+	}
 
 	@Override
 	protected JpaRepository<PortfolioSettings, Serializable> getRepository() {
@@ -65,7 +75,10 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 		});
 		ass.setItems(appContext.getBean(HasSymbolDataProvider.class,assetRepo));
 		ass.setWidth("250px");
-		binder.forField(ass).asRequired().bind(
+		binder
+			.forField(ass)
+			.asRequired()
+			.bind(
 				PortfolioSettings::getReserve,PortfolioSettings::setReserve
 				//FunctionUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
 				//FunctionUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
@@ -73,22 +86,31 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 
 
 		TextField balance = new TextField("Minimum Adjustment");
-		binder.forField(balance)
-		.asRequired()
-		.withNullRepresentation("")
-		.withConverter(new BigDecimalConverter())
-		.bind(PortfolioSettings::getMinimumAdjust, PortfolioSettings::setMinimumAdjust);
+		binder
+			.forField(balance)
+		//.asRequired()
+			.withNullRepresentation("")
+			.withConverter(new BigDecimalConverter())
+			.bind(PortfolioSettings::getMinimumAdjust, PortfolioSettings::setMinimumAdjust);
 		
 		Checkbox alerts = new Checkbox("Disable Alerts");
 		binder.forField(alerts).bind(PortfolioSettings::getAlertsDisabled,PortfolioSettings::setAlertsDisabled);
 
 
+		binder.addValueChangeListener(change -> {
+			save.setEnabled(true);
+			
+		});
+		
 		formLayout.startVerticalLayout();
 		//formLayout.add(nameField);
 		formLayout.add(ass);
 		formLayout.add(balance);
 		formLayout.add(alerts);
 		formLayout.endLayout();
+		
+		
+		
 
 
 	}
@@ -105,6 +127,10 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 		Portfolio p = portRepo.findById(portfolio.getId()).get();
 		p.setSettings(entity);
 		portRepo.save(p);
+		Notification n = Notification.show("Saved", 500, Position.MIDDLE);
+		//Notification n = new Notification("Saved", 500, Position.MIDDLE);
+		
+		//Notification.show("", 500, Position.MIDDLE);
 	}
 
 

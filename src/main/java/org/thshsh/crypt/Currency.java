@@ -1,15 +1,19 @@
 package org.thshsh.crypt;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import org.thshsh.cryptman.CryptmanModel;
 
 /**
  * This is a system wide entity
@@ -52,6 +56,11 @@ public class Currency extends IdedEntity implements HasImage  {
 	@Enumerated(EnumType.ORDINAL)
 	Grade grade;
 
+	@ManyToMany
+	@JoinTable(schema = CryptModel.SCHEMA,name="currency_exchange",
+	joinColumns = @JoinColumn(name="currency_id"),inverseJoinColumns = @JoinColumn(name="exchange_id"))
+	Set<Exchange> exchanges;
+	
 	/*
 	 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - platformtypes: [null, blockchain, derivative, token]
 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - builton: [null, XLM,ETH, Mainnet,BNB, NAS, TRX,ETH, VET, RSK Network, SOL,ETH, ETH,BNB,FTM, mainnet,BNB, HT, WAVES, ETH/BNB, mainnet,ETH, ONT, XLM, ETH,BNB,mainnet, 2017-10-25, TRX, QTUM, Mainnet,NEO,ETH, LUNA, luniverse, ETH,WAN, KAVA, IOST, BNB,TRX,ETH, ETH,BNB,NEO,NULS, EOS, GO, WAVES,ETH, STRAX, ETH,BTC,EOS,TRX,ALGO,SLP,OMG, ETH,BNB, ETH,BNB,DOT,ALGO,ADA, BNB, ETH, NEO, ETH,ZIL, OMNI, XMR]
@@ -146,7 +155,16 @@ public class Currency extends IdedEntity implements HasImage  {
 		return platformType;
 	}
 
+	
 
+	public Set<Exchange> getExchanges() {
+		if(exchanges == null) exchanges = new HashSet<Exchange>();
+		return exchanges;
+	}
+
+	public void setExchanges(Set<Exchange> exchanges) {
+		this.exchanges = exchanges;
+	}
 
 	public void setPlatformType(PlatformType platformType) {
 		this.platformType = platformType;

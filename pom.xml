@@ -10,7 +10,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<active.profile>local</active.profile>
@@ -20,7 +21,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.0</version>
+		<version>2.5.5</version>
 	</parent>
 
 	<repositories>
@@ -81,6 +82,9 @@
 
 	<dependencies>
 
+		<!-- <dependency> <groupId>com.storedobject.chart</groupId> <artifactId>so-charts</artifactId> 
+			<version>2.3.0</version> </dependency> -->
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -132,6 +136,11 @@
 			<groupId>ch.carnet.kasparscherrer</groupId>
 			<artifactId>scrolllayout</artifactId>
 			<version>2.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.appreciated</groupId>
+			<artifactId>card</artifactId>
+			<version>2.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -349,6 +358,12 @@
 			<version>2.3.3.RELEASE</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.github.appreciated</groupId>
+			<artifactId>vaadin-css-grid</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+
 		<!-- BC stuff -->
 
 
@@ -445,6 +460,7 @@
 			<id>local</id>
 			<properties>
 				<active.profile>local</active.profile>
+
 			</properties>
 
 			<build>
@@ -484,7 +500,61 @@
 			<id>test</id>
 			<properties>
 				<vaadin.productionMode>true</vaadin.productionMode>
+				<active.profile>test</active.profile>
 			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-server-production-mode</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<configuration>
+									<wait>500</wait>
+									<maxAttempts>5</maxAttempts>
+									<mainClass>org.thshsh.crypt.web.SpringVaadinApplication</mainClass>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.vaadin</groupId>
+						<artifactId>vaadin-maven-plugin</artifactId>
+						<version>${vaadin.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>build-frontend</goal>
+								</goals>
+								<phase>compile</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
+		
+		
+		
+		<profile>
+			<id>flounder</id>
+			<properties>
+				<vaadin.productionMode>true</vaadin.productionMode>
+				<active.profile>flounder</active.profile>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-server-production-mode</artifactId>
+				</dependency>
+			</dependencies>
 			<build>
 				<plugins>
 					<plugin>

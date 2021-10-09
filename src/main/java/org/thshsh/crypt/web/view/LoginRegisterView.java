@@ -43,15 +43,15 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 
-@Route(value = LoginView.ROUTE)
+@Route(value = LoginRegisterView.ROUTE)
 @PageTitle(MainLayout.TITLE_PREFIX)
 @NpmPackage(value = "@polymer/iron-form", version = "3.0.1")
 @JsModule("@polymer/iron-form/iron-form.js")
-public class LoginView extends VerticalLayout implements BeforeEnterObserver {
+public class LoginRegisterView extends VerticalLayout implements BeforeEnterObserver {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(LoginView.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(LoginRegisterView.class);
 
-	public static final String ROUTE = "login2";
+	public static final String ROUTE = "lv";
 
 	private static final String EMAIL_PATTERN = "^" + "([a-zA-Z0-9_\\.\\-+])+" // local
 			+ "@" + "[a-zA-Z0-9-.]+" // domain
@@ -86,7 +86,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	// VerticalLayout formsLayout;
 
-	public LoginView() {
+	public LoginRegisterView() {
 
 		this.setSizeFull();
 
@@ -113,16 +113,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	protected void showLogin() {
 		login = true;
 
-		/*Button button = new Button("Push Me");
-		button.setId("push-me");
-		Popup popup = new Popup();
-		popup.setFor(button.getId().orElse(null));
-		Div text = new Div();
-		text.setText("element 1");
-		Div text2 = new Div();
-		text2.setText("element 2");
-		popup.add(text, text2);
-		add(button, popup);*/
 
 		if (registerLayout != null)
 			this.remove(registerLayout);
@@ -132,20 +122,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		formLayout.setAlignItems(Alignment.CENTER);
 		formLayout.setWidth("300px");
 
-		/*names = new HorizontalLayout();
-		names.setWidthFull();
-		
-		firstName = new TextField();
-		firstName.setMinWidth("0px");
-		firstName.setPlaceholder("First Name");
-		
-		
-		lastName = new TextField();
-		lastName.setMinWidth("0px");
-		lastName.setPlaceholder("Last Name");
-		
-		names.add(firstName, lastName);
-		names.setFlexGrow(1, firstName, lastName);*/
 
 		emailLoginField = new TextField();
 		emailLoginField.setPlaceholder("Email / Username");
@@ -188,17 +164,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		
 		passwordField.getElement().executeJs("this.shadowRoot.querySelector('input').setAttribute('id','password');");
 
-		/*	userNameField = new TextField();
 		
-			userNameField.setPlaceholder("Username (Optional)");
-			userNameField.setWidthFull();
-		*/
-		/*confirmPasswordField = new PasswordField();
-		confirmPasswordField.setPlaceholder("Confirm Password");
-		//passwordField.getElement().setAttribute("name", "password"); //
-		confirmPasswordField.setWidthFull();
-		//confirmPasswordField.setVisible(false);
-		*/
 
 		HorizontalLayout buttons = new HorizontalLayout();
 		buttons.setWidthFull();
@@ -210,16 +176,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		buttons.add(loginButton);
 		UIUtils.setElementAttribute(loginButton, "type", "submit");
 		
-		/*Input i = new Input();
-		i.setType("submit");
-		buttons.add(i);*/
-
-		/*backButton = new Button("Back");
-		buttons.add(backButton);
-		backButton.addClickListener(click -> {
-			showLogin();
-		});*/
-
+	
 		Button register = new Button("Register");
 		buttons.add(register);
 		register.addClickListener(click -> {
@@ -266,16 +223,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		nameField.setMinWidth("0px");
 		nameField.setPlaceholder("Name");
 
-		/*TextField lastName = new TextField();
-		lastName.setMinWidth("0px");
-		lastName.setPlaceholder("Last Name");*/
-
 		names.add(nameField);
 		names.setFlexGrow(1, nameField);
 
-		/*emailField = new TextField();
-		emailField.getElement().setAttribute("name", "username"); //
-		emailField.setWidthFull();*/
+	
 
 		PasswordField passwordField = new PasswordField();
 		passwordField.setPlaceholder("Password");
@@ -348,28 +299,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 		apikeyrow.add(button, popup);
 
-		/*Button why = new Button("What's This?");
-		why.setId("why");
-		why.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-		why.addClassName("helper-text");
-		apikeyrow.add(why);
-		
-		Popup popup = new Popup();
-		popup.addPopupOpenChangedEventListener(change -> {
-			LOGGER.info("change: {}",change.isOpened());
-		});
-		popup.setFor("why");
-		Div exp = new Div();
-		Span span = new Span("Price data for portfolios is retrieved from the CryptoCompare API. An API Key can be obtained by following this guide.");
-		exp.add(span);
-		popup.add(exp);
-		add(popup);*/
-		// https://www.cryptocompare.com/coins/guides/how-to-use-our-api/
-
 		registerLayout.add(names, userNameField, emailField, apikeyrow, passwordField, confirmPasswordField, buttons);
-		// registerForm.add(names,userNameField,passwordField,confirmPasswordField,buttons);
-
-		// formsLayout.getElement().appendChild(formLayout.getElement());
+		
 
 		binder.forField(emailField).asRequired().withValidator(new EmailValidator("Invalid Email Address"))
 				.withValidator((s, c) -> {
@@ -398,11 +329,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 			} else {
 				return ValidationResult.error("Invalid API Key");
 			}
-			// CryptoCompare cc = context.getBean(CryptoCompare.class,s,null);
-			// CryptoCompare cc = new CryptoCompare(s);
-			// Map<String,BigDecimal> price =
-			// cc.getCurrentFiatPrice(Collections.singleton("BTC"));
-			// LOGGER.info("get price: {}",price);
+			
 
 		}).bind(User::getApiKey, User::setApiKey);
 
@@ -444,82 +371,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	}
 
-	/*protected void showRegister() {
-	
-		if (login) {
-	
-			login = false;
-	
-			//loginButton.setVisible(false);
-			//loginButton.addClassName("invisible");
-			backButton.setVisible(true);
-	
-			binder = new Binder<>();
-			//binder.removeBinding(emailField);
-	
-			registerUser = new User();
-	
-			emailField.setPlaceholder("Email");
-	
-			binder.forField(emailField).asRequired().withValidator(new EmailValidator("Invalid Email Address"))
-					.withValidator((s, c) -> {
-						if (userRepo.findByEmail(s).isPresent())
-							return ValidationResult.error("Email Address already in use");
-						else
-							return ValidationResult.ok();
-					}).bind(User::getEmail, User::setEmail);
-	
-			binder.forField(userNameField).withNullRepresentation("")
-					.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++")).withValidator((s, c) -> {
-						if (s != null && userRepo.findByUserNameIgnoreCase(s).isPresent())
-							return ValidationResult.error("Username already in use");
-						else
-							return ValidationResult.ok();
-					}).bind(User::getUserName, User::setUserName);
-	
-			//submitButton.setEnabled(false);
-			names.setVisible(true);
-			confirmPasswordField.setVisible(true);
-			userNameField.setVisible(true);
-	
-			binder.forField(firstName).withNullRepresentation("").bind(User::getFirstName, User::setFirstName);
-	
-			binder.forField(lastName).withNullRepresentation("").bind(User::getLastName, User::setLastName);
-	
-			binder.forField(confirmPasswordField).asRequired().withValidator((u, s) -> {
-				LOGGER.info("validate password {} vs {}", u, passwordField.getValue());
-				if (u.equals(passwordField.getValue()))
-					return ValidationResult.ok();
-				else
-					return ValidationResult.error("Passwords do not match");
-			}).bind(User::getPassword, User::setPassword);
-	
-			names.add(firstName, lastName);
-			names.setFlexGrow(1, firstName, lastName);
-	
-		} else {
-	
-			try {
-				LOGGER.info("write bean");
-				binder.writeBean(registerUser);
-				try {
-					userService.registerUser(registerUser);
-					message.setText("Registration Successful");
-					message.setVisible(true);
-	
-					showLogin();
-					LOGGER.info("registration success");
-					//UI.getCurrent().getPage().reload();
-	
-				} catch (UserExistsException e) {
-	
-				}
-			} catch (ValidationException e) {
-				LOGGER.error("validation error", e);
-			}
-			//User user = new User(firstName.getValue(),lastName.getValue(),emailField.getValue(),userNameField.getValue(),passwordField.getValue());
-		}
-	}*/
+
 
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
@@ -559,13 +411,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 			message.setText("Account confirmed. Login below.");
 			message.setVisible(true);
 
-			// String msg = SecurityConfiguration.ERROR_MESSAGES.inverseBidiMap().get(hash);
-
-			// LOGGER.info("setting error");
-			// emailLoginField.setErrorMessage(msg);
-			// emailLoginField.setInvalid(true);
-			// message.setText("Username and Password do not match");
-			// emailField.setValue("error");
+	
 		}
 	}
 }

@@ -43,6 +43,8 @@ public class ManagePortfolioService {
 	BigDecimal portThreshold = new BigDecimal(".04");
 
 	public PortfolioSummary getSummary(Portfolio portfolio) {
+		
+		LOGGER.info("getSummary: {}",portfolio);
 
 		PortfolioSummary summary = new PortfolioSummary();
 
@@ -81,24 +83,36 @@ public class ManagePortfolioService {
 		currencyBalances.forEach((cur,bal)-> {
 
 			LOGGER.info("cur: {}",cur);
-
-			BigDecimal value = bal.getAsBigDecimal().multiply(rates.get(cur).getRate());
-			currencyValues.put(cur, value);
-			totalValue.inc(value);
-			Allocation allocation = null;
-			if(allocationMap.containsKey(cur)) {
-				allocation = allocationMap.get(cur);
+			
+			BigDecimal rate;
+			
+			if(rates.containsKey(cur)) {
+				rate = rates.get(cur).getRate();
+			
+	
+				BigDecimal value = bal.getAsBigDecimal().multiply(rate);
+				currencyValues.put(cur, value);
+				totalValue.inc(value);
+				Allocation allocation = null;
+				if(allocationMap.containsKey(cur)) {
+					allocation = allocationMap.get(cur);
+				}
+	
+				if(allocation == null || allocation.getPercent() == null) {
+					remainderCount.increment();
+				}
+				PortfolioEntry pe = new PortfolioEntry(portfolio,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
+				pe.setValueReserve(value);
+				entryMap.put(cur, pe);
+				entries.add(pe);
+	
+				LOGGER.info("value: {}",value);
+			
 			}
-
-			if(allocation == null || allocation.getPercent() == null) {
-				remainderCount.increment();
+			else {
+				LOGGER.warn("No Market rate for: {}",cur);
 			}
-			PortfolioEntry pe = new PortfolioEntry(portfolio,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
-			pe.setValueReserve(value);
-			entryMap.put(cur, pe);
-			entries.add(pe);
-
-			LOGGER.info("value: {}",value);
+			
 		});
 
 		Long count = remainderCount.longValue();
@@ -146,49 +160,54 @@ public class ManagePortfolioService {
 			LOGGER.info("cur: {}",cur);
 
 			PortfolioEntry pe = entryMap.get(cur);
-			BigDecimal percent = pe.getAllocation().getPercent();
-			BigDecimal targetValue = totalValue.getAsBigDecimal().multiply(percent);
-			LOGGER.info("targetValue: {}",targetValue);
-			pe.setTargetReserve(targetValue);
-
-			BigDecimal adjPerc = pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
-			LOGGER.info("adjPerc: {}",adjPerc);
-			pe.setAdjustPercent(adjPerc);
-			totalAdjust.inc(pe.getAdjustPercentAbsolute());
-
-			//thresh - 15/4
-			BigDecimal thresh;
-			BigDecimal ind = pe.getAllocation().getPercent().multiply(indThreshold);
-			LOGGER.info("ind thresh: {}",ind);
-			if(ind.compareTo(portThreshold) >0)  thresh = portThreshold;
-			else thresh = ind;
-			pe.setThresholdPercent(thresh);
-
-			LOGGER.info("Threshold: {}",thresh);
-
-
-			if(pe.getAllocation().getPercent().compareTo(BigDecimal.ZERO) != 0) {
-
-				BigDecimal toTrigger = adjPerc.divide(thresh, RoundingMode.HALF_EVEN).abs();
-				LOGGER.info("toTrigger: {}",toTrigger);
-
-
-				if(portfolio.getSettings().getMinimumAdjust() != null) {
-					if(pe.getAdjustAbsolute().compareTo(portfolio.getSettings().getMinimumAdjust()) < 0) {
-						//adjust is less than minimum so change our to trigger
-						BigDecimal toMinTrigger = pe.getAdjustAbsolute().divide(portfolio.getSettings().getMinimumAdjust(),RoundingMode.HALF_EVEN);
-						if(toMinTrigger.compareTo(toTrigger) < 0) {
-							toTrigger = toMinTrigger;
+			
+			if(pe != null) {
+				
+				BigDecimal percent = pe.getAllocation().getPercent();
+				BigDecimal targetValue = totalValue.getAsBigDecimal().multiply(percent);
+				LOGGER.info("targetValue: {}",targetValue);
+				pe.setTargetReserve(targetValue);
+	
+				BigDecimal adjPerc = pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
+				LOGGER.info("adjPerc: {}",adjPerc);
+				pe.setAdjustPercent(adjPerc);
+				totalAdjust.inc(pe.getAdjustPercentAbsolute());
+	
+				//thresh - 15/4
+				BigDecimal thresh;
+				BigDecimal ind = pe.getAllocation().getPercent().multiply(indThreshold);
+				LOGGER.info("ind thresh: {}",ind);
+				if(ind.compareTo(portThreshold) >0)  thresh = portThreshold;
+				else thresh = ind;
+				pe.setThresholdPercent(thresh);
+	
+				LOGGER.info("Threshold: {}",thresh);
+	
+	
+				if(pe.getAllocation().getPercent().compareTo(BigDecimal.ZERO) != 0) {
+	
+					BigDecimal toTrigger = adjPerc.divide(thresh, RoundingMode.HALF_EVEN).abs();
+					LOGGER.info("toTrigger: {}",toTrigger);
+	
+	
+					if(portfolio.getSettings().getMinimumAdjust() != null) {
+						if(pe.getAdjustAbsolute().compareTo(portfolio.getSettings().getMinimumAdjust()) < 0) {
+							//adjust is less than minimum so change our to trigger
+							BigDecimal toMinTrigger = pe.getAdjustAbsolute().divide(portfolio.getSettings().getMinimumAdjust(),RoundingMode.HALF_EVEN);
+							if(toMinTrigger.compareTo(toTrigger) < 0) {
+								toTrigger = toMinTrigger;
+							}
 						}
 					}
+	
+	
+					pe.setToTriggerPercent(toTrigger);
+					if(toTrigger.compareTo(maxToTriggerPercent.getAsBigDecimal()) >0) {
+						maxToTriggerPercent.set(toTrigger);
+					}
+	
 				}
-
-
-				pe.setToTriggerPercent(toTrigger);
-				if(toTrigger.compareTo(maxToTriggerPercent.getAsBigDecimal()) >0) {
-					maxToTriggerPercent.set(toTrigger);
-				}
-
+			
 			}
 
 

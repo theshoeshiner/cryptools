@@ -59,6 +59,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
+	static NumberFormat ReserveFormatWhole = new DecimalFormat("$#,##0");
 	static NumberFormat ReserveFormat = new DecimalFormat("$#,##0.00");
 	static NumberFormat PercentFormat = new DecimalFormat("##.#%");
 	static NumberFormat CoinFormat = new DecimalFormat("####.########");
@@ -144,7 +145,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		return (long) dataProvider.size(new Query<>());
 	}
 
-	BigDecimal[] warn = new BigDecimal[] { new BigDecimal("1"), new BigDecimal(".75"), new BigDecimal(".5"),
+	static BigDecimal[] warn = new BigDecimal[] { new BigDecimal("1"), new BigDecimal(".75"), new BigDecimal(".5"),
 			new BigDecimal(".25") };
 
 
@@ -180,6 +181,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 		dialog.addOpenedChangeListener(changed -> {
 			if(dialog.getEntityForm().getSaved()) {
 				this.view.refreshMainTab();
+				view.runHistoryJob();
 			}
 		});
 
@@ -327,13 +329,16 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 				return "alert";
 			}*/
 
-			for (int i = 0; i < warn.length; i++) {
+			Integer warnLevel = getWarnLevel(pe.getToTriggerPercent());
+			names.add("warn-"+warnLevel);
+			
+			/*for (int i = 0; i < warn.length; i++) {
 				BigDecimal b = warn[i];
 				if (pe.getToTriggerPercentOrZero().compareTo(b) > 0) {
 					names.add("warn-" + i);
 					break;
 				}
-			}
+			}*/
 
 			return StringUtils.join(names, " ");
 			//return new StringJoiner(" ",)
@@ -345,8 +350,18 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntry, Long> {
 
 	}
 	
-	
+	public static Integer getWarnLevel(BigDecimal bd) {
+		if(bd != null) {
+			for (int i = 0; i < warn.length; i++) {
+				if (bd.compareTo(warn[i]) > 0) {
+					return i;
+				}
+			}
+		}
+		return null;
+	}
 
+	
 	@Override
 	public void setupAdvancedColumns(Grid<PortfolioEntry> grid, Collection<Column<PortfolioEntry>> coll) {
 		

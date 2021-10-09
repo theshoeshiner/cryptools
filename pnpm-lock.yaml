@@ -3,6 +3,8 @@ dependencies:
   '@polymer/iron-form': 3.0.1
   '@polymer/iron-icon': 3.0.1
   '@polymer/iron-list': 3.1.0
+  '@polymer/iron-media-query': 3.0.1
+  '@polymer/paper-ripple': 3.0.2
   '@polymer/polymer': 3.2.0
   '@vaadin-component-factory/vcf-popup': 1.2.5
   '@vaadin-component-factory/vcf-toggle-button': 1.0.3
@@ -52,6 +54,7 @@ dependencies:
   apexcharts: 3.26.3
   cdigit: 2.5.6
   chance: 1.1.7
+  element-match-media: 0.0.3
   lit-element: 2.3.1
   multiselect-combo-box: 2.4.2
   onecolor: 3.1.0
@@ -1046,6 +1049,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-xg1WanG25BIkQE8rhuReqY9zx1K5M7F+YAIYpswEp5eyDIaZ1Y3vUmVeQ3KG+hiSugzI1M752azXN7kvyhOBcQ==
+  /@polymer/paper-ripple/3.0.2:
+    dependencies:
+      '@polymer/iron-a11y-keys-behavior': 3.0.1
+      '@polymer/polymer': 3.2.0
+    dev: false
+    resolution:
+      integrity: sha512-DnLNvYIMsiayeICroYxx6Q6Hg1cUU8HN2sbutXazlemAlGqdq80qz3TIaVdbpbt/pvjcFGX2HtntMlPstCge8Q==
   /@polymer/polymer/3.2.0:
     dependencies:
       '@webcomponents/shadycss': 1.9.6
@@ -3582,6 +3592,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-jXdnLcawJ/EMdN+j77TC3YyeAWiIjo1U63DFCKrjtLv4cu8ToyoF4HYXtFvkVVHhEtIl7lU1uDd307Xj1/YDjw==
+  /element-match-media/0.0.3:
+    dev: false
+    resolution:
+      integrity: sha512-RODBFq6pz6NGmeOza8CfjSgzdfBvb/d9+qJVR9IY1580s11H9nFDU5XjR/MYywmEVRcO/wx8+nmvBhjj5n8igA==
   /elliptic/6.5.2:
     dependencies:
       bn.js: 4.11.8
@@ -6143,6 +6157,7 @@ packages:
     resolution:
       integrity: sha1-nsYfeQSYdXB9aUFFlv2Qek1xHnM=
   /querystring/0.2.0:
+    deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
     dev: true
     engines:
       node: '>=0.4.x'
@@ -7685,6 +7700,8 @@ specifiers:
   '@polymer/iron-form': 3.0.1
   '@polymer/iron-icon': 3.0.1
   '@polymer/iron-list': 3.1.0
+  '@polymer/iron-media-query': 3.0.1
+  '@polymer/paper-ripple': 3.0.2
   '@polymer/polymer': 3.2.0
   '@types/validator': 13.1.0
   '@vaadin-component-factory/vcf-popup': 1.2.5
@@ -7740,6 +7757,7 @@ specifiers:
   compression-webpack-plugin: 4.0.1
   copy-webpack-plugin: 5.1.2
   css-loader: 4.2.1
+  element-match-media: 0.0.3
   extract-loader: 5.1.0
   html-webpack-plugin: 3.2.0
   lit-css-loader: 0.0.4

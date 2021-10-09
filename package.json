@@ -58,8 +58,11 @@
     "multiselect-combo-box": "2.4.2",
     "apexcharts": "3.26.3",
     "onecolor": "3.1.0",
+    "@vaadin-component-factory/vcf-popup": "1.2.5",
     "@polymer/iron-form": "3.0.1",
-    "@vaadin-component-factory/vcf-popup": "1.2.5"
+    "element-match-media": "0.0.3",
+    "@polymer/iron-media-query": "3.0.1",
+    "@polymer/paper-ripple": "3.0.2"
   },
   "devDependencies": {
     "webpack": "4.42.0",
@@ -143,7 +146,11 @@
       "apexcharts": "3.26.3",
       "onecolor": "3.1.0",
       "@polymer/iron-form": "3.0.1",
-      "@vaadin-component-factory/vcf-popup": "1.2.5"
+      "@vaadin-component-factory/vcf-popup": "1.2.5",
+      "element-match-media": "0.0.3",
+      "@polymer/iron-media-query": "3.0.1",
+      "echarts": "5.1.2",
+      "@polymer/paper-ripple": "3.0.2"
     },
     "devDependencies": {
       "webpack-babel-multi-target-plugin": "2.3.3",
@@ -169,6 +176,6 @@
       "lit-css-loader": "0.0.4",
       "extract-loader": "5.1.0"
     },
-    "hash": "07cdc97c6a6b22d48b97adea6e0acf1eb9960909ffbfa3ee126394d89cbf9651"
+    "hash": "91e922f72369eb18a43211c6e4eade2e6f00e2509137e35af3c8774e662b3684"
   }
 }

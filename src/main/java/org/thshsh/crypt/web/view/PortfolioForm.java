@@ -1,5 +1,8 @@
 package org.thshsh.crypt.web.view;
 
+import java.util.Collections;
+
+import org.apache.commons.collections4.map.SingletonMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -11,6 +14,7 @@ import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.serv.PortfolioHistoryService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SecurityUtils;
 import org.thshsh.crypt.web.UsernameEmailDataProvider;
@@ -19,15 +23,23 @@ import org.thshsh.cryptman.PortfolioSettings;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.entity.EntityForm;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
 
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
 public class PortfolioForm extends EntityForm<Portfolio, Long> {
 
+	@Autowired
+	PortfolioHistoryService historyService;
+	
 	@Autowired
 	ApplicationContext appContext;
 
@@ -42,6 +54,9 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 
 	public PortfolioForm(Portfolio entity) {
 		super(Portfolio.class, entity);
+		this.createText = "New";
+		this.saveText = "Save and Open";
+		this.confirm = false;
 	}
 
 	@Override
@@ -90,12 +105,23 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 
 		}
 
-		
-		
-		
 		formLayout.endLayout();
 
 	}
+	
+	
+
+	@Override
+	protected void save() throws ValidationException {
+		super.save();
+	}
+	
+	@Override
+	protected void persist()  {
+		super.persist();
+		historyService.runHistoryJob(entity);
+		UI.getCurrent().navigate("portfolio", QueryParameters.simple(new SingletonMap<>("id",entity.getId().toString())));
+	}	
 
 	@Override
 	protected Long getEntityId(Portfolio e) {

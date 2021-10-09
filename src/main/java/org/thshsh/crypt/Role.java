@@ -24,6 +24,7 @@ public class Role extends IdedEntity{
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(Role.class);
 
+	public static final String USER_ROLE_KEY = "user";
 
 	@ManyToMany(mappedBy = "roles")
 	Set<User> users;

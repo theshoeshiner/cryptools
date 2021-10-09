@@ -1,1 +1,16 @@
 
+/* vaadin-grid::part(body-cell) {
+	color:Red;
+}
+
+vaadin-grid::part(body-cell).warn-0 {
+	background-color: var(--warn-0-color)  !important;
+}
+
+vaadin-grid::part(body-cell).warn-1 {
+	background-color: var(--warn-1-color) !important;
+}
+
+vaadin-grid::part(body-cell).warn-2 {
+	background-color: var(--warn-2-color) !important;
+} */

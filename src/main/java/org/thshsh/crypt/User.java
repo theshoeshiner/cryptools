@@ -157,7 +157,6 @@ public class User extends IdedEntity {
 	
 
 	public Map<Feature,Access> getPermissionsMap() {
-		LOGGER.info("getPermissionsMap");
 		if(permissionsMap == null) {
 			permissionsMap = new HashMap<>();
 			getRoles().forEach(role -> {

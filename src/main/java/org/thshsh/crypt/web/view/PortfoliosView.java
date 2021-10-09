@@ -1,5 +1,7 @@
 package org.thshsh.crypt.web.view;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,7 @@ public class PortfoliosView extends EntityGridView<Portfolio, Long> {
 
 
 	@Override
+	 @PostConstruct
 	public void postConstruct() {
 		LOGGER.info("post construct");
 		//this.entitiesList.showButtonColumn=true;

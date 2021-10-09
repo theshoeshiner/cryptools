@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.repo.ExchangeRepository;
+import org.thshsh.crypt.web.SecurityUtils;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.vaadin.FunctionUtils;
@@ -27,8 +29,10 @@ public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 	ExchangeRepository repo;
 
 	public ExchangesGrid() {
-		super(Exchange.class, null, FilterMode.Example);
+		super(Exchange.class, ExchangeDialog.class, FilterMode.Example);
 		this.showButtonColumn=true;
+		this.showEditButton = SecurityUtils.hasAccess(Exchange.class, Access.ReadWrite);
+		this.showDeleteButton = SecurityUtils.hasAccess(Exchange.class, Access.ReadWriteDelete);
 	}
 
 	@Override

@@ -93,7 +93,9 @@ html {
 	--lumo-primary-color-80pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.80);
 
 
-   --lumo-accent-color-1:#FB6107;
+	--lumo-accent-color-1-hsl: 22, 97%, 51%;
+   --lumo-accent-color-1:hsla(var(--lumo-accent-color-1-hsl),1);
+   --lumo-accent-color-1-50pct:hsla(var(--lumo-accent-color-1-hsl),.5);
    --lumo-accent-color-2:var(--bc-light-amber);
    --lumo-accent-color-3:var(--bc-green);
    --lumo-accent-color-4:var(--bc-dark-amber);
@@ -114,7 +116,9 @@ html {
 
   	--lumo-header-text-color:var(--lumo-primary-color);
 
-  	--warn-0-color: #b34045;
+  	/* --warn-0-color: #b34045; */
+  	 --warn-0-color: #c46065; 
+
 	--warn-1-color: #FEAB6D;
 	--warn-2-color: #fecf6d;
 

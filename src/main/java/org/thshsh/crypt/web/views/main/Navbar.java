@@ -18,12 +18,13 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.spring.annotation.UIScope;
 
 @SuppressWarnings("serial")
-@Component()
-@Scope("prototype")
+@UIScope
+@Component
 @CssImport("./styles/navbar.css")
-public class Navbar extends VerticalLayout {
+public class Navbar extends VerticalLayout { 
 	
 	@Autowired
 	protected AppSession appSession;
@@ -32,11 +33,13 @@ public class Navbar extends VerticalLayout {
 	protected Breadcrumbs breadcrumbs;
 	
 	@Autowired
-	UserMenu userMenu;
+	protected UserMenu userMenu;
 	
 	protected Span viewTitle;
 	
-	public Navbar() {}
+	public Navbar() {
+		super();
+	}
 	
 	@PostConstruct
 	public void postConstruct() {

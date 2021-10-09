@@ -7,3 +7,34 @@
 .api-help {
 	padding-left:8px;
 }
+
+
+/* new stuff */
+
+.login-view .h1 {
+	user-select:none;
+}
+
+.cryptools-login vaadin-text-field::part(label) ,  .cryptools-login vaadin-password-field::part(label){
+	display:none;
+}
+
+.cryptools-login vaadin-login-form-wrapper::part(form-title) {
+	display:none;
+}
+
+.cryptools-login vaadin-text-field , .cryptools-login vaadin-password-field {
+	/* padding-top:0px;  */
+}
+
+.cryptools-login vaadin-text-field::before , .cryptools-login vaadin-password-field::before {
+	margin:0px;
+}
+
+.cryptools-login vaadin-login-form-wrapper::part(form) {
+	padding:0px;
+}
+
+.cryptools-login vaadin-login-form-wrapper vaadin-button {
+	display:none;
+}

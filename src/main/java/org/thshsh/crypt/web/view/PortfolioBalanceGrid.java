@@ -89,6 +89,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 	public void refresh() {
 		super.refresh();
 		view.refreshMainTab();
+		view.runHistoryJob();
 	}
 
 
@@ -104,7 +105,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 	public void setupColumns(Grid<Balance> grid) {
 
 		Column<?> col = grid.addComponentColumn(entry -> {
-			if(entry.getExchange().getImageUrl()!=null) {
+			if(entry.getExchange() != null && entry.getExchange().getImageUrl()!=null) {
 				String imageUrl = "/image/"+entry.getExchange().getImageUrl();
 				Image image = new Image(imageUrl,"Icon");
 				image.setWidth(ManagePortfolioView.ICON_SIZE);
@@ -120,7 +121,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 		.setHeader("Exchange")
 		.setSortProperty("exchange.name")
 		.setSortable(true)
-		.setWidth("150px")
+		.setWidth("125px")
 		.setFlexGrow(0)
 		;
 		UiComponents.iconLabelColumn(eName);
