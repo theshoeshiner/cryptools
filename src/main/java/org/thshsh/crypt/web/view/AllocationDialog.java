@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.web.ImageService;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.entity.EntityForm;

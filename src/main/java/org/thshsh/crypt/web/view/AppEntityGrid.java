@@ -3,7 +3,7 @@ package org.thshsh.crypt.web.view;
 import java.io.Serializable;
 
 import org.thshsh.crypt.Access;
-import org.thshsh.crypt.web.SecurityUtils;
+import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.Component;

@@ -15,6 +15,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.web.security.CryptUserPrincipal;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -52,7 +53,7 @@ public class AppSession {
 	@PostConstruct
 	protected void postConstruct() {
 
-		if(appConfig.loginEnabled) {
+		if(appConfig.getLoginEnabled()) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			LOGGER.info("Authentication: {}",authentication);
 			LOGGER.info("Authentication: {}",authentication.getPrincipal());

@@ -2,6 +2,7 @@ package org.thshsh.crypt.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.LoginFormView;
 
 import com.vaadin.flow.component.UI;
@@ -31,7 +32,7 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 	 *            before navigation event with event details
 	 */
 	private void beforeEnter(BeforeEnterEvent event) {
-		if(appConfig.loginEnabled) {
+		if(appConfig.getLoginEnabled()) {
 			
 			
 			if (!LoginFormView.class.equals(event.getNavigationTarget())

@@ -20,7 +20,7 @@ import org.thshsh.crypt.Role;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
-import org.thshsh.crypt.web.SecurityUtils;
+import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.entity.EntityDialog;
 import org.thshsh.vaadin.entity.EntityForm;
 import org.vaadin.gatanaso.MultiselectComboBox;

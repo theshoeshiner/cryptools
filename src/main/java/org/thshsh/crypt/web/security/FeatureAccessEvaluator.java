@@ -2,7 +2,6 @@ package org.thshsh.crypt.web.security;
 
 import org.ilay.Access;
 import org.ilay.AccessEvaluator;
-import org.thshsh.crypt.web.SecurityUtils;
 
 import com.vaadin.flow.router.Location;
 

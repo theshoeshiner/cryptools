@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web;
+package org.thshsh.crypt.web.security;
 
 
 import javax.servlet.http.HttpServletRequest;

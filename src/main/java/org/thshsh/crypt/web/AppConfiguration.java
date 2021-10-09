@@ -40,6 +40,10 @@ public class AppConfiguration {
 		this.productionMode = productionMode;
 	}
 
+	public Boolean getLoginEnabled() {
+		return loginEnabled;
+	}
+
 	/*	public Boolean getCryptoCompareSync() {
 			return cryptoCompareSync;
 		}

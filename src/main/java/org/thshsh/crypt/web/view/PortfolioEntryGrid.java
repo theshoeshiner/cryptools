@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
-import org.thshsh.crypt.web.ImageService;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.cryptman.Allocation;
 import org.thshsh.cryptman.ManagePortfolioService;

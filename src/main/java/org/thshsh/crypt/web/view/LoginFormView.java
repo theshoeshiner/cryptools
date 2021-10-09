@@ -15,7 +15,7 @@ import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
-import org.thshsh.crypt.web.SecurityConfiguration;
+import org.thshsh.crypt.web.security.SecurityConfiguration;
 import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.componentfactory.Popup;

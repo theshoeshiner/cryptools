@@ -46,6 +46,8 @@ import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.serv.CurrencyService;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.UserService;
 
 @Component

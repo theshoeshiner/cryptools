@@ -10,8 +10,8 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.web.AppSession;
-import org.thshsh.crypt.web.SecurityUtils;
 import org.thshsh.crypt.web.UiComponents;
+import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.cryptman.MarketRateService;
 import org.thshsh.vaadin.UIUtils;
 

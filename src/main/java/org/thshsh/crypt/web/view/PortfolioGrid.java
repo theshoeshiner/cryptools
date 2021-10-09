@@ -14,7 +14,7 @@ import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
-import org.thshsh.crypt.web.SecurityUtils;
+import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.FunctionUtils;

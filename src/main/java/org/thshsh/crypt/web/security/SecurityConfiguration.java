@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web;
+package org.thshsh.crypt.web.security;
 
 import java.io.IOException;
 
@@ -26,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.web.AppConfiguration;
 
 /**
  * Configures spring security, doing the following:
@@ -75,10 +76,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		LOGGER.info("appConfig.loginEnabled: {}",appConfig.loginEnabled);
+		LOGGER.info("appConfig.loginEnabled: {}",appConfig.getLoginEnabled());
 
 
-		if(appConfig.loginEnabled) {
+		if(appConfig.getLoginEnabled()) {
 
 			// Not using Spring CSRF here to be able to use plain HTML for the login page
 			http.csrf().disable()
@@ -207,7 +208,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				// (production mode) static resources
 				"/frontend-es5/**", "/frontend-es6/**");
 
-		if(!appConfig.loginEnabled) {
+		if(!appConfig.getLoginEnabled()) {
 			web.ignoring().antMatchers("/**");
 		}
 	}

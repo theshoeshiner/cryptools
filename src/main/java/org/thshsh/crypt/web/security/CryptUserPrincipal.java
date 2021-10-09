@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web;
+package org.thshsh.crypt.web.security;
 
 import java.util.Collection;
 

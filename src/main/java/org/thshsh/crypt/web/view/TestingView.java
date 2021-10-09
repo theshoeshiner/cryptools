@@ -25,7 +25,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.repo.CurrencyRepository;
-import org.thshsh.crypt.web.ImageService;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.UIUtils;

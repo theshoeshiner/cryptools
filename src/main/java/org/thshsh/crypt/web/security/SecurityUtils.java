@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web;
+package org.thshsh.crypt.web.security;
 
 import java.util.stream.Stream;
 
@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.web.AppSession;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 //import com.vaadin.flow.server.ServletHelper.RequestType;
@@ -34,7 +35,7 @@ public final class SecurityUtils {
 	 *            {@link HttpServletRequest}
 	 * @return true if is an internal framework request. False otherwise.
 	 */
-	static boolean isFrameworkInternalRequest(HttpServletRequest request) {
+	public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
 		final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
 		boolean queryFlag =  parameterValue != null
 				&& Stream.of(RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
@@ -49,7 +50,7 @@ public final class SecurityUtils {
 	 * Tests if some user is authenticated. As Spring Security always will create an {@link AnonymousAuthenticationToken}
 	 * we have to ignore those tokens explicitly.
 	 */
-	static boolean isUserLoggedIn() {
+	public static boolean isUserLoggedIn() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		return authentication != null
 				&& !(authentication instanceof AnonymousAuthenticationToken)

@@ -8,7 +8,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.UserRepository;
-import org.thshsh.crypt.web.SecurityUtils;
+import org.thshsh.crypt.web.security.SecurityUtils;
 
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
