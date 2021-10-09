@@ -1,13 +1,8 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.thshsh.crypt.CryptModel;
-import org.thshsh.crypt.Exchange;
-import org.thshsh.crypt.IdedEntity;
-import org.thshsh.crypt.User;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "account")

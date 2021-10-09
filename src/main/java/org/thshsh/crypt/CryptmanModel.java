@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 public class CryptmanModel {
 

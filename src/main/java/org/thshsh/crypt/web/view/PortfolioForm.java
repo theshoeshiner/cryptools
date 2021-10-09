@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioSettings;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
@@ -18,8 +20,6 @@ import org.thshsh.crypt.serv.PortfolioHistoryService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UsernameEmailDataProvider;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.cryptman.Portfolio;
-import org.thshsh.cryptman.PortfolioSettings;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.entity.EntityForm;
 

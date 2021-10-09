@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -9,9 +9,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.IdedEntity;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "market_rate")

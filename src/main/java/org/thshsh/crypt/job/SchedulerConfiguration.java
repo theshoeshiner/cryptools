@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.job;
 
 import javax.annotation.PostConstruct;
 
@@ -27,6 +27,11 @@ public class SchedulerConfiguration {
 	@PostConstruct
 	public void postConstruct() {
 
+		createHistoryJobAndTrigger();
+
+	}
+	
+	protected void createHistoryJobAndTrigger() {
 		try {
 
 			JobKey jk = JobKey.jobKey("history-job");
@@ -61,7 +66,6 @@ public class SchedulerConfiguration {
 		catch(SchedulerException e) {
 			LOGGER.error("",e);
 		}
-
 	}
 
 }

@@ -1,7 +1,6 @@
 <configuration>
 
-	<appender name="STDOUT"
-		class="ch.qos.logback.core.ConsoleAppender">
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>TRACE</level>
 		</filter>
@@ -11,25 +10,43 @@
 		</encoder>
 	</appender>
 
+	<appender name="ACTIVITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/cryptools/logs/activity.log</file>
+		<append>true</append>
+		<immediateFlush>false</immediateFlush>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/cryptools/logs/activity-%d{yyyy-MM-dd}.log
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>3GB</totalSizeCap>
+		</rollingPolicy>
+
+	</appender>
 
 
-	<!-- <include resource="org/springframework/boot/logging/logback/base.xml" 
-		/> -->
+	<!-- <include resource="org/springframework/boot/logging/logback/base.xml" /> -->
+	<logger name="org.thshsh.crypt.UserActivity" level="DEBUG" >
+		<appender-ref ref="ACTIVITY_FILE" />
+	</logger>
 
-	<!-- <root level="INFO"> <appender-ref ref="STDOUT" /> </root> -->
+	<!-- <springProfile name="*">
+	
+	</springProfile> -->
+
+
 	<springProfile name="local">
 
-		<appender name="FILE"
-			class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 			<file>/workspaces/cryptools/logs/local/web.log</file>
 			<append>true</append>
 			<immediateFlush>false</immediateFlush>
 			<encoder>
-				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-				</pattern>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
 			</encoder>
-			<rollingPolicy
-				class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 				<fileNamePattern>/workspaces/cryptools/logs/local/web-%d{yyyy-MM-dd}.log
 				</fileNamePattern>
 				<maxHistory>30</maxHistory>
@@ -43,8 +60,7 @@
 			<appender-ref ref="FILE" />
 		</root>
 
-		<logger name="org.springframework.web.client.RestTemplate"
-			level="DEBUG" />
+		<logger name="org.springframework.web.client.RestTemplate" level="DEBUG" />
 
 		<logger name="org.hibernate" level="INFO" />
 
@@ -58,18 +74,14 @@
 
 	<springProfile name="dev">
 
-
-		<appender name="FILE"
-			class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 			<file>/workspaces/cryptools/logs/dev/web.log</file>
 			<append>true</append>
 			<immediateFlush>false</immediateFlush>
 			<encoder>
-				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-				</pattern>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
 			</encoder>
-			<rollingPolicy
-				class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 				<fileNamePattern>/workspaces/cryptools/logs/dev/web-%d{yyyy-MM-dd}.log
 				</fileNamePattern>
 				<maxHistory>30</maxHistory>
@@ -83,8 +95,7 @@
 			<appender-ref ref="FILE" />
 		</root>
 
-		<logger name="org.springframework.web.client.RestTemplate"
-			level="DEBUG" />
+		<logger name="org.springframework.web.client.RestTemplate" level="DEBUG" />
 
 		<logger name="org.hibernate" level="INFO" />
 
@@ -98,28 +109,23 @@
 
 	<springProfile name="test">
 
-		<appender name="STDOUT"
-		class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
-		</filter>
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-			</pattern>
-		</encoder>
-	</appender>
+		<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+			<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+				<level>INFO</level>
+			</filter>
+			<encoder>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
+			</encoder>
+		</appender>
 
-		<appender name="FILE"
-			class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 			<file>/cryptools/logs/web.log</file>
 			<append>true</append>
 			<immediateFlush>false</immediateFlush>
 			<encoder>
-				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-				</pattern>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
 			</encoder>
-			<rollingPolicy
-				class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 				<fileNamePattern>/cryptools/logs/web-%d{yyyy-MM-dd}.log
 				</fileNamePattern>
 				<maxHistory>30</maxHistory>
@@ -137,30 +143,25 @@
 
 	</springProfile>
 
-<springProfile name="flounder">
+	<springProfile name="flounder">
 
-		<appender name="STDOUT"
-		class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
-		</filter>
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-			</pattern>
-		</encoder>
-	</appender>
+		<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+			<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+				<level>INFO</level>
+			</filter>
+			<encoder>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
+			</encoder>
+		</appender>
 
-		<appender name="FILE"
-			class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 			<file>/cryptools/logs/web.log</file>
 			<append>true</append>
 			<immediateFlush>false</immediateFlush>
 			<encoder>
-				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n
-				</pattern>
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
 			</encoder>
-			<rollingPolicy
-				class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 				<fileNamePattern>/cryptools/logs/web-%d{yyyy-MM-dd}.log
 				</fileNamePattern>
 				<maxHistory>30</maxHistory>

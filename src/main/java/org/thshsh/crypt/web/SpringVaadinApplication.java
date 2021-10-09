@@ -1,4 +1,4 @@
-package org.thshsh.crypt.serv;
+package org.thshsh.crypt.web;
 
 
 import org.slf4j.Logger;
@@ -9,8 +9,7 @@ import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConf
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.thshsh.crypt.CryptModel;
-import org.thshsh.crypt.web.CryptDataSourceConfiguration;
-import org.thshsh.cryptman.CryptmanModel;
+import org.thshsh.crypt.CryptmanModel;
 import org.vaadin.artur.helpers.LaunchUtil;
 
 import com.vaadin.flow.component.Component;

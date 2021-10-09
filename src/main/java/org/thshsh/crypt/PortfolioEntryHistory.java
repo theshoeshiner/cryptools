@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.math.BigDecimal;
 
@@ -9,8 +9,6 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.IdedEntity;
 import org.thshsh.crypt.web.view.PortfolioEntry;
 
 @Entity()

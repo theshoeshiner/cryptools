@@ -7,14 +7,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Balance;
+import org.thshsh.crypt.BigDecimalConverter;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.ExchangeRepository;
-import org.thshsh.cryptman.Balance;
-import org.thshsh.cryptman.BigDecimalConverter;
-import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.combobox.ComboBox;

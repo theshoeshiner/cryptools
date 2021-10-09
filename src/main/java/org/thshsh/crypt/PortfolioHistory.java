@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -15,7 +15,6 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.thshsh.crypt.IdedEntity;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "portfolio_history")

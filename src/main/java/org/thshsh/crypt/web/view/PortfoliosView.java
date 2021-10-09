@@ -5,9 +5,9 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.entity.EntityGridView;
 
 import com.vaadin.flow.router.PageTitle;

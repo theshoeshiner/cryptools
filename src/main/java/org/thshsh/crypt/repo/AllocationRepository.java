@@ -7,9 +7,9 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
-import org.thshsh.cryptman.Allocation;
-import org.thshsh.cryptman.Portfolio;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface AllocationRepository extends BaseRepository<Allocation, Long>, ExampleFilterRepository<Allocation, Long>  {

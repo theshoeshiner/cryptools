@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.model;
+package org.thshsh.crypt.audit;
 
 import org.hibernate.envers.RevisionListener;
 import org.thshsh.crypt.web.AppSession;

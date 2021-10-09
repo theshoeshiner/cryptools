@@ -28,14 +28,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
+import org.thshsh.crypt.UserActivity;
+import org.thshsh.crypt.job.HistoryJob;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.PortfolioHistoryService;
+import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.security.UnauthorizedException;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.cryptman.HistoryJob;
-import org.thshsh.cryptman.Portfolio;
-import org.thshsh.cryptman.PortfolioHistory;
 import org.thshsh.vaadin.BasicTabSheet;
 
 import com.github.appreciated.apexcharts.ApexCharts;
@@ -77,6 +83,8 @@ import com.vaadin.flow.router.Route;
 public class ManagePortfolioView  extends VerticalLayout implements HasUrlParameter<String>, HasDynamicTitle {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ManagePortfolioView.class);
+	
+	public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(UserActivity.class);
 
 	public static final String ID_PARAM = "id";
 
@@ -136,10 +144,13 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    Map<String, List<String>> parametersMap = queryParameters.getParameters();
 	    if(parametersMap.containsKey(ID_PARAM)) {
 	    	entityId = Long.valueOf(parametersMap.get(ID_PARAM).get(0));
-	    	entity = portRepo.findById(entityId).get();
+	    	entity = portRepo.findByIdSecured(entityId);
+	    	if(entity == null) throw new UnauthorizedException();
 	    	LOGGER.info("Got entity with id: {} = {}",entityId,entity);
 	    }
 
+	    LOGGER_ACTIVITY.info("User: {} Opened Portfolio: {}",AppSession.getCurrentUser().getUserName(),entity.getName());
+	    
 	    tabSheet = new BasicTabSheet();
 	    tabSheet.getContentLayout().setMargin(false);
 	    tabSheet.getContentLayout().setPadding(false);
@@ -155,7 +166,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //tabSheet.getContentLayout().add(new AreaChartExample());
 
 	    mainLayout = createMainTab();
-	    mainTab = tabSheet.addTab("Portfolio", mainLayout);
+	    mainTab = tabSheet.addTab("Summary", mainLayout);
 	    //mainLayout = createMainTab();
 	    //tabSheet.addTab(new Tab("Portfolio"), mainLayout);
 
@@ -219,9 +230,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		add(tabs, pages);
 		*/
 	    
-	    
-	    VerticalLayout funcLayout = createFunctionsTab();
-	    tabSheet.addTab(new Tab("Functions"), funcLayout);
+	    if(SecurityUtils.hasAccess(Feature.System, Access.ReadWrite)) {
+	    	VerticalLayout funcLayout = createFunctionsTab();
+	    	tabSheet.addTab(new Tab("Functions"), funcLayout);
+	    }
 	    
 	    add(tabSheet);
 	    //add(new AreaChartExample());

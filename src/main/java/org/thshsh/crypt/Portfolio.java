@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,9 +14,6 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.IdedEntity;
-import org.thshsh.crypt.User;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "portfolio")

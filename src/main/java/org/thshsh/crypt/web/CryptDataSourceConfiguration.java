@@ -17,7 +17,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.thshsh.crypt.CryptModel;
-import org.thshsh.cryptman.CryptmanModel;
+import org.thshsh.crypt.CryptmanModel;
 import org.thshsh.spring.DataSourceConfiguration;
 
 @Configuration

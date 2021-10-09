@@ -294,9 +294,14 @@ public class DataGenerator {
 			);
 			updateRole(user);
 			
+			Role sup = new Role("Superuser");
+			sup.updatePermissions(
+					Permission.of(Feature.System, Access.ReadWrite)
+			);
+			updateRole(sup);
+			
 			Role admin = new Role("Administrator");
 			admin.updateAllPermissions(Access.Super);
-			
 			updateRole(admin);
 			
 		

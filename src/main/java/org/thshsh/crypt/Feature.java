@@ -6,11 +6,14 @@ import javax.persistence.EnumAttributeConverter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thshsh.cryptman.Portfolio;
 
 public enum Feature {
 	
-	Portfolio(Portfolio.class),User(User.class),Currency(Currency.class),Exchange(Exchange.class),System();
+	Portfolio(Portfolio.class),
+	User(User.class),
+	Currency(Currency.class),
+	Exchange(Exchange.class),
+	System();
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(Feature.class);
 	

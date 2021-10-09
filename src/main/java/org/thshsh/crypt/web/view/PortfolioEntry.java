@@ -5,10 +5,10 @@ import java.math.RoundingMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
-import org.thshsh.cryptman.Allocation;
-import org.thshsh.cryptman.MarketRate;
-import org.thshsh.cryptman.Portfolio;
+import org.thshsh.crypt.MarketRate;
+import org.thshsh.crypt.Portfolio;
 
 public class PortfolioEntry {
 	

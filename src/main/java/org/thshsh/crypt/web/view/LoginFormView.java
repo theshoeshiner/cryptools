@@ -46,10 +46,7 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(LoginFormView.class);
 	
-	public LoginFormView() {
-		
-		
-	}
+	
 	
 	Span message;
 	
@@ -102,11 +99,11 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		lf.getElement().getClassList().add("cryptools-login");
 		loginLayout.add(lf);
 		
-		
+		/*
 		LOGGER.info("children: {}",lf.getElement().getChildCount());
 		lf.getChildren().forEach(c -> {
 			LOGGER.info("child: {},{}",c,c.getClass());
-		});
+		});*/
 		
 		
 		
@@ -116,12 +113,12 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		buttons.setMargin(false);
 
 		Button loginButton = new Button("Login");
-		loginButton.setId("submitbutton"); //
+		//loginButton.setId("submitbutton"); //
 		buttons.add(loginButton);
-		UIUtils.setElementAttribute(loginButton, "type", "submit");
+		//UIUtils.setElementAttribute(loginButton, "type", "submit");
 		loginButton.addClickListener(click -> {
 			//lf.getElement().executeJs("console.log('form: '+this);");
-			lf.getElement().executeJs("console.log(this);");
+			//lf.getElement().executeJs("console.log(this);");
 			//lf.getElement().executeJs("this.submit");
 			lf.getElement().executeJs("this.submit();");
 			//lf.getElement().executeJs("console.log(this.querySelector('vaadin-button'));");

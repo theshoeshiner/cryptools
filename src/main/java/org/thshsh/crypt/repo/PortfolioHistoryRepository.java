@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.thshsh.cryptman.Portfolio;
-import org.thshsh.cryptman.PortfolioHistory;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHistory, Long>, ExampleFilterRepository<PortfolioHistory, Long>  {

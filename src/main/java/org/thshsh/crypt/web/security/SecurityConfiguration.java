@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.thshsh.crypt.UserActivity;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.AppConfiguration;
 
@@ -40,6 +41,8 @@ import org.thshsh.crypt.web.AppConfiguration;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfiguration.class);
+	
+	public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(UserActivity.class);
 
 	private static final String LOGIN_PROCESSING_URL = "/login";
 	private static final String LOGIN_FAILURE_URL = "/login?error";
@@ -56,7 +59,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		ERROR_MESSAGES.put(ERROR_USER, Integer.toHexString(ERROR_USER.hashCode()));
 		ERROR_MESSAGES.put(ERROR_CREDENTIALS, Integer.toHexString(ERROR_CREDENTIALS.hashCode()));
 		//Hex.encodeHexString(((Integer)ERROR_USER.hashCode()).byteValue());
-		
+		 
 	}
 
 	@Autowired
@@ -118,15 +121,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 					})
 					//.defaultSuccessUrl("/dashboard",false)
 					.successHandler(new SavedRequestAwareAuthenticationSuccessHandler() {
-					    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-					            Authentication authentication) throws IOException, ServletException {
+					    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 					    	LOGGER.info("onAuthenticationSuccess");
 					    	
 					        // run custom logics upon successful login
 					        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 					        String username = userDetails.getUsername();
-					        System.out.println("The user " + username + " has logged in.");
-					         
+					         LOGGER_ACTIVITY.info("User: {} logged in",username);
 					        super.onAuthenticationSuccess(request, response, authentication);
 					    }                      
 					})

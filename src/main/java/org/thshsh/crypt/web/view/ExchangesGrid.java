@@ -5,12 +5,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.cryptman.Balance;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.entity.EntityGrid;
 

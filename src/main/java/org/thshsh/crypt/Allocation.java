@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.math.BigDecimal;
 
@@ -9,8 +9,6 @@ import javax.persistence.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.IdedEntity;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "allocation")

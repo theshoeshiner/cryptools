@@ -1,12 +1,10 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt;
 
 import java.math.BigDecimal;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
-
-import org.thshsh.crypt.Currency;
 
 @Embeddable
 public class PortfolioSettings {

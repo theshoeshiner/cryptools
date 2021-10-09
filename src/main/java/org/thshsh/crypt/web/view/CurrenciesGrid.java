@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.cryptman.MarketRateService;
 import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.flow.component.button.Button;

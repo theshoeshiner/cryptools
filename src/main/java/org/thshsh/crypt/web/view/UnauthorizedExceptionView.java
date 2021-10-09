@@ -6,10 +6,13 @@ import org.thshsh.crypt.web.security.UnauthorizedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.QueryParameters;
 
+@SuppressWarnings("serial")
 @Tag(Tag.DIV)
 public class UnauthorizedExceptionView extends Component implements HasErrorParameter<UnauthorizedException> {
 
@@ -19,6 +22,9 @@ public class UnauthorizedExceptionView extends Component implements HasErrorPara
 		            + event.getLocation().getPath()
 		            + "'");*/
     	event.forwardTo(HomeView.class);
+    	//event.forwardTo(HomeView.class);
+    	//event
+    	//UI.getCurrent().navigate("/dashboard", QueryParameters.empty());
         return HttpServletResponse.SC_NOT_FOUND;
         
     }

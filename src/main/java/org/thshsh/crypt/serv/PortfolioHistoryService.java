@@ -7,8 +7,8 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.thshsh.cryptman.HistoryJob;
-import org.thshsh.cryptman.Portfolio;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.job.HistoryJob;
 
 @Service
 public class PortfolioHistoryService {

@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.cryptman.Portfolio;
 
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;

@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.serv;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.MarketRate;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.cryptocompare.CryptoCompareException;
 import org.thshsh.crypt.cryptocompare.CurrentPricesResponse;

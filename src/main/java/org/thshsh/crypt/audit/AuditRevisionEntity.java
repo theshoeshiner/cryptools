@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.model;
+package org.thshsh.crypt.audit;
 
 import java.text.DateFormat;
 import java.util.Date;

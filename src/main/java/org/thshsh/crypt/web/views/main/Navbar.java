@@ -5,8 +5,8 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.thshsh.crypt.serv.SpringVaadinApplication;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.view.HomeView;
 

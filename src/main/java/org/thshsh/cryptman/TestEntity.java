@@ -3,6 +3,7 @@ package org.thshsh.cryptman;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.thshsh.crypt.CryptmanModel;
 import org.thshsh.crypt.IdedEntity;
 
 @Entity

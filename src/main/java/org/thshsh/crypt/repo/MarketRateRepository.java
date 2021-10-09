@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
-import org.thshsh.cryptman.MarketRate;
+import org.thshsh.crypt.MarketRate;
 
 public interface MarketRateRepository extends BaseRepository<MarketRate, Long> {
 

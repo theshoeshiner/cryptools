@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.thshsh.cryptman.Balance;
-import org.thshsh.cryptman.Portfolio;
+import org.thshsh.crypt.Balance;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface BalanceRepository extends BaseRepository<Balance, Long>, ExampleFilterRepository<Balance, Long>  {

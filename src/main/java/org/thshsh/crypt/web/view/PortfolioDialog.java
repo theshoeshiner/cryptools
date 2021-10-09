@@ -4,7 +4,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.thshsh.cryptman.Portfolio;
+import org.thshsh.crypt.Portfolio;
 
 @SuppressWarnings("serial")
 @Component

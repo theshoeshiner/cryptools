@@ -6,8 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
-import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
 public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, ExampleFilterRepository<Portfolio, Long>  {
@@ -19,9 +19,11 @@ public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, Ex
 	public Long countByUser(User user);
 	
 	public List<Portfolio> findAllByUser(User user);
+	
+	@Query("select e from #{#entityName} e where e.id =?1 and "+OWNER_OR_SUPER_IN)
+	public Portfolio findByIdSecured(Long is);
 
 	@Query("select distinct e from #{#entityName} e  where "+OWNER_OR_SUPER_IN)
-	//@EntityGraph(attributePaths = {})
 	public Page<Portfolio> findAllSecured(Pageable p);
 	
 	@Query("select count(distinct e.id) from #{#entityName} e where "+OWNER_OR_SUPER_IN)

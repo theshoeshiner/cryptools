@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.job;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -24,8 +24,14 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.NumberUtils;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioEntryHistory;
+import org.thshsh.crypt.PortfolioHistory;
+import org.thshsh.crypt.PortfolioSummary;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.serv.ManagePortfolioService;
+import org.thshsh.crypt.serv.MarketRateService;
 
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution

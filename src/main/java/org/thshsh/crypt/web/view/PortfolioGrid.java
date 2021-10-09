@@ -7,39 +7,40 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.cryptman.Portfolio;
-import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.RouterLinkRenderer;
 import org.thshsh.vaadin.StringSearchDataProvider;
-import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.entity.ConfirmDialog;
+import org.thshsh.vaadin.entity.ConfirmDialog.ButtonConfig;
 
-import com.google.common.primitives.Ints;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 
 @SuppressWarnings("serial")
-@Component
+@org.springframework.stereotype.Component
 @Scope("prototype")
 public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 
+	@Autowired
+	TaskExecutor executor;
+	
 	@Autowired
 	PortfolioRepository portRepo;
 
@@ -146,6 +147,25 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 	}
 
 
+	@Override
+	public void delete(Portfolio e, ConfirmDialog d, ButtonConfig bc) {
+		ProgressBar pb = new ProgressBar();
+		pb.setIndeterminate(true);
+		HasOrderedComponents parent = (HasOrderedComponents) d.getButtonLayout().getParent().get();
+		parent.addComponentAtIndex(parent.indexOf(d.getButtonLayout()), pb);
+		bc.withClose(false);
+		d.disableAllButtons();
+		UI ui = UI.getCurrent();
+		executor.execute(() -> {
+			portRepo.deleteById(e.getId());
+			ui.access(() -> {
+				d.close();
+				refresh();
+			});
+		});
+		//super.delete(e, d, bc);
+
+	}
 
 	@Override
 	public String getEntityName(Portfolio t) {

@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.serv.ImageService;
-import org.thshsh.cryptman.Allocation;
-import org.thshsh.cryptman.Portfolio;
 import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.Text;

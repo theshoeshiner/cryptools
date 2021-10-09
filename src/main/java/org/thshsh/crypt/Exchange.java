@@ -6,8 +6,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import org.thshsh.cryptman.CryptmanModel;
-
 /**
  * System wide entity
  * @author TheShoeShiner

@@ -1,4 +1,4 @@
-package org.thshsh.cryptman;
+package org.thshsh.crypt.serv;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.MarketRate;
+import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioSummary;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.web.view.PortfolioEntry;
@@ -49,7 +53,7 @@ public class ManagePortfolioService {
 		PortfolioSummary summary = new PortfolioSummary();
 
 		List<PortfolioEntry> entries = new ArrayList<PortfolioEntry>();
-		summary.entries = entries;
+		summary.setEntries(entries);
 
 		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElse(BigDecimal.ZERO);
 
@@ -213,9 +217,9 @@ public class ManagePortfolioService {
 
 		});
 
-		summary.totalValue = totalValue.getAsBigDecimal();
+		summary.setTotalValue(totalValue.getAsBigDecimal());
 		summary.setMaxToTriggerPercent(maxToTriggerPercent.getAsBigDecimal());
-		summary.totalAdjustPercent = totalAdjust.getAsBigDecimal();
+		summary.setTotalAdjustPercent(totalAdjust.getAsBigDecimal());
 
 		return summary;
 	}
