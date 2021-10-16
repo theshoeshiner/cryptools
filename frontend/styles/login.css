@@ -8,6 +8,10 @@
 	padding-left:8px;
 }
 
+.helper-text .type {
+	color:var(--lumo-primary-text-color);
+	font-sytle:italic;
+}
 
 /* new stuff */
 

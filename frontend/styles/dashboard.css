@@ -22,7 +22,10 @@
 	align-self:center;
 }
 
-
+.portfolio-alert iron-icon {
+	align-self:center;
+	padding-top:15px;
+}
 
 .portfolio-alert .portfolio-name {
 	padding-top: var(--lumo-space-s);
@@ -31,7 +34,7 @@
     height:45px;
     font-weight: 200;
     text-align:center;
-    color: var(--lumo-accent-color-4); 
+    /* color: var(--lumo-accent-color-4);  */
     
 }
 
