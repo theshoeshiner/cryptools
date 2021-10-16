@@ -31,6 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioEntryHistory;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.UserActivity;
 import org.thshsh.crypt.job.HistoryJob;
@@ -540,7 +541,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		    	List<String> labels = new ArrayList<>();
 		    	List<String> colors = new ArrayList<>();
 		    	
-		    	List<PortfolioEntry> sorted = new ArrayList<PortfolioEntry>(entriesList.entries);
+		    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(entriesList.entries);
 		    	Collections.sort(sorted, (pe0,pe1) -> {
 		    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
 		    	});
@@ -550,10 +551,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		    		//labels.add(entry.getCurrency().getKey());
 		    		Map<String,Object> m = new HashMap<>();
 		    		m.put("x", entry.getCurrency().getKey());
-		    		m.put("y", entry.valueReserve.toBigInteger());
+		    		m.put("y", entry.getValue().toBigInteger());
 		    		data.add(m);
 		    		labels.add(entry.getCurrency().getName());
-		    		series.add(entry.valueReserve.toBigInteger().doubleValue());
+		    		series.add(entry.getValue().toBigInteger().doubleValue());
 		    		colors.add("#"+entry.getCurrency().getColorHex());
 		    	});
 		    	
@@ -715,7 +716,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    	List<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
 	    	List<String> colors = new ArrayList<>();
 	    	
-	    	List<PortfolioEntry> sorted = new ArrayList<PortfolioEntry>(entriesList.entries);
+	    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(entriesList.entries);
 	    	Collections.sort(sorted, (pe0,pe1) -> {
 	    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
 	    	});
@@ -725,7 +726,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    		//labels.add(entry.getCurrency().getKey());
 	    		Map<String,Object> m = new HashMap<>();
 	    		m.put("x", entry.getCurrency().getKey());
-	    		m.put("y", entry.valueReserve.toBigInteger());
+	    		m.put("y", entry.getValue().toBigInteger());
 	    		data.add(m);
 	    		colors.add("#"+entry.getCurrency().getColorHex());
 	    	});

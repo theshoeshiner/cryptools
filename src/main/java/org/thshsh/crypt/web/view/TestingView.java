@@ -1,7 +1,6 @@
 package org.thshsh.crypt.web.view;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,11 +10,11 @@ import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.thshsh.color.AbstractColor;
 import org.thshsh.color.ColorSpaceConverter;
@@ -24,14 +23,18 @@ import org.thshsh.color.LchColor;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.ImageService;
+import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -69,6 +72,16 @@ public class TestingView extends VerticalLayout {
 	
 	@Autowired
 	CurrencyRepository currRepo;
+	
+	@Autowired
+	ApplicationContext context;
+	
+	@Autowired
+	PortfolioRepository portRepo;
+	
+	@Autowired
+	ManagePortfolioService portService;
+
 
 	// @Value("${ldap.user.base}")
 	// String ldapUserBase;
@@ -81,6 +94,30 @@ public class TestingView extends VerticalLayout {
 	public void postConstruct() {
 		// breadcrumbs.resetBreadcrumbs().addBreadcrumb(DashboardView.TITLE,
 		// DashboardView.class).addBreadcrumb("About", TestingView.class);
+		
+		{
+			VerticalLayout runLayout = new VerticalLayout();
+			add(runLayout);
+			ComboBox<Portfolio> ports = new ComboBox<Portfolio>();
+			ports.setItemLabelGenerator(Portfolio::getName);
+			ports.setItems(context.getBean(HasNameDataProvider.class,portRepo));
+			runLayout.add(ports);
+			Button runHistory = new Button("Run 500 History Jobs");
+			runLayout.add(runHistory);
+			runHistory.addClickListener(click -> {
+				if(!ports.isEmpty()) {
+					executor.execute(() -> {
+						for(int i=0;i<500;i++) {
+							LOGGER.info("Running: {}",i);
+							portService.createHistory(ports.getValue());
+						}
+					});
+				}
+				
+			});
+			
+			
+		}
 
 		{
 

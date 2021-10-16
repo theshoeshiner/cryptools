@@ -30,7 +30,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Serializable> {
+public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Serializable> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioSettingsForm.class);
 
@@ -55,8 +55,8 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 	
 	@PostConstruct
 	public void postConstruct() {
+		this.disableSaveUntilChange=true;
 		super.postConstruct();
-		this.save.setEnabled(false);
 	}
 
 	@Override
@@ -69,14 +69,15 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 
 		this.title.setVisible(false);
 
-		ComboBox<Currency> ass = new ComboBox<>("Reserve Currency");
-		ass.setItemLabelGenerator(c -> {
+		ComboBox<Currency> reserveField = new ComboBox<>("Reserve Currency");
+		reserveField.setItemLabelGenerator(c -> {
 			return c.getName() +" ("+c.getKey()+")";
 		});
-		ass.setItems(appContext.getBean(HasSymbolDataProvider.class,assetRepo));
-		ass.setWidth("250px");
+		reserveField.setReadOnly(true);
+		reserveField.setItems(appContext.getBean(CurrencyDataProvider.class));
+		reserveField.setWidth("250px");
 		binder
-			.forField(ass)
+			.forField(reserveField)
 			.asRequired()
 			.bind(
 				PortfolioSettings::getReserve,PortfolioSettings::setReserve
@@ -96,15 +97,10 @@ public class PortfolioSettingsForm extends EntityForm<PortfolioSettings, Seriali
 		Checkbox alerts = new Checkbox("Disable Alerts");
 		binder.forField(alerts).bind(PortfolioSettings::getAlertsDisabled,PortfolioSettings::setAlertsDisabled);
 
-
-		binder.addValueChangeListener(change -> {
-			save.setEnabled(true);
-			
-		});
 		
 		formLayout.startVerticalLayout();
 		//formLayout.add(nameField);
-		formLayout.add(ass);
+		formLayout.add(reserveField);
 		formLayout.add(balance);
 		formLayout.add(alerts);
 		formLayout.endLayout();

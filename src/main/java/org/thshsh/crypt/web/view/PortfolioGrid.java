@@ -13,6 +13,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
@@ -43,6 +44,9 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 	
 	@Autowired
 	PortfolioRepository portRepo;
+	
+	@Autowired
+	PortfolioHistoryRepository histRepo;
 
 	@Autowired
 	AppSession session;
@@ -107,6 +111,15 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 		.setFlexGrow(0)
 		;
 		
+		grid
+		.addColumn( p -> {
+			return histRepo.countByPortfolio(p);
+		})
+		.setHeader("History")
+		.setWidth("100px")
+		.setFlexGrow(0)
+		;
+		
 		if(SecurityUtils.hasAccess(Feature.User, Access.Read)) {
 			grid.addColumn(FunctionUtils.nestedValue(Portfolio::getUser, User::getUserName))
 			.setHeader("User")
@@ -147,7 +160,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 	}
 
 
-	@Override
+	/*@Override
 	public void delete(Portfolio e, ConfirmDialog d, ButtonConfig bc) {
 		ProgressBar pb = new ProgressBar();
 		pb.setIndeterminate(true);
@@ -164,8 +177,8 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 			});
 		});
 		//super.delete(e, d, bc);
-
-	}
+	
+	}*/
 
 	@Override
 	public String getEntityName(Portfolio t) {

@@ -33,6 +33,7 @@ public class UserDialog extends AppEntityDialog<User> {
 	@PostConstruct
 	public void postConstruct() {
 		super.postConstruct();
+		this.setCloseOnOutsideClick(true);
 		this.setWidth("400px");
 	}
 

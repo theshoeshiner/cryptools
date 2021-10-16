@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.views.main.MainLayout;
@@ -137,6 +138,8 @@ public class HomeView extends VerticalLayout {
     	        
     	        PortfolioCard newPort = context.getBean(PortfolioCard.class);
     	        newPort.addClassName("clickable");
+    	        newPort.add(VaadinIcon.CHART_GRID.create());
+    	        
     	        layout.add(newPort);
     	        newPort.addClickListener(click -> {
     	        	PortfolioDialog pd = context.getBean(PortfolioDialog.class);
@@ -286,15 +289,19 @@ public class HomeView extends VerticalLayout {
     		portAlert.add(portName);
     		
     		if(port != null) {
-	    		Long val = Math.round(port.getLatest().getValue().doubleValue());
+    			
+    			PortfolioHistory history = port.getLatest();
+    			LOGGER.info("Latest History: {}",history);
+    			
+	    		Long val = Math.round(history.getValue().doubleValue());
 	    		Span portValue = new Span(PortfolioEntryGrid.ReserveFormatWhole.format(val));
 	    		portValue.addClassName("portfolio-value");
 	    		portAlert.add(portValue);
 	    		
 	    		
-	    		Integer warnLevel = PortfolioEntryGrid.getWarnLevel(port.getLatest().getMaxToTriggerPercent());
+	    		Integer warnLevel = PortfolioEntryGrid.getWarnLevel(history.getMaxToTriggerPercent());
 				//names.add("warn-"+warnLevel);
-	    		Long perc = Math.round(port.getLatest().getMaxToTriggerPercent().doubleValue()*100);
+	    		Long perc = Math.round(history.getMaxToTriggerPercent().doubleValue()*100);
 	    		Span portPerc = new Span(perc.toString());
 	    		portPerc.addClassName("alert-percent");
 	    		portAlert.add(portPerc);

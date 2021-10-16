@@ -27,7 +27,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
 @Component
 @Scope("prototype")
 @CssImport("./styles/allocation-form.css")
-public class AllocationForm extends EntityForm<Allocation, Long> {
+public class AllocationForm extends AppEntityForm<Allocation, Long> {
 
 	@Autowired
 	ApplicationContext context;
@@ -126,7 +126,7 @@ public class AllocationForm extends EntityForm<Allocation, Long> {
 		ass.setItemLabelGenerator(c -> {
 			return c.getName() +" ("+c.getKey()+")";
 		});
-		ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
+		ass.setItems(context.getBean(CurrencyDataProvider.class));
 		ass.setWidth("250px");
 
 		if(currency==null)formLayout.add(ass);

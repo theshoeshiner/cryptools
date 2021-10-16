@@ -3,38 +3,65 @@ package org.thshsh.crypt.web.view;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.persistence.Column;
+import javax.persistence.ManyToOne;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
 
 public class PortfolioEntry {
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioEntry.class);
 
+	/*
+	 *@ManyToOne(optional = false)
+	Currency currency;
+
+	@Column(columnDefinition = "decimal")
 	BigDecimal balance;
 
-	Portfolio portfolio;
-	Currency currency;
-	Allocation allocation;
-	MarketRate rate;
+	@Column(columnDefinition = "decimal")
+	BigDecimal value;
 
-	BigDecimal targetReserve;
-	BigDecimal valueReserve;
-	BigDecimal adjustReserve;
+	@ManyToOne
+	PortfolioHistory portfolio;
 
+	@Column(columnDefinition = "decimal")
+	BigDecimal thresholdPercent;
 
-	BigDecimal adjust;
+	@Column(columnDefinition = "decimal")
+	BigDecimal toTriggerPercent;
 
-	BigDecimal adjustAbsolute;
-
+	@Column(columnDefinition = "decimal")
 	BigDecimal adjustPercent;
-	BigDecimal adjustPercentAbsolute;
 
+	 */
+	
+	Currency currency;
+	BigDecimal balance;
+	BigDecimal valueReserve;
+	Portfolio portfolio;
 	BigDecimal thresholdPercent;
 	BigDecimal toTriggerPercent;
+	BigDecimal adjustPercent;
+	
+	
+	
+	Allocation allocation;
+	MarketRate rate;
+	BigDecimal targetReserve;
+	BigDecimal adjustReserve;
+	BigDecimal adjust;
+	BigDecimal adjustAbsolute;
+	BigDecimal adjustPercentAbsolute;
+
+	
+	
 
 	//static NumberFormat format = new DecimalFormat("$#,##0.00");
 

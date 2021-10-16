@@ -43,7 +43,7 @@ import com.vaadin.flow.data.binder.ValidationResult;
 @Component
 @Scope("prototype")
 @CssImport("./styles/user-form.css") 
-public class UserForm extends EntityForm<User,Long> {
+public class UserForm extends AppEntityForm<User,Long> {
 
 	@Autowired
 	UserRepository userRepo;
@@ -99,12 +99,16 @@ public class UserForm extends EntityForm<User,Long> {
 		Button change = new Button("Change Password");
 		buttonsLeft.add(change);
 		change.addClickListener(click -> {
-			//ChangePasswordDialog cpd = context.getBean(ChangePasswordDialog.class,entity);
-			//
-	
 			ChangePasswordFormDialog cpd = context.getBean(ChangePasswordFormDialog.class,entity);
 			cpd.open();
-			
+			cpd.addOpenedChangeListener(changed -> {
+				if(cpd.getEntityForm().getSaved()) {
+					//need to update user pass
+					//User u = userRepo.findById(entity.getId()).get();
+					entity.setPassword(((ChangePasswordForm)cpd.getEntityForm()).newPassword);
+					LOGGER.info("set entity password: {}",entity.getPassword());
+				}
+			});
 		});
 	}
 
@@ -338,11 +342,17 @@ public class UserForm extends EntityForm<User,Long> {
 			this.setWidth("400px");
 		}
 		
+		@PostConstruct
+		public void postConstruct() {
+			super.postConstruct();
+			this.setCloseOnOutsideClick(true);
+		}
+		
 	}
 	
 	@Component
 	@Scope("prototype")
-	public static class ChangePasswordForm extends EntityForm<ChangePasswordEntity,Long> {
+	public static class ChangePasswordForm extends AppEntityForm<ChangePasswordEntity,Long> {
 		
 		@Autowired
 		UserRepository userRepo;
@@ -353,6 +363,7 @@ public class UserForm extends EntityForm<User,Long> {
 		@Autowired
 		PlatformTransactionManager transactionManager;
 		
+		String newPassword;
 		User user;
 		
 		public ChangePasswordForm(ChangePasswordEntity e) {
@@ -427,10 +438,13 @@ public class UserForm extends EntityForm<User,Long> {
 
 			TransactionTemplate template = new TransactionTemplate(transactionManager);
 			template.executeWithoutResult(ts -> {
+				newPassword = encoder.encode(entity.getNewPassword());
 				User u = userRepo.findById(user.getId()).get();
-				u.setPassword(encoder.encode(entity.getNewPassword()));
+				u.setPassword(newPassword);
+				LOGGER.info("new password: {}",newPassword);
+				
 			});
-
+			this.saved = true;
 			
 		}
 		

@@ -15,7 +15,7 @@ import com.vaadin.flow.component.textfield.TextField;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ExchangeForm extends EntityForm<Exchange,Long> {
+public class ExchangeForm extends AppEntityForm<Exchange,Long> {
 
 	@Autowired
 	ExchangeRepository repo;

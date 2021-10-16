@@ -35,7 +35,7 @@ import com.vaadin.flow.router.RouteParameters;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioForm extends EntityForm<Portfolio, Long> {
+public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 
 	@Autowired
 	PortfolioHistoryService historyService;
@@ -77,17 +77,18 @@ public class PortfolioForm extends EntityForm<Portfolio, Long> {
 		.bind(Portfolio::getName, Portfolio::setName);
 		formLayout.add(nameField);
 
-		ComboBox<Currency> ass = new ComboBox<>("Reserve Currency");
-		ass.setItemLabelGenerator(c -> {
+		ComboBox<Currency> reserveField = new ComboBox<>("Reserve Currency");
+		reserveField.setItemLabelGenerator(c -> {
 			return c.getName() +" ("+c.getKey()+")";
 		});
-		ass.setItems(appContext.getBean(HasSymbolDataProvider.class,assetRepo));
-		ass.setWidth("250px");
-		binder.forField(ass).asRequired().bind(
+		reserveField.setReadOnly(true);
+		reserveField.setItems(appContext.getBean(CurrencyDataProvider.class));
+		reserveField.setWidth("250px");
+		binder.forField(reserveField).asRequired().bind(
 				FunctionUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
 				FunctionUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
 				);
-		formLayout.add(ass);
+		formLayout.add(reserveField);
 		
 		if(SecurityUtils.hasAccess(Feature.User, Access.ReadWrite)) {
 

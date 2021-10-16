@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery.B;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
+import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.crypt.web.security.SecurityConfiguration;
 import org.thshsh.vaadin.UIUtils;
 
@@ -32,6 +34,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.validator.EmailValidator;
@@ -56,7 +59,8 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 	@Autowired
 	PasswordEncoder encoder;
 	
-
+	@Autowired
+	AppConfiguration appConfig;
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -174,7 +178,7 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 
 		TextField nameField = new TextField();
 		nameField.setMinWidth("0px");
-		nameField.setPlaceholder("Name");
+		nameField.setPlaceholder("Name (Optional)");
 
 		names.add(nameField);
 		names.setFlexGrow(1, nameField);
@@ -242,7 +246,7 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		text.addClassName("popup");
 		text.setWidth("250px");
 		Html h = new Html(
-				"<span>Price information for currencies is retrieved from the CryptoCompare API. Due to usage limits an API Key is necessary for each User. Keys can be obtained by following <a href='https://www.cryptocompare.com/coins/guides/how-to-use-our-api/' target='_blank'>this guide</a>.</span>");
+				"<span>Price information for currencies is retrieved from the CryptoCompare API. Due to usage limits an API Key is necessary for each user. The API Key access type should be: <span class='type'>Price Streaming and Polling</span>. API Keys are free and can be obtained by following <a href='https://www.cryptocompare.com/coins/guides/how-to-use-our-api/' target='_blank'>this guide</a>.</span>");
 		// text.setText("Price data for portfolios is retrieved from the CryptoCompare
 		// API. An API Key can be obtained by following this guide.");
 		text.add(h);
@@ -255,13 +259,18 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		registerLayout.add(names, userNameField, emailField, apikeyrow, passwordField, confirmPasswordField, buttons);
 		
 
-		binder.forField(emailField).asRequired().withValidator(new EmailValidator("Invalid Email Address"))
-				.withValidator((s, c) -> {
-					if (userRepo.findByEmail(s).isPresent())
-						return ValidationResult.error("Email Address already in use");
-					else
-						return ValidationResult.ok();
-				}).bind(User::getEmail, User::setEmail);
+		binder
+			.forField(emailField)
+			.asRequired()
+			.withValidator(new EmailValidator("Invalid Email Address"))
+			.withValidator((s, c) -> {
+				
+				if (userRepo.findByEmail(s).isPresent())
+					return ValidationResult.error("Email Address already in use");
+				else
+					return ValidationResult.ok();
+			})
+			.bind(User::getEmail, User::setEmail);
 
 		binder.forField(userNameField).withNullRepresentation("")
 				/*.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
@@ -273,29 +282,43 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 				})*/
 				.withValidator(userNameValidator).bind(User::getUserName, User::setUserName);
 
-		binder.forField(nameField).withNullRepresentation("").bind(User::getDisplayName, User::setDisplayName);
+		binder
+			.forField(nameField)
+			.withNullRepresentation("")
+			.bind(User::getDisplayName, User::setDisplayName);
 
-		binder.forField(apiKey).asRequired().withNullRepresentation("").withValidator((s, c) -> {
-
-			if (s.length() == 64 && StringUtils.isAlphanumeric(s)) {
-				return ValidationResult.ok();
-			} else {
-				return ValidationResult.error("Invalid API Key");
-			}
-			
-
-		}).bind(User::getApiKey, User::setApiKey);
+		BindingBuilder<User,String> bb = binder
+			.forField(apiKey)
+			.withNullRepresentation("")
+			.withValidator((s, c) -> {
+		
+				if (s == null || s.length() == 64 && StringUtils.isAlphanumeric(s)) {
+					return ValidationResult.ok();
+				} 
+				else {
+					return ValidationResult.error("Invalid API Key");
+				}
+				
+			});
+		if(appConfig.getRequireApiKey()) bb.asRequired();
+		bb.bind(User::getApiKey, User::setApiKey);
 
 		// binder.forField(lastName).withNullRepresentation("").bind(User::getLastName,
 		// User::setLastName);
 
-		binder.forField(confirmPasswordField).asRequired().withValidator((u, s) -> {
-			LOGGER.info("validate password {} vs {}", u, passwordField.getValue());
-			if (u.equals(passwordField.getValue()))
-				return ValidationResult.ok();
-			else
-				return ValidationResult.error("Passwords do not match");
-		}).bind(User::getPassword, User::setPassword);
+		binder.forField(passwordField).asRequired().bind(u -> {return "";}, (u,s) -> {});
+		
+		binder
+			.forField(confirmPasswordField)
+			.asRequired()
+			.withValidator((u, s) -> {
+				LOGGER.info("validate password {} vs {}", u, passwordField.getValue());
+				if (u.equals(passwordField.getValue()))
+					return ValidationResult.ok();
+				else
+					return ValidationResult.error("Passwords do not match");
+			})
+			.bind(User::getPassword, User::setPassword);
 
 		this.add(registerLayout);
 
@@ -363,5 +386,6 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		}
 	}
 
+	
 
 }

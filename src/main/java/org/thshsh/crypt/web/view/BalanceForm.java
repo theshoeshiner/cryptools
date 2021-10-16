@@ -25,7 +25,7 @@ import com.vaadin.flow.data.binder.ValidationResult;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class BalanceForm extends EntityForm<Balance, Long> {
+public class BalanceForm extends AppEntityForm<Balance, Long> {
 
 	@Autowired
 	ApplicationContext context;
@@ -73,7 +73,7 @@ public class BalanceForm extends EntityForm<Balance, Long> {
 		ass.setItemLabelGenerator(c -> {
 			return c.getName() +" ("+c.getKey()+")";
 		});
-		ass.setItems(context.getBean(HasSymbolDataProvider.class,assetRepo));
+		ass.setItems(context.getBean(CurrencyDataProvider.class));
 		ass.setWidth("250px");
 		formLayout.add(ass);
 

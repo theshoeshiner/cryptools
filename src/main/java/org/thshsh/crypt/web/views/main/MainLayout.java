@@ -21,6 +21,7 @@ import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
 import org.thshsh.crypt.web.view.PortfoliosView;
+import org.thshsh.crypt.web.view.SystemView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
 import org.thshsh.crypt.web.view.UsersView;
@@ -303,7 +304,9 @@ public class MainLayout extends AppLayout {
     	//TestingView
 
     	if(SecurityUtils.hasAccess(Feature.System, Access.Read)) {
-    	
+
+    		items.add(createMenuItem(VaadinIcon.COG.create(),"System", SystemView.class));
+    		
 	    	items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
 	
 	    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
