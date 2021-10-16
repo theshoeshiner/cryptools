@@ -2,12 +2,15 @@ package org.thshsh.crypt.serv;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
@@ -15,14 +18,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
 import org.thshsh.crypt.Portfolio;
-import org.thshsh.crypt.PortfolioSummary;
+import org.thshsh.crypt.PortfolioEntryHistory;
+import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
-import org.thshsh.crypt.web.view.PortfolioEntry;
+import org.thshsh.crypt.repo.PortfolioHistoryRepository;
+import org.thshsh.crypt.repo.PortfolioRepository;
 
 import com.helger.commons.mutable.MutableBigDecimal;
 
@@ -39,20 +47,63 @@ public class ManagePortfolioService {
 
 	@Autowired
 	AllocationRepository alloRepo;
+	
+	@Autowired
+	PortfolioHistoryRepository portHistRepo;
+	
+	@Autowired
+	PortfolioRepository portRepo;
 
 	@Autowired
 	MarketRateService rateService;
+	
+
+	@Autowired
+	PlatformTransactionManager transactionManager;
+	
+	TransactionTemplate template;
 
 	BigDecimal indThreshold = new BigDecimal(".15");
 	BigDecimal portThreshold = new BigDecimal(".04");
+	
+	@PostConstruct
+	public void postConstruct() {
+		template = new TransactionTemplate(transactionManager);
+	}
 
-	public PortfolioSummary getSummary(Portfolio portfolio) {
+	public PortfolioHistory createHistory(Portfolio p) {
+		
+		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
+
+			//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
+
+			Portfolio port = portRepo.findById(p.getId()).get();
+
+			PortfolioHistory portHistory = getSummary(port);
+			//PortfolioHistory portHistory = new PortfolioHistory(port, summary);
+			//portHistory.setValue(portHistory.getValue());
+			/*summary.getEntries().forEach(entry -> {
+				PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
+				portHistory.addEntry(hist);
+			});*/
+			port.setLatest(portHistory);
+			portHistRepo.save(portHistory);
+
+			return portHistory;
+		});
+		
+		return history;
+
+		
+	}
+	
+	protected PortfolioHistory getSummary(Portfolio portfolio) {
 		
 		LOGGER.info("getSummary: {}",portfolio);
 
-		PortfolioSummary summary = new PortfolioSummary();
+		PortfolioHistory summary = new PortfolioHistory(portfolio);
 
-		List<PortfolioEntry> entries = new ArrayList<PortfolioEntry>();
+		Set<PortfolioEntryHistory> entries = new HashSet<PortfolioEntryHistory>();
 		summary.setEntries(entries);
 
 		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElse(BigDecimal.ZERO);
@@ -79,7 +130,7 @@ public class ManagePortfolioService {
 		LOGGER.info("got rates: {}",rates);
 
 		Map<Currency,BigDecimal> currencyValues = new HashMap<>();
-		Map<Currency,PortfolioEntry> entryMap = new HashMap<>();
+		Map<Currency,PortfolioEntryHistory> entryMap = new HashMap<>();
 
 		MutableBigDecimal totalValue = new MutableBigDecimal(0);
 
@@ -105,7 +156,7 @@ public class ManagePortfolioService {
 				if(allocation == null || allocation.getPercent() == null) {
 					remainderCount.increment();
 				}
-				PortfolioEntry pe = new PortfolioEntry(portfolio,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
+				PortfolioEntryHistory pe = new PortfolioEntryHistory(summary,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
 				pe.setValueReserve(value);
 				entryMap.put(cur, pe);
 				entries.add(pe);
@@ -163,7 +214,7 @@ public class ManagePortfolioService {
 
 			LOGGER.info("cur: {}",cur);
 
-			PortfolioEntry pe = entryMap.get(cur);
+			PortfolioEntryHistory pe = entryMap.get(cur);
 			
 			if(pe != null) {
 				
@@ -217,7 +268,7 @@ public class ManagePortfolioService {
 
 		});
 
-		summary.setTotalValue(totalValue.getAsBigDecimal());
+		summary.setValue(totalValue.getAsBigDecimal());
 		summary.setMaxToTriggerPercent(maxToTriggerPercent.getAsBigDecimal());
 		summary.setTotalAdjustPercent(totalAdjust.getAsBigDecimal());
 

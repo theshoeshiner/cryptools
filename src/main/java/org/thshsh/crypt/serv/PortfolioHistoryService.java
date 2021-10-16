@@ -15,12 +15,19 @@ public class PortfolioHistoryService {
 	
 	@Autowired
 	Scheduler scheduler;
+
+	public void runHistoryJob() {
+		runHistoryJob(null);
+	}
 	
 	public void runHistoryJob(Portfolio entity) {
 		try {
 			scheduler.getJobDetail(JobKey.jobKey(""));
 			Trigger t = TriggerBuilder.newTrigger().forJob("history-job").startNow().build();
-			t.getJobDataMap().put(HistoryJob.PORTFOLIO_ID_PROP, entity.getId().toString());
+			if(entity != null) {
+				t.getJobDataMap().put(HistoryJob.PORTFOLIO_ID_PROP, entity.getId().toString());
+			}
+			t.getJobDataMap().put(HistoryJob.FORCE_PROP, true);
 			scheduler.scheduleJob(t);
 		}
 		catch (SchedulerException e) {

@@ -49,7 +49,12 @@ public class MarketRateService {
 	@PostConstruct
 	public void postConstruct() {
 		usd = currRepo.findByKey("USD");
-		usdRate = new MarketRate(usd, BigDecimal.ONE, null);
+		usdRate = rateRepo.findTopByCurrencyOrderByTimestampDesc(usd);
+		if(usdRate == null) {
+			usdRate = new MarketRate(usd, BigDecimal.ONE, ZonedDateTime.now());
+			rateRepo.save(usdRate);
+		}
+		
 	}
 
 	/**
