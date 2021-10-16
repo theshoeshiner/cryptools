@@ -1,19 +1,27 @@
 package org.thshsh.crypt;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.web.view.PortfolioEntry;
 
 @Entity()
-@Table(schema = CryptmanModel.SCHEMA, name = "entry_history")
+@Table(schema = CryptmanModel.SCHEMA, name = "entry_history",indexes = {
+		@Index(columnList = "portfolio_id")
+})
 public class PortfolioEntryHistory extends IdedEntity {
+	
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioEntryHistory.class);
 
 
 	@ManyToOne(optional = false)
@@ -36,6 +44,21 @@ public class PortfolioEntryHistory extends IdedEntity {
 
 	@Column(columnDefinition = "decimal")
 	BigDecimal adjustPercent;
+	
+	
+	@ManyToOne()
+	MarketRate rate;
+	@Column(columnDefinition = "decimal")
+	BigDecimal targetReserve;
+	@Column(columnDefinition = "decimal")
+	BigDecimal adjustReserve;
+	@Column(columnDefinition = "decimal")
+	BigDecimal adjust;
+	@Column(columnDefinition = "decimal")
+	BigDecimal adjustAbsolute;
+	@Column(columnDefinition = "decimal")
+	BigDecimal adjustPercentAbsolute;
+	
 
 	public PortfolioEntryHistory() {}
 
@@ -48,6 +71,30 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.toTriggerPercent = pe.getToTriggerPercentOrZero();
 		this.adjustPercent = pe.getAdjustPercent();
 	}
+	
+	public PortfolioEntryHistory(PortfolioHistory portfolio,BigDecimal balance, Currency currency,Allocation a,MarketRate rate) {
+		super();
+		this.portfolio = portfolio;
+		this.balance = balance;
+		this.currency = currency;
+		this.allocation = a;
+		this.rate = rate;
+	}
+	
+	
+	//TODO figure out how to handle this
+	@Transient
+	Allocation allocation;
+	
+	public Allocation getAllocation() {
+		return allocation;
+	}
+
+	public void setAllocation(Allocation allocation) {
+		this.allocation = allocation;
+	}
+
+	
 
 	public Currency getCurrency() {
 		return currency;
@@ -65,6 +112,55 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.balance = balance;
 	}
 
+
+
+	public PortfolioHistory getPortfolio() {
+		return portfolio;
+	}
+
+	public void setPortfolio(PortfolioHistory portfolio) {
+		this.portfolio = portfolio;
+	}
+
+
+	
+	
+
+
+	public MarketRate getRate() {
+		return rate;
+	}
+
+	public void setRate(MarketRate rate) {
+		this.rate = rate;
+	}
+
+	public BigDecimal getTargetReserve() {
+		return targetReserve;
+	}
+
+	public void setTargetReserve(BigDecimal target) {
+		this.targetReserve = target;
+		this.setAdjustReserve(this.targetReserve.subtract(this.value));
+		LOGGER.info("rate: {}",rate);
+		
+		if(rate.getRate().compareTo(BigDecimal.ZERO) == 0) {
+			this.adjust = null;
+		}
+		else {
+			this.adjust = this.adjustReserve.divide(rate.getRate(),RoundingMode.HALF_EVEN);
+		}
+		
+	}
+
+	public BigDecimal getValueReserve() {
+		return value;
+	}
+
+	public void setValueReserve(BigDecimal value) {
+		this.value = value;
+	}
+	
 	public BigDecimal getValue() {
 		return value;
 	}
@@ -73,12 +169,49 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.value = value;
 	}
 
-	public PortfolioHistory getPortfolio() {
-		return portfolio;
+	/*public String getValueString() {
+		return format.format(value);
 	}
 
-	public void setPortfolio(PortfolioHistory portfolio) {
-		this.portfolio = portfolio;
+	public String getTargetString() {
+		if(target != null) return format.format(target);
+		else return format.format(BigDecimal.ZERO);
+	}*/
+
+	public BigDecimal getAdjustReserve() {
+		return adjustReserve;
+	}
+
+	public BigDecimal getAdjustAbsolute() {
+		return adjustAbsolute;
+	}
+
+	public void setAdjustReserve(BigDecimal adjust) {
+		this.adjustReserve = adjust;
+		this.adjustAbsolute = adjust.abs();
+	}
+
+	
+
+	public BigDecimal getAdjustPercent() {
+		return adjustPercent;
+	}
+
+	public void setAdjustPercent(BigDecimal adjustPercent) {
+		this.adjustPercent = adjustPercent;
+		this.adjustPercentAbsolute = adjustPercent.abs();
+	}
+
+	public void setAdjustAbsolute(BigDecimal adjustAbsolute) {
+		this.adjustAbsolute = adjustAbsolute;
+	}
+
+	public BigDecimal getAdjustPercentAbsolute() {
+		return adjustPercentAbsolute;
+	}
+
+	public BigDecimal getAdjust() {
+		return adjust;
 	}
 
 	public BigDecimal getThresholdPercent() {
@@ -89,21 +222,20 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.thresholdPercent = thresholdPercent;
 	}
 
+	public BigDecimal getToTriggerPercentOrZero() {
+		if(toTriggerPercent == null) return BigDecimal.ZERO;
+		else return toTriggerPercent;
+	}
+
 	public BigDecimal getToTriggerPercent() {
 		return toTriggerPercent;
 	}
 
 	public void setToTriggerPercent(BigDecimal toTriggerPercent) {
-		this.toTriggerPercent = toTriggerPercent;
+		this.toTriggerPercent = toTriggerPercent.abs();
 	}
-
-	public BigDecimal getAdjustPercent() {
-		return adjustPercent;
-	}
-
-	public void setAdjustPercent(BigDecimal adjustPercent) {
-		this.adjustPercent = adjustPercent;
-	}
+	
+	
 
 	@Override
 	public String toString() {

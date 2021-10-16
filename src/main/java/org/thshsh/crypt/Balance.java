@@ -4,11 +4,14 @@ import java.math.BigDecimal;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(schema = CryptmanModel.SCHEMA, name = "balance")
+@Table(schema = CryptmanModel.SCHEMA, name = "balance",indexes = {
+		@Index(columnList = "portfolio_id")
+})
 public class Balance extends IdedEntity {
 
 	@ManyToOne

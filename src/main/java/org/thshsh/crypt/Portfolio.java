@@ -17,7 +17,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(schema = CryptmanModel.SCHEMA, name = "portfolio")
-public class Portfolio extends IdedEntity {
+public class Portfolio extends IdedEntity implements HasName {
 
 	@ManyToOne
 	User user;

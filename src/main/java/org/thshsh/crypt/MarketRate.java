@@ -62,7 +62,7 @@ public class MarketRate extends IdedEntity {
 
 	@Override
 	public String toString() {
-		return "[currency=" + currency + ", rate=" + rate + ", timestamp=" + timestamp + "]";
+		return "[id=" + id + ", currency=" + currency + ", rate=" + rate + ", timestamp=" + timestamp + "]";
 	}
 
 

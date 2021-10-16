@@ -3,20 +3,19 @@ package org.thshsh.crypt;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.thshsh.crypt.web.view.PortfolioEntry;
 
 public class PortfolioSummary {
 
-	List<PortfolioEntry> entries;
+	List<PortfolioEntryHistory> entries;
 	BigDecimal totalValue;
 	BigDecimal maxToTriggerPercent;
 	BigDecimal totalAdjustPercent;
 
 
-	public List<PortfolioEntry> getEntries() {
+	public List<PortfolioEntryHistory> getEntries() {
 		return entries;
 	}
-	public void setEntries(List<PortfolioEntry> entries) {
+	public void setEntries(List<PortfolioEntryHistory> entries) {
 		this.entries = entries;
 	}
 	public BigDecimal getTotalValue() {

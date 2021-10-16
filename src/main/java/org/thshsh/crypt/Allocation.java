@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -11,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity
-@Table(schema = CryptmanModel.SCHEMA, name = "allocation")
+@Table(schema = CryptmanModel.SCHEMA, name = "allocation",indexes = {
+		@Index(columnList = "portfolio_id")
+})
 public class Allocation extends IdedEntity {
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(Allocation.class);

@@ -3,11 +3,13 @@ package org.thshsh.crypt;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -17,7 +19,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(schema = CryptmanModel.SCHEMA, name = "portfolio_history")
+@Table(schema = CryptmanModel.SCHEMA, name = "portfolio_history",indexes = {
+		@Index(columnList = "portfolio_id")
+})
 public class PortfolioHistory extends IdedEntity {
 
     @ManyToOne
@@ -41,19 +45,39 @@ public class PortfolioHistory extends IdedEntity {
 
     @Column(columnDefinition = "decimal")
     BigDecimal totalImbalance;
+    
+    @Column(columnDefinition = "decimal")
+    BigDecimal totalAdjustPercent;
+    
+    
+    //List<PortfolioEntryHistory> entries;
+	//BigDecimal totalValue;
+	//BigDecimal maxToTriggerPercent;
+	//BigDecimal totalAdjustPercent;
 
     public PortfolioHistory() {}
+    
+    
 
-    public PortfolioHistory(Portfolio portfolio,PortfolioSummary summary) {
-        this.portfolio = portfolio;
-        this.timestamp = ZonedDateTime.now();
-        this.maxToTriggerPercent = summary.maxToTriggerPercent;
-        this.value = summary.getTotalValue();
-        this.totalImbalance = BigDecimal.ZERO;
-    }
+	/* public PortfolioHistory(Portfolio portfolio,PortfolioSummary summary) {
+	    this.portfolio = portfolio;
+	    this.timestamp = ZonedDateTime.now();
+	    this.maxToTriggerPercent = summary.maxToTriggerPercent;
+	    this.value = summary.getTotalValue();
+	    this.totalImbalance = BigDecimal.ZERO;
+	    this.totalAdjustPercent = summary.totalAdjustPercent;
+	}*/
 
 
-    public Portfolio getPortfolio() {
+    public PortfolioHistory(Portfolio portfolio) {
+		super();
+		this.portfolio = portfolio;
+		this.timestamp = ZonedDateTime.now();
+	}
+
+
+
+	public Portfolio getPortfolio() {
         return portfolio;
     }
 
@@ -120,9 +144,17 @@ public class PortfolioHistory extends IdedEntity {
         this.maxToTriggerPercent = maxToTriggerPercent;
     }
 
+    
 
+    public BigDecimal getTotalAdjustPercent() {
+		return totalAdjustPercent;
+	}
 
-    public BigDecimal getTotalImbalance() {
+	public void setTotalAdjustPercent(BigDecimal totalAdjustPercent) {
+		this.totalAdjustPercent = totalAdjustPercent;
+	}
+
+	public BigDecimal getTotalImbalance() {
         return totalImbalance;
     }
 

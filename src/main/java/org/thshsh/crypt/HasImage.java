@@ -1,6 +1,6 @@
 package org.thshsh.crypt;
 
-public interface HasImage extends HasName {
+public interface HasImage extends HasNameAndKey {
 
 	public String getImageUrl();
 
