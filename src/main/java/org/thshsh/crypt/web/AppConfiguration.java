@@ -31,6 +31,12 @@ public class AppConfiguration {
 
 	@Value("${app.login.username:}")
 	String username;
+	
+	@Value("${app.historyjob.enabled:true}")
+	Boolean historyJobEnabled;
+	
+	@Value("${app.apikey.required:true}")
+	Boolean requireApiKey;
 
 	public Boolean getProductionMode() {
 		return productionMode;
@@ -43,6 +49,16 @@ public class AppConfiguration {
 	public Boolean getLoginEnabled() {
 		return loginEnabled;
 	}
+
+	public Boolean getHistoryJobEnabled() {
+		return historyJobEnabled;
+	}
+
+	public Boolean getRequireApiKey() {
+		return requireApiKey;
+	}
+	
+	
 
 	/*	public Boolean getCryptoCompareSync() {
 			return cryptoCompareSync;
