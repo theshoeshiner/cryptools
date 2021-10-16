@@ -22,4 +22,6 @@ public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHis
 	@Modifying
 	@Query("delete from PortfolioHistory h where h.portfolio = ?1")
 	void deleteAllByPortfolio(Portfolio p);
+	
+	Integer countByPortfolio(Portfolio p);
 }

@@ -10,7 +10,7 @@ import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
 import org.thshsh.vaadin.ExampleFilterRepository;
 
-public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, ExampleFilterRepository<Portfolio, Long>  {
+public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, ExampleFilterRepository<Portfolio, Long>, HasNameRepository<Portfolio>  {
 
 	public static final String OWNER_OR_SUPER_IN = "e.id in ( select e.id from Portfolio e join e.user owners where ( owners = ?#{session.user} or ?#{session.hasAccess(T(org.thshsh.crypt.Feature).Portfolio,T(org.thshsh.crypt.Access).Super)} = true ) )";
 	
