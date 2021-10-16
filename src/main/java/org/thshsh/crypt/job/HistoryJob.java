@@ -6,10 +6,9 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.sound.sampled.Port;
-
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
@@ -21,17 +20,15 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.NumberUtils;
 import org.thshsh.crypt.Portfolio;
-import org.thshsh.crypt.PortfolioEntryHistory;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.crypt.PortfolioSummary;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.serv.MarketRateService;
+import org.thshsh.crypt.web.AppConfiguration;
 
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
@@ -40,6 +37,7 @@ public class HistoryJob implements InterruptableJob {
 	public static final Logger LOGGER = LoggerFactory.getLogger(HistoryJob.class);
 	
 	public static final String PORTFOLIO_ID_PROP = "PORTFOLIO_ID";
+	public static final String FORCE_PROP = "FORCE";
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -58,6 +56,9 @@ public class HistoryJob implements InterruptableJob {
 
 	@Autowired
 	JavaMailSender mailSender;
+	
+	@Autowired
+	AppConfiguration appConfig;
 
 	TransactionTemplate template;
 	NumberFormat format = new DecimalFormat("###.#%");
@@ -74,25 +75,32 @@ public class HistoryJob implements InterruptableJob {
 
 		LOGGER.info("Running Job");
 		
-		Object portId = context.getMergedJobDataMap().get(PORTFOLIO_ID_PROP);
+		JobDataMap map = context.getMergedJobDataMap();
 		
-		List<Portfolio> ports;
+		if(appConfig.getHistoryJobEnabled() || map.containsKey(FORCE_PROP) ) {
+			
+
+			Object portId = map.get(PORTFOLIO_ID_PROP);
+			
+			List<Portfolio> ports;
+			
+			if(portId == null) {
+				ports = portRepo.findAll();
+			}
+			else {
+				ports = Arrays.asList(portRepo.findById(Long.valueOf(portId.toString())).get());
+			}
+	
+			template = new TransactionTemplate(transactionManager);
+	
+	
+			LOGGER.info("ports: {}",ports);
+	
+			ports.forEach((Portfolio p) -> {
+				runForPortfolio(p);
+			});
 		
-		if(portId == null) {
-			ports = portRepo.findAll();
 		}
-		else {
-			ports = Arrays.asList(portRepo.findById(Long.valueOf(portId.toString())).get());
-		}
-
-		template = new TransactionTemplate(transactionManager);
-
-
-		LOGGER.info("ports: {}",ports);
-
-		ports.forEach((Portfolio p) -> {
-			runForPortfolio(p);
-		});
 
 	}
 
@@ -102,27 +110,25 @@ public class HistoryJob implements InterruptableJob {
 
 		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
 
-			//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
-
 			Portfolio port = portRepo.findById(p.getId()).get();
-
-
-			PortfolioSummary summary = manageService.getSummary(port);
-			PortfolioHistory portHistory = new PortfolioHistory(port, summary);
-			portHistory.setValue(portHistory.getValue());
-			summary.getEntries().forEach(entry -> {
-				PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
-				portHistory.addEntry(hist);
-			});
-
-
-
-			portHistory.setValue(summary.getTotalValue());
-			port.setLatest(portHistory);
-
-			portHistRepo.save(portHistory);
-
-			return portHistory;
+			return manageService.createHistory(port);
+			
+			/*	//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
+			
+				Portfolio port = portRepo.findById(p.getId()).get();
+			
+			
+				PortfolioSummary summary = manageService.getSummary(port);
+				PortfolioHistory portHistory = new PortfolioHistory(port, summary);
+				//portHistory.setValue(portHistory.getValue());
+				summary.getEntries().forEach(entry -> {
+					PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
+					portHistory.addEntry(hist);
+				});
+				port.setLatest(portHistory);
+				portHistRepo.save(portHistory);
+			
+				return portHistory;*/
 		});
 
 

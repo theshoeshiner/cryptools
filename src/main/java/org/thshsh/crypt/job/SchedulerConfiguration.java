@@ -9,6 +9,7 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.slf4j.Logger;
@@ -60,6 +61,9 @@ public class SchedulerConfiguration {
 				//TriggerBuilder.newTrigger()
 				//CronTrigger ct = TriggerBuilder.newTrigger().forJob(jk).withIdentity(tk).build();
 
+			}
+			else {
+				scheduler.resetTriggerFromErrorState(tk);
 			}
 
 		}
