@@ -124,19 +124,19 @@ public class DataGenerator {
 		
 		future = future.thenRunAsync(this::updateRoles);
 
-		if(appConfig.syncExchanges) {
+		if(appConfig.getCryptocompare().getExchanges()) {
 			future = future.thenRunAsync(this::syncExchanges,executor);
 		}
 		
-		if(appConfig.syncCoins) {
+		if(appConfig.getCryptocompare().getCoins()) {
 			future = future.thenRunAsync(this::syncCurrencies,executor);
 		}
 		
-		if(appConfig.syncGrades) {
+		if(appConfig.getCryptocompare().getGrades()) {
 			future = future.thenRunAsync(this::syncGrades,executor);
 		}
 		
-		if(appConfig.syncImages) {
+		if(appConfig.getCryptocompare().getImages()) {
 			future = future
 					.thenRunAsync(this::checkForLocalImages, executor)
 					.thenRunAsync(this::getColors, executor);
