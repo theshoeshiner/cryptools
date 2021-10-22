@@ -2,9 +2,9 @@ package org.thshsh.crypt.web.view;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,11 +17,8 @@ import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.JobKey;
+import org.ocpsoft.prettytime.PrettyTime;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +26,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Activity;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioEntryHistory;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.crypt.UserActivity;
-import org.thshsh.crypt.job.HistoryJob;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
@@ -85,9 +81,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ManagePortfolioView.class);
 	
-	public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(UserActivity.class);
+	public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(Activity.class);
 
 	public static final String ID_PARAM = "id";
+	public static final String SILENCE_PARAM = "silence";
 
 	public static final String ICON_SIZE = "24px";
 
@@ -131,12 +128,12 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	Tab chartTab;
 
 
-	static NumberFormat usdFormat = new DecimalFormat("$#,##0.00");
+	//static NumberFormat usdFormat = new DecimalFormat("$#,##0.00");
 
 	@Override
 	public void setParameter(BeforeEvent event,@OptionalParameter String parameter) {
 
-
+		
 
 		this.setHeight("100%");
 
@@ -144,11 +141,46 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    QueryParameters queryParameters = location.getQueryParameters();
 	    Map<String, List<String>> parametersMap = queryParameters.getParameters();
 	    if(parametersMap.containsKey(ID_PARAM)) {
-	    	entityId = Long.valueOf(parametersMap.get(ID_PARAM).get(0));
-	    	entity = portRepo.findByIdSecured(entityId);
-	    	if(entity == null) throw new UnauthorizedException();
-	    	LOGGER.info("Got entity with id: {} = {}",entityId,entity);
+	    	
+	    	template.executeWithoutResult(action -> {
+	    		
+	    		entityId = Long.valueOf(parametersMap.get(ID_PARAM).get(0));
+		    	entity = portRepo.findByIdSecured(entityId);
+		    	if(entity == null) throw new UnauthorizedException();
+		    	LOGGER.info("Got entity with id: {} = {}",entityId,entity);
+		    	
+		    	
+		    	if(parametersMap.containsKey(SILENCE_PARAM)) {
+			    	//DurationFormatUtils.formatDuration(durationMillis, format);
+			    	String param = parametersMap.get(SILENCE_PARAM).get(0);
+			    	LOGGER.info("silence for duration: {}",param);
+			    	Duration duration = Duration.parse(param);
+			    	LOGGER.info("silence for duration: {}",duration);
+			    
+			    	LocalDateTime now = LocalDateTime.now();
+			    	LocalDateTime then = now.plus(duration);
+			    	//ZonedDateTime till = ZonedDateTime.now().plus(duration);
+			    	PrettyTime prettyTime = new PrettyTime(LocalDateTime.now());
+			    	
+			    	org.ocpsoft.prettytime.Duration approx = prettyTime.approximateDuration(then);
+			    	//prettyTime.approximateDuration(LocalDateTime.)
+			    	//String format = prettyTime.format(till);
+			    	LOGGER.info("silence for: {}",approx);
+			    	//PrettyTime pt = new PrettyTime();
+			    	//prettyTime.approximateDuration(then)
+			    	
+		    		//entity.getSettings().setSilentTill(then);	
+
+			    }
+
+	    		
+	    		//return entity;
+	    	});
+	    	
+
 	    }
+	    
+	    
 
 	    LOGGER_ACTIVITY.info("User: {} Opened Portfolio: {}",AppSession.getCurrentUser().getUserName(),entity.getName());
 	    
@@ -252,6 +284,8 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //.addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
 	    .addBreadcrumb(entity.getName(), null)
 	    ;
+	    
+	    
 	}
 
 	@PostConstruct
