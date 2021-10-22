@@ -53,7 +53,7 @@ public class AppSession {
 	@PostConstruct
 	protected void postConstruct() {
 
-		if(appConfig.getLoginEnabled()) {
+		if(appConfig.getLogin()) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			LOGGER.info("Authentication: {}",authentication);
 			LOGGER.info("Authentication: {}",authentication.getPrincipal());
@@ -62,7 +62,7 @@ public class AppSession {
 			user = userRepo.findById(user.getId()).get();
 		}
 		else {
-			user = userRepo.findByUserNameIgnoreCase(appConfig.username).orElseThrow(() -> new ApplicationException("No user configured"));
+			user = userRepo.findByUserNameIgnoreCase(appConfig.getUsername()).orElseThrow(() -> new ApplicationException("No user configured"));
 		}
 
 
@@ -168,5 +168,9 @@ public class AppSession {
 		return r;
 	}
 
+	public void refresh() {
+		user = userRepo.findById(user.getId()).get();
+		user.getPermissionsMap();
+	}
 
 }
