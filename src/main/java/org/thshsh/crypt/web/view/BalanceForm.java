@@ -2,6 +2,7 @@ package org.thshsh.crypt.web.view;
 
 import java.math.BigDecimal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -102,7 +103,7 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 						return ValidationResult.error("Invalid Format");
 					}
 				})*/
-		.withNullRepresentation("")
+		.withNullRepresentation(StringUtils.EMPTY)
 		.withConverter(new BigDecimalConverter())
 		.bind(Balance::getBalance, Balance::setBalance);
 
