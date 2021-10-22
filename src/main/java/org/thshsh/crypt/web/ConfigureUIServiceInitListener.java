@@ -39,7 +39,7 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 	 */
 	private void beforeEnter(BeforeEnterEvent event) {
 		//TODO dont need this
-		if(appConfig.getLoginEnabled()) {
+		if(appConfig.getLogin()) {
 			
 			//LOGGER.info("getNavigationTarget: {}",event.getNavigationTarget());
 			
