@@ -59,7 +59,6 @@
     "apexcharts": "3.26.3",
     "onecolor": "3.1.0",
     "@vaadin-component-factory/vcf-popup": "1.2.5",
-    "@polymer/iron-form": "3.0.1",
     "element-match-media": "0.0.3",
     "@polymer/iron-media-query": "3.0.1",
     "@polymer/paper-ripple": "3.0.2"
@@ -176,6 +175,6 @@
       "lit-css-loader": "0.0.4",
       "extract-loader": "5.1.0"
     },
-    "hash": "91e922f72369eb18a43211c6e4eade2e6f00e2509137e35af3c8774e662b3684"
+    "hash": "20564419adad9ca57b4c2dce6a5ffab26037017d4374f3628d0c6e8a1c767c4a"
   }
 }
