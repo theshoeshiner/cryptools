@@ -1,6 +1,7 @@
 package org.thshsh.crypt;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -17,6 +18,9 @@ public class PortfolioSettings {
 	
 	@Column()
 	Boolean alertsDisabled;
+	
+	@Column
+	ZonedDateTime silentTill;
 
 	public Currency getReserve() {
 		return reserve;
@@ -46,6 +50,14 @@ public class PortfolioSettings {
 		this.alertsDisabled = alertsDisabled;
 	}
 
+
+	public ZonedDateTime getSilentTill() {
+		return silentTill;
+	}
+
+	public void setSilentTill(ZonedDateTime silentTill) {
+		this.silentTill = silentTill;
+	}
 
 	
 
