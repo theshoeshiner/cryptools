@@ -12,6 +12,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
@@ -20,17 +21,13 @@ import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.RouterLinkRenderer;
 import org.thshsh.vaadin.StringSearchDataProvider;
-import org.thshsh.vaadin.entity.ConfirmDialog;
-import org.thshsh.vaadin.entity.ConfirmDialog.ButtonConfig;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 
@@ -111,11 +108,10 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 		.setFlexGrow(0)
 		;
 		
+		
 		grid
-		.addColumn( p -> {
-			return histRepo.countByPortfolio(p);
-		})
-		.setHeader("History")
+		.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(Portfolio::getLatest, PortfolioHistory::getMaxToTriggerPercent), PortfolioEntryGrid.PercentFormat))
+		.setHeader("Alert")
 		.setWidth("100px")
 		.setFlexGrow(0)
 		;
@@ -129,9 +125,16 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 			;
 		}
 		
-		/*grid.getHeaderRows().forEach(hr -> {
-			
-		});*/
+		if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
+			grid
+			.addColumn( p -> {
+				return histRepo.countByPortfolio(p);
+			})
+			.setHeader("History")
+			.setWidth("100px")
+			.setFlexGrow(0)
+			;
+		}
 	}
 	
 	@Override

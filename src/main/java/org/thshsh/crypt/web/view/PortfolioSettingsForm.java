@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +91,7 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 		binder
 			.forField(balance)
 		//.asRequired()
-			.withNullRepresentation("")
+			.withNullRepresentation(StringUtils.EMPTY)
 			.withConverter(new BigDecimalConverter())
 			.bind(PortfolioSettings::getMinimumAdjust, PortfolioSettings::setMinimumAdjust);
 		

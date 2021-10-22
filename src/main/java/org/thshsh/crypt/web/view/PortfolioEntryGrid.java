@@ -60,10 +60,10 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
-	static NumberFormat ReserveFormatWhole = new DecimalFormat("$#,##0");
-	static NumberFormat ReserveFormat = new DecimalFormat("$#,##0.00");
-	static NumberFormat PercentFormat = new DecimalFormat("##.#%");
-	static NumberFormat CoinFormat = new DecimalFormat("####.########");
+	public static NumberFormat ReserveFormatWhole = new DecimalFormat("$#,##0");
+	public static NumberFormat ReserveFormat = new DecimalFormat("$#,##0.00");
+	public static NumberFormat PercentFormat = new DecimalFormat("##.#%");
+	public static NumberFormat CoinFormat = new DecimalFormat("####.########");
 
 	//@Autowired
 	//ApplicationContext appContext;
