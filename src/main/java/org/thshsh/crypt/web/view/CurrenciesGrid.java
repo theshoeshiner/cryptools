@@ -2,12 +2,14 @@ package org.thshsh.crypt.web.view;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.AppSession;
@@ -150,12 +152,15 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 	public void setFilter(String text) {
 		this.filterEntity.setName(text);
 		this.filterEntity.setKey(text);
+		filterEntity.setGrade(EnumUtils.getEnumIgnoreCase(Grade.class, text));
 	}
 
 	@Override
 	public void clearFilter() {
 		this.filterEntity.setName(null);
 		this.filterEntity.setKey(null);
+		filterEntity.setGrade(null);
+		
 	}
 	
 }

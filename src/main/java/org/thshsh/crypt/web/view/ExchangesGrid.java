@@ -1,18 +1,16 @@
 package org.thshsh.crypt.web.view;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
-import org.thshsh.crypt.Balance;
-import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
@@ -20,6 +18,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
+@SuppressWarnings("serial")
 @Component
 @Scope("prototype")
 public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
@@ -107,14 +106,16 @@ public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
 
 	@Override
 	public void setFilter(String text) {
-		this.filterEntity.setName(text);
-		this.filterEntity.setKey(text);
+		filterEntity.setName(text);
+		filterEntity.setKey(text);
+		filterEntity.setGrade(EnumUtils.getEnumIgnoreCase(Grade.class, text));
 	}
 
 	@Override
 	public void clearFilter() {
 		this.filterEntity.setName(null);
 		this.filterEntity.setKey(null);
+		filterEntity.setGrade(null);
 	}
 	
 }
