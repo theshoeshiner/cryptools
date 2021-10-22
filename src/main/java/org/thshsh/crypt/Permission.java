@@ -6,8 +6,6 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-
 @Table(schema = CryptModel.SCHEMA,indexes = @Index(columnList = "role_id"))
 @Entity
 public class Permission extends IdedEntity {

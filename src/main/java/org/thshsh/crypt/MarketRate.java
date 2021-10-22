@@ -1,8 +1,6 @@
 package org.thshsh.crypt;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.time.ZonedDateTime;
 
 import javax.persistence.Column;

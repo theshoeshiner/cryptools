@@ -44,8 +44,7 @@ public class Portfolio extends IdedEntity implements HasName {
 	@Embedded
 	PortfolioSettings settings;
 
-	//@ManyToOne(optional = false)
-	//Currency reserve;
+
 
 	public User getUser() {
 		return user;
@@ -104,4 +103,5 @@ public class Portfolio extends IdedEntity implements HasName {
 	}
 
 
+	
 }
