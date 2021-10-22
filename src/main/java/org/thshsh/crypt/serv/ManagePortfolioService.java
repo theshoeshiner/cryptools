@@ -101,10 +101,10 @@ public class ManagePortfolioService {
 		
 		LOGGER.info("getSummary: {}",portfolio);
 
-		PortfolioHistory summary = new PortfolioHistory(portfolio);
+		PortfolioHistory history = new PortfolioHistory(portfolio);
 
 		Set<PortfolioEntryHistory> entries = new HashSet<PortfolioEntryHistory>();
-		summary.setEntries(entries);
+		history.setEntries(entries);
 
 		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElse(BigDecimal.ZERO);
 
@@ -156,7 +156,7 @@ public class ManagePortfolioService {
 				if(allocation == null || allocation.getPercent() == null) {
 					remainderCount.increment();
 				}
-				PortfolioEntryHistory pe = new PortfolioEntryHistory(summary,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
+				PortfolioEntryHistory pe = new PortfolioEntryHistory(history,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
 				pe.setValueReserve(value);
 				entryMap.put(cur, pe);
 				entries.add(pe);
@@ -268,11 +268,11 @@ public class ManagePortfolioService {
 
 		});
 
-		summary.setValue(totalValue.getAsBigDecimal());
-		summary.setMaxToTriggerPercent(maxToTriggerPercent.getAsBigDecimal());
-		summary.setTotalAdjustPercent(totalAdjust.getAsBigDecimal());
+		history.setValue(totalValue.getAsBigDecimal());
+		history.setMaxToTriggerPercent(maxToTriggerPercent.getAsBigDecimal());
+		history.setTotalAdjustPercent(totalAdjust.getAsBigDecimal());
 
-		return summary;
+		return history;
 	}
 
 }
