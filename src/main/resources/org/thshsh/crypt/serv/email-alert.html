@@ -1,0 +1,17 @@
+<div>Portfolio Alert for: <a class="portfolio-name" href="#{app.url}portfolio?id=#{portfolio.id}">#{portfolio.name}</a></div>
+<div class="alert-outer">
+<table class="alert-summary">
+<tbody>
+#{summary}
+</tbody>
+</table>
+</div>
+<div class="silence">
+<span>
+Silence this alert for:
+</span>
+<a href="#{app.url}portfolio?id=#{portfolio.id}&silence=pt1h">1h</a>
+<a href="#{app.url}portfolio?id=#{portfolio.id}&silence=pt8h">8h</a>
+<a href="#{app.url}portfolio?id=#{portfolio.id}&silence=p1d">1d</a>
+<a href="#{app.url}portfolio?id=#{portfolio.id}&silence=p3d">3d</a>
+</div>

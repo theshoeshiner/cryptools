@@ -2,6 +2,8 @@ package org.thshsh.crypt.serv;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 
@@ -17,16 +19,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.expression.MapAccessor;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParseException;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.serv.UserService.ClasspathDataSource;
+import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.util.MapUtils;
 
 @Service
@@ -40,38 +47,84 @@ public class MailService {
 	@Value("${app.url}")
 	String baseUrl;
 	
+	@Autowired
+	AppConfiguration appConfig;
 	//public static final String CONTENT_PLACEHOLDER = "<!--CONTENT-->";
 	
 	public void sendAccountConfirmEmail(User user, String token) {
 		
-		//htmlText = String.format(htmlText, confirmToken,baseUrl+"login?confirm="+confirmToken);
-		//String url = baseUrl+"login?confirm="+confirmToken;
-		Map<String,Object> context = MapUtils.createHashMap("confirm.token", token, "app.url",baseUrl);
-		sendMailFromResource(user, "email-confirm.html", context);
+		Map<String,Object> context = createContext( MapUtils.createHashMap("token", token));
+		sendMailFromResource(user, "email-confirm.html", context,"Cryptools Account Confirmation");
 	}
 	
-	public void sendMailFromResource(User user, String contentResource,Map<String,Object> context) {
+	public void sendPortfolioAlert(Portfolio p) {
+
+
+		//String subject = "Portfolio '' Imbalance Alert: "+format.format(history.getMaxToTriggerPercent().doubleValue());
+		//String subject = String.format(subjectFormat, p.getName(),(int)(history.getMaxToTriggerPercent().doubleValue()*100));
+		String subject = "Cryptools Portfolio Alert: "+p.getName(); 
+		//String text = "Total Imbalance: "+format.format(history.getTotalImbalance().doubleValue()*100);\
+
+
+		StringBuilder assets = new StringBuilder();
+		p.getLatest().getEntries().forEach(entry -> {
+			Map<String,Object> c = createContext(MapUtils.createHashMap("entry", entry));
+			String content = createEmailContent("email-alert-entry.html", c);
+			assets.append(content);
+		});
 		
-		try {
-			
-			String content = createEmailContent(contentResource, context);
-			LOGGER.info("content: {}",content);
-			sendMailFromString(user,content);
-			
-		} 
-		catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
+		//Map<String,Object> context = MapUtils.createHashMap("portfolio", p,"summary",assets.toString());
+		
+		Map<String,Object> context = createContext(MapUtils.createHashMap("portfolio", p,"summary",assets.toString()));
+
+		sendMailFromResource(p.getUser(), "email-alert.html", context, subject); 
+		
+		/*StringBuilder emailText = new StringBuilder();
+		emailText.append(String.format(textFormat, NumberUtils.BigDecimalToPercentInt(history.getTotalAdjustPercent())));
+		
+		history.getEntries().forEach(entry -> {
+			LOGGER.info("entry: {}",entry.getThresholdPercent());
+			if(entry.getToTriggerPercent().compareTo(BigDecimal.ONE) > 0) {
+				String entryText = String.format(entryFormat, entry.getCurrency().getKey(),NumberUtils.BigDecimalToPercentInt(entry.getToTriggerPercent()));
+				emailText.append("\n");
+				emailText.append(entryText);
+			}
+		});
+		
+		//String text = ;
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setFrom("cryptools@thshsh.org");
+		message.setTo("dcwatson84@gmail.com");
+		message.setSubject(subject);
+		message.setText(emailText.toString());
+		mailSender.send(message);*/
 		
 	}
 	
-	public void sendMailFromString(User user, String contentHtml) {
+	public Map<String,Object> createContext(Map<String,Object> add){
+		String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.now());
+		Map<String,Object> context = MapUtils.createHashMap("app",appConfig,"timestamp",timestamp);
+		context.putAll(add);
+		LOGGER.info("created context: {}",context.keySet());
+		return context;
+	}
+	
+	public void sendMailFromResource(User user, String contentResource,Map<String,Object> context,String subject) {
+
+		LOGGER.info("context: {}",context.keySet());
+		String content = createEmailContent(contentResource, context);
+		//LOGGER.info("content: {}",content);
+		sendMailFromString(user,content,subject);
+
+	}
+	 
+	public void sendMailFromString(User user, String contentHtml,String subject) {
 		
 		try {	
 			
 			LOGGER.info("contentHtml: {}",contentHtml);
 			
-			Map<String,Object> context = Collections.singletonMap("content.html", contentHtml);
+			Map<String,Object> context = createContext(Collections.singletonMap("content", contentHtml));
 			String htmlText = createEmailContent("email-outer.html", context);
 			
 			LOGGER.info("htmlText: {}",htmlText);
@@ -110,6 +163,14 @@ public class MailService {
 			//Next set the multipart in the message as follows:
 			mimeMessage.setContent(multipart);
 			
+			mimeMessage.saveChanges();
+			String id = "cryptools-alert+"+System.currentTimeMillis()+"@thshsh.org";
+			mimeMessage.setHeader("Message-ID", id);
+			mimeMessage.setHeader("References", id);
+			mimeMessage.setHeader("X-Entity-Ref-ID", id);
+			
+			
+			//mimeMessage.setReplyTo(new Addressre);
 			
 
 			//String htmlMsg = String.format(CONFIRMATION_TEXT, confirmToken,baseUrl+"login?confirm="+confirmToken);
@@ -118,7 +179,7 @@ public class MailService {
 			//helper.setText(htmlMsg, true); // Use this or above line.
 			
 			helper.setTo(user.getEmail());
-			String subject = "Cryptools Account Confirmation";
+			//String subject = "Cryptools Account Confirmation";
 			/*if(u.getUserName()!=null) {
 				subject+=u.getUserName();
 			}
@@ -127,6 +188,8 @@ public class MailService {
 			}*/
 			helper.setSubject(subject);
 			helper.setFrom("cryptools@thshsh.org");
+			helper.setReplyTo(id);
+			
 			
 			mailSender.send(mimeMessage);
 		} 
@@ -136,25 +199,40 @@ public class MailService {
 		}
 	}
 	
-	public String createEmailContent(String resourceName,Map<String,Object> contextMap) throws IOException {
+	
+	
+	public String createEmailContent(String resourceName,Map<String,Object> contextMap)  {
 		
-        String htmlText = IOUtils.toString(MailService.class.getResourceAsStream(resourceName),Charset.defaultCharset());
-        LOGGER.info("resource text: {}",htmlText);
-        
-        LOGGER.info("contextMap: {}",contextMap);
+        try {
+			String htmlText = IOUtils.toString(MailService.class.getResourceAsStream(resourceName),Charset.defaultCharset());
+			//LOGGER.info("resource text: {}",htmlText);
+			
+			LOGGER.info("context: {}",contextMap.keySet());
 
-        ExpressionParser parser = new SpelExpressionParser();
-        Expression expression = parser.parseExpression(htmlText, new TemplateParserContext());
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        
-        if(contextMap != null) {
-        	context.setRootObject(contextMap);
-        }
+			ExpressionParser parser = new SpelExpressionParser();
+			TemplateParserContext tc = new TemplateParserContext();
+			Expression expression = parser.parseExpression(htmlText,tc);
+			
+			StandardEvaluationContext context = new StandardEvaluationContext();
+			MapAccessor ma = new MapAccessor();
+			context.addPropertyAccessor(ma);
+			
+			
+			
+			/* if(contextMap != null) {
+				context.setRootObject(contextMap);
+			}*/
 
-        String result = expression.getValue(context,String.class);
-        LOGGER.info("result text: {}",result);
-        
-        return result;
+			String result = (String) expression.getValue(context, contextMap);
+			
+			//String result = expression.getValue(context,String.class);
+			LOGGER.info("result text: {}",result);
+			
+			return result;
+		} 
+        catch (IOException | ParseException | EvaluationException e) {
+			throw new IllegalArgumentException("Could not create content", e);
+		} 
 		
         
 	}
