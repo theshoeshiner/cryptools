@@ -20,12 +20,13 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-import org.thshsh.crypt.UserActivity;
+import org.thshsh.crypt.Activity;
+import org.thshsh.crypt.ActivityType;
+import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.AppConfiguration;
 
@@ -42,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfiguration.class);
 	
-	public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(UserActivity.class);
+	//public static final Logger LOGGER_ACTIVITY = LoggerFactory.getLogger(Activity.class);
 
 	private static final String LOGIN_PROCESSING_URL = "/login";
 	private static final String LOGIN_FAILURE_URL = "/login?error";
@@ -64,6 +65,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	UserRepository userRepo;
+	
+	@Autowired
+	ActivityRepository actRepo;
 
 	@Autowired
 	AppConfiguration appConfig;
@@ -79,10 +83,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		LOGGER.info("appConfig.loginEnabled: {}",appConfig.getLoginEnabled());
+		//LOGGER.info("appConfig.loginEnabled: {}",appConfig.getLoginEnabled());
 
 
-		if(appConfig.getLoginEnabled()) {
+		if(appConfig.getLogin()) {
 
 			// Not using Spring CSRF here to be able to use plain HTML for the login page
 			http.csrf().disable()
@@ -125,9 +129,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 					    	LOGGER.info("onAuthenticationSuccess");
 					    	
 					        // run custom logics upon successful login
-					        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-					        String username = userDetails.getUsername();
-					         LOGGER_ACTIVITY.info("User: {} logged in",username);
+					    	CryptUserPrincipal userDetails = (CryptUserPrincipal) authentication.getPrincipal();
+					        //String username = userDetails.getUsername();
+					         //LOGGER_ACTIVITY.info("User: {} logged in",username);
+					        actRepo.save(new Activity(userDetails.getUser(),ActivityType.Login));
+					        
 					        super.onAuthenticationSuccess(request, response, authentication);
 					    }                      
 					})
@@ -209,7 +215,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				// (production mode) static resources
 				"/frontend-es5/**", "/frontend-es6/**");
 
-		if(!appConfig.getLoginEnabled()) {
+		if(!appConfig.getLogin()) {
 			web.ignoring().antMatchers("/**");
 		}
 	}
