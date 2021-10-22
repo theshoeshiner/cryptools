@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.web.view.UserForm.Type;
 import org.thshsh.vaadin.entity.EntityForm;
 
 @SuppressWarnings("serial")
@@ -19,27 +20,34 @@ public class UserDialog extends AppEntityDialog<User> {
 	@Autowired
 	ApplicationContext context;
 	
-	Boolean profile = false;
+	//Boolean profile = false;
+	UserForm.Type type;
 	
 	public UserDialog(User entity) {
 		super(UserForm.class,entity);
+		this.type = Type.Admin;
 	}
 	
-	public UserDialog(User entity,Boolean profile) {
+	public UserDialog(User entity,UserForm.Type type) {
 		super(UserForm.class, entity);
-		this.profile = profile;
+		this.type = type;
 	}
 	
 	@PostConstruct
 	public void postConstruct() {
 		super.postConstruct();
 		this.setCloseOnOutsideClick(true);
-		this.setWidth("400px");
+		if(type == Type.Admin) {
+			this.setWidth("800px");
+		}
+		else {
+			this.setWidth("400px");
+		}
 	}
 
 	@Override
 	protected EntityForm<User, Long> createEntityForm() {
-		return context.getBean(entityFormClass,entity,profile);
+		return context.getBean(entityFormClass,entity,type);
 	}
 	
 	

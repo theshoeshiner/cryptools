@@ -1,16 +1,20 @@
 package org.thshsh.crypt.web.views.main;
 
+import java.time.ZonedDateTime;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.view.ContactDialog;
 import org.thshsh.crypt.web.view.UserDialog;
+import org.thshsh.crypt.web.view.UserForm;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -40,6 +44,8 @@ public class UserMenu extends HorizontalLayout {
 
 	@Autowired
 	TaskExecutor executor;
+	
+	Button userMenuButton;
 
 	@PostConstruct
 	public void postConstruct() {
@@ -49,12 +55,13 @@ public class UserMenu extends HorizontalLayout {
           
          Icon i = VaadinIcon.USER.create();
          i.addClassName("profile");
-         Button userMenuButton = new Button(appSession.getUser().getDisplayName(), i);
+         userMenuButton = new Button(appSession.getUser().getDisplayString(), i);
          userMenuButton.setIconAfterText(true);
          userMenuButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
          userMenuButton.addClassName("profile");
          ContextMenu cm = new ContextMenu(userMenuButton);
          cm.setOpenOnClick(true);
+         
 
           
 			/* if(appSession.getPrimaryRole()!=null) {
@@ -82,9 +89,25 @@ public class UserMenu extends HorizontalLayout {
          });
          MenuItem mi = cm.addItem(profile);
          mi.addClickListener(click -> {
-        	 UserDialog ud = context.getBean(UserDialog.class,appSession.getUser(),true);
+        	 UserDialog ud = context.getBean(UserDialog.class,appSession.getUser(),UserForm.Type.Profile);
         	 ud.open();
          });
+          
+         
+			/*   
+			  Button contactBut = new Button("Contact");
+			  contactBut.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			 
+			  MenuItem contactIm = cm.addItem(contactBut);
+			  contactIm.addClickListener(click -> {     
+				  Contact c = new Contact();
+				  c.setUser(appSession.getUser());
+				  c.setCreated(ZonedDateTime.now());
+				  c.setAnswered(false);
+				  ContactDialog cd = context.getBean(ContactDialog.class,c);
+				  cd.open();
+			  });
+			  */
           
           Button b = new Button("Sign out");
           b.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
@@ -94,8 +117,12 @@ public class UserMenu extends HorizontalLayout {
         	  UI.getCurrent().getPage().setLocation("/logout");
           });
           
+          
           add(userMenuButton,cm);
 		
 	}
 
+	public void refresh() {
+		userMenuButton.setText(appSession.getUser().getDisplayString());
+	}
 }
