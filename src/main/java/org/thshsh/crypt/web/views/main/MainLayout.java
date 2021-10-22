@@ -1,5 +1,6 @@
 package org.thshsh.crypt.web.views.main;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,11 +12,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AboutView;
+import org.thshsh.crypt.web.view.ActivityView;
+import org.thshsh.crypt.web.view.ContactDialog;
+import org.thshsh.crypt.web.view.ContactsView;
 import org.thshsh.crypt.web.view.CurrenciesView;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
@@ -25,6 +31,7 @@ import org.thshsh.crypt.web.view.SystemView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
 import org.thshsh.crypt.web.view.UsersView;
+import org.thshsh.vaadin.ClickableAnchor;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -79,6 +86,9 @@ public class MainLayout extends AppLayout {
 
     @Autowired
     AppSession appSession;
+    
+    @Autowired
+    AppConfiguration config;
 
     //@Autowired
     //Breadcrumbs breadcrumbs;
@@ -254,6 +264,10 @@ public class MainLayout extends AppLayout {
 
     	items.add(home);
 
+
+    	
+    	
+    	
 		/*if(appSession.hasAccess(Feature.User, Access.Read)) {
 			items.add(createMenuItem(VaadinIcon.CLOUD_DOWNLOAD.create(),"Data Flows", FlowsView.class));
 		}*/
@@ -304,39 +318,50 @@ public class MainLayout extends AppLayout {
     	//TestingView
 
     	if(SecurityUtils.hasAccess(Feature.System, Access.Read)) {
+    		
+    		items.add(createMenuItem(VaadinIcon.CURSOR.create(),"Activity", ActivityView.class));
 
     		items.add(createMenuItem(VaadinIcon.COG.create(),"System", SystemView.class));
     		
-	    	items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
-	
-	    	RouterLink about = createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class);
-	    	items.add(about);
+    		items.add(createMenuItem(VaadinIcon.ENVELOPE.create(),"Contacts", ContactsView.class));
+    		
+
+    	}
     	
+    	
+    	ClickableAnchor contactUs = new ClickableAnchor("","Contact Us");
+    	contactUs.getElement().setAttribute("router-link", "");
+    	contactUs.addClassName("h3");
+    	contactUs.addComponentAsFirst(VaadinIcon.ENVELOPE.create());
+    	contactUs.addClickListener(click -> {
+    		  Contact c = new Contact();
+        	  c.setUser(appSession.getUser());
+        	  c.setCreated(ZonedDateTime.now());
+        	  c.setAnswered(false);
+        	  ContactDialog cd = context.getBean(ContactDialog.class,c);
+        	  cd.open();
+    	});
+    	
+    	items.add(contactUs);
+    	
+    	
+    	
+    	if(SecurityUtils.hasAccess(Feature.System, Access.Read) && !config.getProductionMode()) {
+
+    		
+    		//TODO REMOVE
+    		
+    		items.add(createMenuItem(VaadinIcon.FLASK.create(),"Test", TestingView.class));
+	
+	    	items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Component Test", AboutView.class));
+    	
+	    	
     	}
 
     	return items;
 
-		/* return new RouterLink[]{
-				home,
-				flows,
-				profiles,
-				users,
-				createMenuItem(VaadinIcon.TABLE.create(),"Studies", MdmStudiesView.class),
-				browse,
-				form,
-				about,
-				//load,
-
-				//mdm
-		        };*/
+	
     }
-
-	/*private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
-	    final Tab tab = new Tab();
-	    tab.add(new RouterLink(text, navigationTarget));
-	    ComponentUtil.setData(tab, Class.class, navigationTarget);
-	    return tab;
-	}*/
 
     private static RouterLink createMenuItem(Icon icon,String text, Class<? extends Component> navigationTarget) {
         //final Tab tab = new Tab();

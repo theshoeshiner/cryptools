@@ -58,6 +58,12 @@ public class User extends IdedEntity {
 	Map<Feature,Access> permissionsMap;
 
 	public User() {}
+	
+	public User(String name, String email, String un) {
+		this.displayName = name;
+		this.userName = un;
+		this.email = email;
+	}
 
 	public User(String name, String email, String un, String pass) {
 		super();
@@ -76,6 +82,12 @@ public class User extends IdedEntity {
 		this.displayName = displayName;
 	}
 
+	public String getDisplayString() {
+		if(displayName != null) return displayName;
+		else if(userName != null) return userName;
+		else return email;
+	}
+	
 	/*public String getFirstName() {
 		return firstName;
 	}
