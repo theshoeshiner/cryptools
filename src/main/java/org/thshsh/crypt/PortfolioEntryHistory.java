@@ -14,6 +14,7 @@ import javax.persistence.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.web.view.PortfolioEntry;
+import org.thshsh.crypt.web.view.PortfolioEntryGrid;
 
 @Entity()
 @Table(schema = CryptmanModel.SCHEMA, name = "entry_history",indexes = {
@@ -225,6 +226,11 @@ public class PortfolioEntryHistory extends IdedEntity {
 	public BigDecimal getToTriggerPercentOrZero() {
 		if(toTriggerPercent == null) return BigDecimal.ZERO;
 		else return toTriggerPercent;
+	}
+	
+	public String getToTriggerPercentOrZeroString() {
+		BigDecimal p = getToTriggerPercentOrZero();
+		return PortfolioEntryGrid.PercentFormat.format(p);
 	}
 
 	public BigDecimal getToTriggerPercent() {

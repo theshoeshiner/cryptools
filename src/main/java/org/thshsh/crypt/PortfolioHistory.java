@@ -43,8 +43,6 @@ public class PortfolioHistory extends IdedEntity {
     @Column(columnDefinition = "decimal")
     BigDecimal maxToTriggerPercent;
 
-    @Column(columnDefinition = "decimal")
-    BigDecimal totalImbalance;
     
     @Column(columnDefinition = "decimal")
     BigDecimal totalAdjustPercent;
@@ -100,10 +98,6 @@ public class PortfolioHistory extends IdedEntity {
         return entries;
     }
 
-    public void addEntry(PortfolioEntryHistory e) {
-        getEntries().add(e);
-        this.totalImbalance = this.totalImbalance.add(e.getAdjustPercent().abs());
-    }
 
     public void setEntries(Set<PortfolioEntryHistory> entries) {
         this.entries = entries;
@@ -154,13 +148,6 @@ public class PortfolioHistory extends IdedEntity {
 		this.totalAdjustPercent = totalAdjustPercent;
 	}
 
-	public BigDecimal getTotalImbalance() {
-        return totalImbalance;
-    }
-
-    public void setTotalImbalance(BigDecimal totalImbalance) {
-        this.totalImbalance = totalImbalance;
-    }
 
     @Override
     public String toString() {
