@@ -16,16 +16,14 @@ import org.quartz.UnableToInterruptJobException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.thshsh.crypt.NumberUtils;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.serv.MailService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.AppConfiguration;
@@ -55,7 +53,7 @@ public class HistoryJob implements InterruptableJob {
 	ManagePortfolioService manageService;
 
 	@Autowired
-	JavaMailSender mailSender;
+	MailService mailService;
 	
 	@Autowired
 	AppConfiguration appConfig;
@@ -77,7 +75,7 @@ public class HistoryJob implements InterruptableJob {
 		
 		JobDataMap map = context.getMergedJobDataMap();
 		
-		if(appConfig.getHistoryJobEnabled() || map.containsKey(FORCE_PROP) ) {
+		if(appConfig.getJob().getHistory() || map.containsKey(FORCE_PROP) ) {
 			
 
 			Object portId = map.get(PORTFOLIO_ID_PROP);
@@ -97,75 +95,41 @@ public class HistoryJob implements InterruptableJob {
 			LOGGER.info("ports: {}",ports);
 	
 			ports.forEach((Portfolio p) -> {
-				runForPortfolio(p);
+				try {
+					runForPortfolio(p);
+				}
+				catch(Exception e) {
+					LOGGER.info("History Job Failed for Portfolio: {}",p,e);
+				}
 			});
 		
 		}
 
 	}
 
-	protected void runForPortfolio(Portfolio p) {
+	protected void runForPortfolio(Portfolio portfolio) {
 
 
 
-		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
+		template.executeWithoutResult((TransactionStatus action) -> {
 
-			Portfolio port = portRepo.findById(p.getId()).get();
-			return manageService.createHistory(port);
-			
-			/*	//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
-			
-				Portfolio port = portRepo.findById(p.getId()).get();
+			Portfolio port = portRepo.findById(portfolio.getId()).get();
+			PortfolioHistory history = manageService.createHistory(port);
 			
 			
-				PortfolioSummary summary = manageService.getSummary(port);
-				PortfolioHistory portHistory = new PortfolioHistory(port, summary);
-				//portHistory.setValue(portHistory.getValue());
-				summary.getEntries().forEach(entry -> {
-					PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
-					portHistory.addEntry(hist);
-				});
-				port.setLatest(portHistory);
-				portHistRepo.save(portHistory);
+			if(!port.getSettings().isAlertsDisabled() && history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
+				
+				mailService.sendPortfolioAlert(port);
+
+
+			}
 			
-				return portHistory;*/
+			
 		});
 
 
 
-		if(!p.getSettings().isAlertsDisabled() && history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
-			//fire alert
-
-			//PortfolioEntryHistory max = history.getMaxTriggerEntry();
-
-			//String subject = "Portfolio '' Imbalance Alert: "+format.format(history.getMaxToTriggerPercent().doubleValue());
-			//String subject = String.format(subjectFormat, p.getName(),(int)(history.getMaxToTriggerPercent().doubleValue()*100));
-			String subject = String.format(subjectFormat, p.getName());
-			//String text = "Total Imbalance: "+format.format(history.getTotalImbalance().doubleValue()*100);\
-
-
-
-			StringBuilder emailText = new StringBuilder();
-			emailText.append(String.format(textFormat, NumberUtils.BigDecimalToPercentInt(history.getTotalImbalance())));
-
-			history.getEntries().forEach(entry -> {
-				LOGGER.info("entry: {}",entry.getThresholdPercent());
-				if(entry.getToTriggerPercent().compareTo(BigDecimal.ONE) > 0) {
-					String entryText = String.format(entryFormat, entry.getCurrency().getKey(),NumberUtils.BigDecimalToPercentInt(entry.getToTriggerPercent()));
-					emailText.append("\n");
-					emailText.append(entryText);
-				}
-			});
-
-			//String text = ;
-			SimpleMailMessage message = new SimpleMailMessage();
-	        message.setFrom("cryptools@thshsh.org");
-	        message.setTo("dcwatson84@gmail.com");
-	        message.setSubject(subject);
-	        message.setText(emailText.toString());
-	        mailSender.send(message);
-
-		}
+		
 
 	}
 
