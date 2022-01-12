@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,8 @@ public class MarketRateService {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MarketRateService.class);
 
+	public static final Duration HOUR = Duration.ofHours(1);
+	
 	@Autowired
 	MarketRateRepository rateRepo;
 
@@ -41,10 +44,9 @@ public class MarketRateService {
 	@Autowired
 	CryptoCompare compare;
 
-	static Duration HOUR = Duration.ofHours(1);
-
 	Currency usd;
 	MarketRate usdRate;
+	Duration maxAge = HOUR;
 
 	@PostConstruct
 	public void postConstruct() {
@@ -62,6 +64,14 @@ public class MarketRateService {
 	 * @param currencies
 	 * @return
 	 */
+	
+	public MarketRate getUpToDateMarketRate(String apiKey,Currency c){
+		return getUpToDateMarketRates(apiKey, c).get(c);
+	}
+	
+	public Map<Currency,MarketRate> getUpToDateMarketRates(String apiKey,Currency... currencies){
+		return getUpToDateMarketRates(apiKey, Arrays.asList(currencies));
+	}
 	
 	public Map<Currency,MarketRate> getUpToDateMarketRates(String apiKey,Collection<Currency> currencies){
 		return getUpToDateMarketRates(apiKey, currencies, false);
@@ -87,14 +97,13 @@ public class MarketRateService {
 
 		ZonedDateTime now = ZonedDateTime.now();
 
-		ZonedDateTime hourAgo = now.minus(HOUR);
+		ZonedDateTime hourAgo = now.minus(maxAge);
 
 		List<Currency> getRatesFor = new ArrayList<>();
 
 		currencies.forEach(cur -> {
 
 			MarketRate lastRate = rateRepo.findTopByCurrencyOrderByTimestampDesc(cur);
-
 			if(lastRate == null || force) {
 				getRatesFor.add(cur);
 			}
@@ -110,13 +119,16 @@ public class MarketRateService {
 
 		if(getRatesFor.size() > 0) {
 
-			String oldApi = compare.getApiKey();
+			//String oldApi = compare.getApiKey();
 			try {
-				if(apiKey != null) compare.setApiKey(apiKey);
+				if(apiKey != null) {
+					compare.getApiKeyThreadLocal().set(apiKey);
+				}
 				Map<String,Currency> symMap = getRatesFor.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
 				CurrentPricesResponse prices = compare.getCurrentPrice(usd.getKey(),symMap.keySet());
 				symMap.keySet().forEach(sym -> {
 					BigDecimal price = prices.getPrice(sym);
+					LOGGER.info("price: {}",price);
 					Currency c = symMap.get(sym);
 					MarketRate mr = new MarketRate(c,price,now);
 					rateRepo.save(mr);
@@ -133,7 +145,7 @@ public class MarketRateService {
 				LOGGER.warn("Error getting rates",ex);
 			}
 			finally {
-				compare.setApiKey(oldApi);
+				//compare.setApiKey(oldApi);
 			}
 
 		}

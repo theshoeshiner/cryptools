@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +100,8 @@ public class DataGenerator {
 	@PostConstruct
 	public void postConstruct() {
 
+		try {
+		
 		template = new TransactionTemplate(transactionManager);
 
 		//CompletableFuture<?> future = CompletableFuture.runAsync(() -> {}, executor);
@@ -157,7 +161,11 @@ public class DataGenerator {
 				.thenRunAsync(this::fiat, executor);*/
 		//}
 		
-		
+		}
+		catch(RuntimeException re) {
+			LOGGER.error("",re);
+			throw re;
+		}
 
 	}
 	
@@ -168,6 +176,12 @@ public class DataGenerator {
 			currencyRepo.findAll().forEach(cur -> {
 				if(cur.getImageUrl() == null) {
 					String checkName = cur.getKey().toLowerCase()+".png";
+					if(imageService.checkForImage(checkName)) {
+						cur.setImageUrl(checkName);
+					}
+				}
+				else if(cur.getImageUrl().endsWith("jpg")) {
+					String checkName = cur.getImageUrl().replace(".jpg", ".png");
 					if(imageService.checkForImage(checkName)) {
 						cur.setImageUrl(checkName);
 					}
@@ -225,7 +239,7 @@ public class DataGenerator {
 					}
 					
 		
-					List<AbstractColor> toAvg = new ArrayList<>();
+					List<AbstractColor<?>> toAvg = new ArrayList<>();
 					for(int x=0;x<bi.getWidth();x++) {
 						for(int y=0;y<bi.getHeight();y++) {
 							int color = bi.getRGB(x, y);
@@ -250,7 +264,7 @@ public class DataGenerator {
 					if(toAvg.size()>0) {
 						LchColor average = (LchColor) ColorUtils.averageColors(toAvg);
 						LOGGER.info("average: {}",average); 
-						int[] rgb = csc.LABtoRGB(csc.LCHtoLAB(average.getComponentsPrimitive()));
+						int[] rgb = csc.LABtoRGB(ColorSpaceConverter.LCHtoLAB(average.getComponentsPrimitive()));
 						byte[] rbgb = new byte[] {(byte) rgb[0],(byte) rgb[1],(byte) rgb[2]};
 						LOGGER.info("rbg: {}",new Object[] {rgb}); 
 						String hex = Hex.encodeHexString(rbgb);
@@ -431,16 +445,21 @@ public class DataGenerator {
 		LOGGER.info("updateGrades");
 		
 		ExchangesCurrencyPairs response = compare.getExchangeCurrencyPairs(false);
-		Map<String,ExchangePairs> map = response.getExchangeNamePairsMap();
+		Map<String,ExchangePairs> pairsMap = response.getExchangeNamePairsMap();
 		
-		//LOGGER.info("map: {}",map.size());
-			
+		//LOGGER.info("pairsMap: {}",pairsMap.size());
+		
 		List<Currency> currencies = currencyRepo.findAll();
 		Map<String,Currency> keyMap = currencies.stream().collect(Collectors.toMap(c -> {
 			return c.getKey().toLowerCase();
 		}, Function.identity()));
 
-		map.forEach((name,pairs) -> {
+		Map<Currency,MutableInt> usageMap = new HashMap<>();
+		currencies.forEach(curr -> {
+			usageMap.put(curr, new MutableInt(0));
+		});
+		
+		pairsMap.forEach((name,pairs) -> {
 			
 			template.executeWithoutResult(action -> {
 			
@@ -450,26 +469,51 @@ public class DataGenerator {
 				if(e != null && e.getGrade() != null) {
 					//LOGGER.info("update pairs for: {} with grade: {}",e,e.getGrade());
 					pairs.getPairsMap().forEach((currencyKey,otherPairs) -> {
-						//LOGGER.info("currencyKey: {}",currencyKey);
-						//Currency curr = currencyRepo.findByKeyIgnoreCase(currencyKey);
+						
+						//LOGGER.info("currency: {}",currencyKey);
+						
 						Currency curr = keyMap.get(currencyKey.toLowerCase());
-						//LOGGER.info("curr: {}",curr);
-						if(curr != null && (curr.getGrade() == null || curr.getGrade().compareTo(e.getGrade())>0 )) {
-							//LOGGER.info("Update grade for {} to {}",curr,e.getGrade());
-							curr.setGrade(e.getGrade());
-							currencyRepo.save(curr);
+						
+						//LOGGER.info("currency: {}",curr);
+						
+						if(curr != null) {
+
+							usageMap.get(curr).add(e.getGrade().ordinalReverse());
+							
+							if((curr.getGrade() == null || curr.getGrade().compareTo(e.getGrade())>0 )) {
+								//LOGGER.info("Update grade for {} to {}",curr,e.getGrade());
+								curr.setGrade(e.getGrade());
+								currencyRepo.save(curr);
+							}
 						}
 						
 					});
 				}
-				//}
-				
 				
 				
 			});
 			
 
 		});
+		
+		
+		currencies.forEach(curr -> {
+			curr.setRank(usageMap.get(curr).toInteger());
+			currencyRepo.save(curr);
+		});
+		
+		/*List<Currency> sortedCurrencies = new ArrayList<Currency>(currencies);
+		LOGGER.info("sorting currencies");
+		Collections.sort(sortedCurrencies, (c0,c1) -> {
+			return countMap.get(c1).getOne().toInteger().compareTo(countMap.get(c0).getOne().toInteger());
+		});
+		
+		LOGGER.info("sorted currencies");
+		sortedCurrencies.forEach(c -> {
+			//LOGGER.info("{} = {}",c,countMap.get(c).getTwo().toInteger());
+			LOGGER.info("{}: {} = {}",sortedCurrencies.indexOf(c),c,countMap.get(c).getOne().toInteger());
+		});*/
+		
 		/*currMap = currencyRepo.findByRemoteIdNotNull().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
 		
 		Collection<Coin> coins = compare.getCoins();

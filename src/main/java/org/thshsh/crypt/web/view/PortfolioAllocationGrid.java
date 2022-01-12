@@ -37,7 +37,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
+public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioAllocationGrid.class);
 
@@ -64,6 +64,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 		this.view = v;
 		this.showCount=false;
 		this.showFilter=false;
+		this.showCreateButton=false;
 
 	}
 
@@ -91,14 +92,14 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 	@Override
 	public Dialog createDialog(Allocation entity) {
 		LOGGER.info("createDialog: {}", this.portfolio);
-		Dialog cd = (Dialog) appCtx.getBean(entityView, entity, portfolio,null);
+		Dialog cd = (Dialog) appCtx.getBean(entityView, entity);
 		return cd;
 	}
 
 	@Override
 	public void refresh() {
 		super.refresh();
-		view.refreshMainTab();
+		view.refreshValueRelatedTabs();
 		updateRemainder();
 	}
 
@@ -203,6 +204,12 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation, Long> {
 
 		grid.addColumn(new NumberRenderer<>(Allocation::getPercent,PortfolioEntryGrid.PercentFormat))
 		.setHeader("Percent")
+		.setFlexGrow(0)
+		.setWidth("150px")
+		;
+		
+		grid.addColumn(Allocation::getUndefined)
+		.setHeader("Undefined")
 		.setFlexGrow(0)
 		.setWidth("150px")
 		;

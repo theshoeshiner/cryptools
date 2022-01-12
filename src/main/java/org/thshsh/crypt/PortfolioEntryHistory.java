@@ -3,7 +3,6 @@ package org.thshsh.crypt;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
@@ -13,7 +12,6 @@ import javax.persistence.Transient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thshsh.crypt.web.view.PortfolioEntry;
 import org.thshsh.crypt.web.view.PortfolioEntryGrid;
 
 @Entity()
@@ -25,7 +23,7 @@ public class PortfolioEntryHistory extends IdedEntity {
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioEntryHistory.class);
 
 
-	@ManyToOne(optional = false)
+	@ManyToOne()
 	Currency currency;
 
 	@Column(columnDefinition = "decimal")
@@ -60,10 +58,16 @@ public class PortfolioEntryHistory extends IdedEntity {
 	@Column(columnDefinition = "decimal")
 	BigDecimal adjustPercentAbsolute;
 	
+	@Column(columnDefinition = "decimal")
+	BigDecimal allocationPercent;
+
+	@Column
+	Boolean allocationUndefined;
+
 
 	public PortfolioEntryHistory() {}
 
-	public PortfolioEntryHistory(PortfolioHistory p, PortfolioEntry pe) {
+	/*public PortfolioEntryHistory(PortfolioHistory p, PortfolioEntry pe) {
 		this.currency = pe.getCurrency();
 		this.balance = pe.getBalance();
 		this.value = pe.getValueReserve();
@@ -71,29 +75,35 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.thresholdPercent = pe.getThresholdPercent();
 		this.toTriggerPercent = pe.getToTriggerPercentOrZero();
 		this.adjustPercent = pe.getAdjustPercent();
-	}
+	}*/
 	
 	public PortfolioEntryHistory(PortfolioHistory portfolio,BigDecimal balance, Currency currency,Allocation a,MarketRate rate) {
 		super();
 		this.portfolio = portfolio;
 		this.balance = balance;
 		this.currency = currency;
-		this.allocation = a;
+		//this.allocation = a;
+		if(a!=null) {
+			this.allocationPercent = a.getPercent();
+			this.allocationUndefined = a.getUndefined();
+		}
+		if(this.allocationUndefined == null) this.allocationUndefined = this.allocationPercent == null; 
+		//else this.allocationUndefined = true;
 		this.rate = rate;
 	}
 	
 	
 	//TODO figure out how to handle this
-	@Transient
-	Allocation allocation;
+	//@Transient
+	//Allocation allocation;
 	
-	public Allocation getAllocation() {
+	/*public Allocation getAllocation() {
 		return allocation;
 	}
-
+	
 	public void setAllocation(Allocation allocation) {
 		this.allocation = allocation;
-	}
+	}*/
 
 	
 
@@ -145,7 +155,10 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.setAdjustReserve(this.targetReserve.subtract(this.value));
 		LOGGER.info("rate: {}",rate);
 		
-		if(rate.getRate().compareTo(BigDecimal.ZERO) == 0) {
+		if(rate == null) {
+			this.adjust = this.adjustReserve;
+		}
+		else if(rate.getRate().compareTo(BigDecimal.ZERO) == 0) {
 			this.adjust = null;
 		}
 		else {
@@ -158,9 +171,9 @@ public class PortfolioEntryHistory extends IdedEntity {
 		return value;
 	}
 
-	public void setValueReserve(BigDecimal value) {
+	/*public void setValueReserve(BigDecimal value) {
 		this.value = value;
-	}
+	}*/
 	
 	public BigDecimal getValue() {
 		return value;
@@ -243,9 +256,26 @@ public class PortfolioEntryHistory extends IdedEntity {
 	
 	
 
+	public void setAllocationPercent(BigDecimal allocationPercent) {
+		this.allocationPercent = allocationPercent;
+	}
+
+	public void setAllocationUndefined(Boolean allocationUndefined) {
+		this.allocationUndefined = allocationUndefined;
+	}
+
+	public BigDecimal getAllocationPercent() {
+		return allocationPercent;
+	}
+
+	public Boolean getAllocationUndefined() {
+		return allocationUndefined;
+	}
+
 	@Override
 	public String toString() {
-		return "[currency=" + currency + ", toTriggerPercent=" + toTriggerPercent + "]";
+		return "[currency=" + currency + ", balance=" + balance + ", value=" + value
+				+ ", allocationPercent=" + allocationPercent + ", allocationUndefined=" + allocationUndefined + "]";
 	}
 
 

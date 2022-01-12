@@ -1,3 +1,14 @@
 span.helper-text {
 	font-weight:700;
 }
+
+.allocation-entity-form .title-layout {
+	font-weight:700;
+	align-items: center;
+}
+
+.allocation-entity-form .title-layout div {
+	display: flex;
+    flex-direction: column;
+}
+

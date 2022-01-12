@@ -35,6 +35,11 @@ public class Allocation extends IdedEntity {
 	Boolean undefined;
 
 	public Allocation() {}
+	
+	public Allocation(Portfolio p, Currency c) {
+		this.portfolio = p;
+		this.currency = c;
+	}
 
 	public Allocation(BigDecimal percent) {
 		super();
@@ -58,7 +63,7 @@ public class Allocation extends IdedEntity {
 	}
 
 	public Boolean isUndefined() {
-		LOGGER.info("isUndefined: {}",this);
+		LOGGER.info("isUndefined: {} {}",undefined,this);
 		if(undefined != null) return undefined;
 		else return percent == null;
 	}
@@ -79,10 +84,13 @@ public class Allocation extends IdedEntity {
 		this.portfolio = portfolio;
 	}
 
+	public Boolean getUndefined() {
+		return undefined;
+	}
 
 	@Override
 	public String toString() {
-		return "[id=" + id + ", currency=" + currency + ", percent=" + percent + "]";
+		return "[currency=" + currency + ", percent=" + percent + ", undefined=" + undefined + "]";
 	}
 
 	/*public static String getPercentString(BigDecimal bd) {

@@ -10,6 +10,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.thshsh.crypt.CryptModel;
 import org.thshsh.crypt.CryptmanModel;
+import org.thshsh.vaadin.entity.EntityGrid;
 import org.vaadin.artur.helpers.LaunchUtil;
 
 import com.vaadin.flow.component.Component;
@@ -26,7 +27,8 @@ import com.vaadin.flow.theme.material.Material;
 		SpringVaadinApplication.class,
 		CryptDataSourceConfiguration.class,
 		CryptmanModel.class,
-		CryptModel.class
+		CryptModel.class,
+		EntityGrid.class
 },
 exclude = ErrorMvcAutoConfiguration.class)
 @Theme(value = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)

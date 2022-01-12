@@ -7,8 +7,9 @@ import java.util.stream.Stream;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
+import org.thshsh.vaadin.ExampleFilterRepository;
 
-public interface MarketRateRepository extends BaseRepository<MarketRate, Long> {
+public interface MarketRateRepository extends BaseRepository<MarketRate, Long>, ExampleFilterRepository<MarketRate, Long> {
 
 	//@Query("select mr from MarketRate mr group by")
 	//Stream<MarketRate> findByCurrencyInOrderByTimestampDesc(Collection<Currency> c);

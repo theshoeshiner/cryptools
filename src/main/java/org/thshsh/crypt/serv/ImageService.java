@@ -63,6 +63,7 @@ public class ImageService {
 
 
 	public String getImageUrl(HasImage img) {
+		if(img == null) return "image/unallocated.png";
 		String imageUrl = "image/" + img.getImageUrl();
 		return imageUrl;
 	}

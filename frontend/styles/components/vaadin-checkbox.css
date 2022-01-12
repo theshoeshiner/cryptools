@@ -14,8 +14,8 @@
 	padding-top:var(--lumo-space-m);
 }
 
-:host label {
-	flex-direction:column-reverse;
+:host(.vertical) label {
+	 flex-direction:column-reverse; 
 }
 
 :host [part="label"] {

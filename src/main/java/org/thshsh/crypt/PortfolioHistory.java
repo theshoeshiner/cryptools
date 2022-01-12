@@ -3,8 +3,10 @@ package org.thshsh.crypt;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -46,6 +48,9 @@ public class PortfolioHistory extends IdedEntity {
     
     @Column(columnDefinition = "decimal")
     BigDecimal totalAdjustPercent;
+    
+    @ManyToOne
+    User initiated;
     
     
     //List<PortfolioEntryHistory> entries;
@@ -102,6 +107,26 @@ public class PortfolioHistory extends IdedEntity {
     public void setEntries(Set<PortfolioEntryHistory> entries) {
         this.entries = entries;
     }
+    
+    public Optional<PortfolioEntryHistory> getEntry(Currency c) {
+    	return getEntries().stream().filter(e -> Objects.equals(e.getCurrency(), c)).findFirst();
+    }
+    
+    public Optional<BigDecimal> getBalance(Currency c) {
+    	return getEntries().stream().filter(e -> Objects.equals(e.getCurrency(), c)).findFirst().map(e -> e.getBalance());
+    }
+    
+    
+    
+    public Optional<BigDecimal> getDefinedAllocation(Currency c) {
+    	
+    	return getEntries()
+    			.stream()
+    			.filter(e -> Objects.equals(e.getCurrency(), c))
+    			.findFirst()
+    			.filter(e -> !e.getAllocationUndefined())
+    			.map(e -> e.getAllocationPercent());
+    }
 
     public PortfolioEntryHistory getMaxTriggerEntry() {
         MutableObject<PortfolioEntryHistory> max = new MutableObject<PortfolioEntryHistory>();
@@ -112,15 +137,21 @@ public class PortfolioHistory extends IdedEntity {
         });
         return max.getValue();
     }
-
-    /*public Set<BalanceHistory> getBalances() {
-        if(balances == null) balances = new HashSet<BalanceHistory>();
-        return balances;
+    
+    public BigDecimal getAllocated() {
+    	MutableObject<BigDecimal> allocated = new MutableObject<BigDecimal>(BigDecimal.ZERO);
+    	getEntries().forEach(e -> {
+    		if(!e.getAllocationUndefined())
+    			allocated.setValue(allocated.getValue().add(e.getAllocationPercent()));
+    	});
+    	return allocated.getValue();
     }
 
-    public void setBalances(Set<BalanceHistory> balances) {
-        this.balances = balances;
-    }*/
+    public Stream<PortfolioEntryHistory> getTopEntries(long count) {
+    	return getEntries().stream().sorted((e0,e1) -> {
+    		return e1.getValue().compareTo(e0.getValue());
+    	}).limit(count);
+    }
 
     public BigDecimal getValue() {
         return value;

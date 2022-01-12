@@ -1,5 +1,7 @@
 package org.thshsh.crypt.web.view;
 
+import java.util.Collection;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -12,14 +14,16 @@ import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
+import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.entity.EntityGrid;
-import org.thshsh.vaadin.entity.EntityGrid.FilterMode;
 
 import com.google.common.primitives.Ints;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
@@ -31,7 +35,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
+public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
@@ -40,9 +44,16 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 
 	@Autowired
 	BalanceRepository balanceRepo;
+	
+	@Autowired
+	AllocationRepository alloRepo;
+	
+	@Autowired
+	ManagePortfolioService manageService;
+	
 	Portfolio portfolio;
-	ManagePortfolioView view;
-
+	ManagePortfolioView manageView;
+	
 	public PortfolioBalanceGrid(ManagePortfolioView v) {
 		super(Balance.class, BalanceDialog.class,FilterMode.None);
 
@@ -50,7 +61,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 		LOGGER.info("PortfolioBalancesList: {}",this.portfolio);
 		this.showDeleteButton = true;
 		this.showButtonColumn = true;
-		this.view = v;
+		this.manageView = v;
 		this.showCount = false;
 		this.showFilter=false;
 		this.createText="Add";
@@ -87,14 +98,40 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance, Long> {
 
 	@Override
 	public void refresh() {
+		//This gets called when something is deleted or balance dialog is saved
 		super.refresh();
-		view.refreshMainTab();
-		view.runHistoryJob();
+		//create new history
+		manageService.createHistory(portfolio);
+		manageView.refreshSummaryTab(true);
+		manageView.refreshDistributionChart();
+		manageView.refreshChartTab();
+		manageView.refreshAllocationTab();
 	}
 
 
 
+	@Override
+	public void clickNew(ClickEvent<Button> click) {
+		super.clickNew(click);
+	}
 
+	@Override
+	public void delete(Balance e) {
+		
+		
+		Collection<Balance> balances = balanceRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency());
+		if(balances.size() == 1) {
+			//TODO if this is the last balance then we need to delete the allocation as well
+			alloRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency()).ifPresent(a -> {
+				LOGGER.info("deleting allocation: {}",a);
+				alloRepo.delete(a);
+				//if we're deleting an allocation then we need to make sure we're not leaving a remainder?
+				//no we dont want to change other allocations without explicitly telling the user
+			});
+
+		}
+		super.delete(e);
+	}
 
 	@Override
 	public PagingAndSortingRepository<Balance, Long> getRepository() {

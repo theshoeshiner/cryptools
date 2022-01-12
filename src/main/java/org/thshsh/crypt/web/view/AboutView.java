@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
 import com.vaadin.flow.component.button.Button;
@@ -19,6 +22,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "about", layout = MainLayout.class)
 @PageTitle("About")
+@SecuredByFeatureAccess(feature=Feature.System,access=Access.Super)
 public class AboutView extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(AboutView.class);

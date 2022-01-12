@@ -62,9 +62,7 @@ public class ErrorLayout extends VerticalLayout {
 		ErrorDiv ed = new ErrorDiv(message,caught,reference);
 		add(ed);
 		
-		if(!config.getProductionMode() 
-				//|| session.hasAccess(Feature.Flow, Access.Super)
-				) {
+		if(!config.getProductionMode() ) {
 		
     		String trace = "<span>"+ExceptionUtils.getStackTrace(caught)
     		.replaceAll("\\n", "<br/>")

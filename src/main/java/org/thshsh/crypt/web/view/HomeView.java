@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
@@ -42,13 +45,13 @@ import com.github.appreciated.css.grid.sizes.MinMax;
 import com.github.appreciated.css.grid.sizes.Repeat.RepeatMode;
 import com.github.appreciated.layout.FlexibleGridLayout;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
 
 @Route(value = HomeView.PATH, layout = MainLayout.class)
@@ -70,17 +73,18 @@ public class HomeView extends VerticalLayout {
 	AppSession session;
 
 	@Autowired
+	ImageService imageService;
+	
+	@Autowired
 	PortfolioRepository portRepo;
 	
 	@Autowired
 	ApplicationContext context;
 	
-	//@Autowired
-	//@PersistenceContext
-	//AuditReader auditReader;
+	@Autowired
+	PlatformTransactionManager transactionManager;
 
-	//@Autowired
-	//EntityManagerFactory entityManagerFactory;
+	TransactionTemplate template;
 
     public HomeView() {
     	super();
@@ -88,182 +92,122 @@ public class HomeView extends VerticalLayout {
 
 
     @PostConstruct
-    //@Transactional
     public void postConstruct() {
+    	
+    	template = new TransactionTemplate(transactionManager);
     	
     	breadcrumbs.resetBreadcrumbs().addBreadcrumb(TITLE, HomeView.class);
     	
+    	template.executeWithoutResult(action -> {
+    		
     	
-    	
-		/*
-		    	AuditQuery query =  auditReader
-		    		    .createQuery()
-		    		    .forRevisionsOfEntity( ProfileConfiguration.class, true, false )
-		    		    .addOrder( AuditEntity.revisionProperty("timestamp").desc() );
-		    	 query.add(AuditEntity.revisionNumber().maximize().computeAggregationInInstanceContext());
 
-
-		    	List<?> results =  query.getResultList();
-
-
-		    	results.forEach(o -> {
-		    		LOGGER.info("entity: {}",o);
-
-		    	});
-		    	*/
-
-    	
-    	List<Portfolio> ports = portRepo.findAllByUser(session.getUser());
+    		List<Portfolio> ports = portRepo.findAllByUser(session.getUser());
     	
    
-    	        FlexibleGridLayout layout = new FlexibleGridLayout()
-    	        		
-    	                .withColumns(RepeatMode.AUTO_FILL, new MinMax(new Length("110px"), new Flex(1)))
-    	                .withAutoRows(new Length("110px"))
-    	                /*.withItems(
-    	                        new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(),
-    	                        new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(),
-    	                        new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard(), new ExampleCard()
-    	                )*/
-    	                .withPadding(true)
-    	                .withSpacing(true)
-    	                .withAutoFlow(GridLayoutComponent.AutoFlow.ROW_DENSE)
-    	                .withOverflow(GridLayoutComponent.Overflow.AUTO);
-    	        
-    	        
-    	        
-    	        layout.setSizeFull();
-    	      
-    	        add(layout);
-    	        
-    	        PortfolioCard newPort = context.getBean(PortfolioCard.class);
-    	        newPort.addClassName("clickable");
-    	        newPort.add(VaadinIcon.CHART_GRID.create());
-    	        
-    	        layout.add(newPort);
-    	        newPort.addClickListener(click -> {
-    	        	PortfolioDialog pd = context.getBean(PortfolioDialog.class);
-    	        	pd.open();
-    	        });
-    	       
-    	        
-    	        ports.forEach(port -> {
-    	        	if(port.getLatest()!= null) {
-    	        		
-    	        		RouterLink link = new RouterLink();
-    	        		link.addClassName("portfolio-alert-link");
-    	        		link.setRoute(ManagePortfolioView.class);
-    	        		
-    	        		link.setQueryParameters(QueryParameters.simple(new SingletonMap<>("id",port.getId().toString())));
-    	        		
-    	        		PortfolioCard pc = context.getBean(PortfolioCard.class,port);
-    	        		link.add(pc);
-    	   
-						/*RouterLink portAlert = new RouterLink();
-						portAlert.setRoute(ManagePortfolioView.class);
-						portAlert.setQueryParameters(QueryParameters.simple(new SingletonMap<>("id",port.getId().toString())));
-						
-						portAlert.addClassName("portfolio-alert");
-						
-						Span portName = new Span(port.getName());
-						portName.addClassName("portfolio-name");
-						portAlert.add(portName);
-						
-						Long val = Math.round(port.getLatest().getValue().doubleValue());
-						Span portValue = new Span(PortfolioEntryGrid.ReserveFormatWhole.format(val));
-						portValue.addClassName("portfolio-value");
-						portAlert.add(portValue);
-						
-						
-						Integer warnLevel = PortfolioEntryGrid.getWarnLevel(port.getLatest().getMaxToTriggerPercent());
-						//names.add("warn-"+warnLevel);
-						Long perc = Math.round(port.getLatest().getMaxToTriggerPercent().doubleValue()*100);
-						Span portPerc = new Span(perc.toString());
-						portPerc.addClassName("alert-percent");
-						portAlert.add(portPerc);
-						portAlert.addClassName("warn-"+warnLevel);*/
-    	        		
-    	        		
-    	        		
-    	        		
-    	        		
-    	        		layout.add(link);
-    	        		
-    	        		
-						/*RadialBarChartExample ex = new RadialBarChartExample(port);
-						layout.add(ex);*/
-    	        		
-    	        		
-						/*// Creating a chart display area.
-						SOChart soChart = new SOChart() {
-						
-							@Override
-							protected String customizeJSON(String json) throws Exception {
-								LOGGER.info("customizejson: {}",json);
-								return super.customizeJSON(json);
-							}
-						
-							@Override
-							protected String customizeDataJSON(String json, AbstractDataProvider<?> data)throws Exception {
-								LOGGER.info("customizeDataJSON: {}",json);
-								return super.customizeDataJSON(json, data);
-							}
-							
-							
-							
-						};
-						soChart.setSize("300px", "250px");
-						
-						// Let us define some inline data.
-						//CategoryData labels = new CategoryData("Banana", "Apple", "Orange", "Grapes");
-						//Data data = new Data(25, 40, 20, 30);
-						
-						// We are going to create a couple of charts. So, each chart should be positioned
-						// appropriately.
-						// Create a self-positioning chart.
-						//NightingaleRoseChart nc = new NightingaleRoseChart(labels, data);
-						Position p = new Position();
-						p.setTop(Size.percentage(50));
-						//nc.setPosition(p); // Position it leaving 50% space at the top
-						
-						// Second chart to add.
-						//BarChart bc = new BarChart(labels, data);
-						//RectangularCoordinate rc;
-						//rc  = new RectangularCoordinate(new XAxis(DataType.CATEGORY), new YAxis(DataType.NUMBER));
-						p = new Position();
-						p.setBottom(Size.percentage(55));
-						//rc.setPosition(p); // Position it leaving 55% space at the bottom
-						//bc.plotOn(rc); // Bar chart needs to be plotted on a coordinate system
-						
-						GaugeChart gc = new GaugeChart();
-						
-						gc.setPosition(p);
-						
-						//gc.setStartAngle(0);
-						//gc.setEndAngle(90);
-						gc.setMin(10);
-						gc.setMax(80);
-						gc.setValue(port.getLatest().getMaxToTriggerPercent().doubleValue()*100);
-						//gc.setValue(30, 1);
-						soChart.add( gc);
-						soChart.disableDefaultLegend();
-						
-						// Now, add the chart display (which is a Vaadin Component) to your layout.
-						layout.add(soChart);*/
-							
-    	        		
-    	        		
-    	        	}
-    	        });
+	        FlexibleGridLayout layout = new FlexibleGridLayout()
+	        		
+	                .withColumns(RepeatMode.AUTO_FILL, new MinMax(new Length("110px"), new Flex(1)))
+	                .withAutoRows(new Length("110px"))
+
+	                .withPadding(true)
+	                .withSpacing(true)
+	                .withAutoFlow(GridLayoutComponent.AutoFlow.ROW_DENSE)
+	                .withOverflow(GridLayoutComponent.Overflow.AUTO);
+	        
+	        layout.addClassName("portfolio-grid");
+	        
+	        
+	        layout.setSizeFull();
+	      
+	        add(layout);
+	        
+	        PortfolioCard newPort = context.getBean(PortfolioCard.class);
+	        newPort.addClassNames("clickable","portfolio-alert-link");
+	        newPort.add(VaadinIcon.CHART_GRID.create());
+	        
+	        layout.add(newPort);
+	        newPort.addClickListener(click -> {
+	        	PortfolioDialog pd = context.getBean(PortfolioDialog.class);
+	        	pd.open();
+	        });
+	       
+	        
+	        ports.forEach(port -> {
+	        	if(port.getLatest()!= null) {
+	        		
+	        		PortfolioCardLink link = context.getBean(PortfolioCardLink.class,port);
+	        		
+					/*RouterLink link = new RouterLink();
+					link.addClassName("portfolio-alert-link");
+					link.setRoute(ManagePortfolioView.class);
+					
+					link.setQueryParameters(QueryParameters.simple(new SingletonMap<>("id",port.getId().toString())));
+					
+					PortfolioCard pc = context.getBean(PortfolioCard.class,port);
+					link.add(pc);*/
+
+	        		
+	        		layout.add(link);
+	        		
+
+	        		
+	        	}
+	        });
     	    
+    	});
     
 
+    }
+    
+    @SuppressWarnings("serial")
+   	@Component
+       @Scope("prototype")
+    public static class PortfolioCardLink extends RouterLink {
+    
+    	@Autowired
+    	ApplicationContext context;
+    	
+    	Portfolio port;
+    	
+    	public PortfolioCardLink() {}
+    	
+    	public PortfolioCardLink(Portfolio p) {
+    		this.port = p;
+    		addClassName("portfolio-alert-link");
+    		setRoute(ManagePortfolioView.class);
+    		
+    		setQueryParameters(QueryParameters.simple(new SingletonMap<>("id",port.getId().toString())));
+    		
+    		
+
+    	}
+    	
+    	@PostConstruct
+    	public void postConstruct() {
+    		
+    		if(port != null) {
+    			
+    			PortfolioHistory history = port.getLatest();
+    		
+	    		Integer warnLevel = PortfolioEntryGrid.getWarnLevel(history.getMaxToTriggerPercent());
+	    		this.addClassName("warn-"+warnLevel);
+	    		
+	    		PortfolioCard pc = context.getBean(PortfolioCard.class,port);
+	    		add(pc);
+    		
+    		}
+    	}
+    	
     }
     
     @SuppressWarnings("serial")
 	@Component
     @Scope("prototype")
     public static class PortfolioCard extends Span {
+    	
+    	@Autowired
+    	ImageService imageService;
     	
     	Portfolio port;
     	
@@ -276,27 +220,41 @@ public class HomeView extends VerticalLayout {
     	@PostConstruct
     	public void postConstruct() {
     		
-    		Span portAlert = this;
+    		//Span portAlert = this;
 			/*portAlert.setRoute(ManagePortfolioView.class);
 			if(port!=null)
 				portAlert.setQueryParameters(QueryParameters.simple(new SingletonMap<>("id",port.getId().toString())));*/
     		
-    		portAlert.addClassName("portfolio-alert");
+    		this.addClassName("portfolio-alert");
     		
     		String name = port!=null?port.getName():"New Portfolio";
     		Span portName = new Span(name);
     		portName.addClassName("portfolio-name");
-    		portAlert.add(portName);
+    		this.add(portName);
     		
     		if(port != null) {
     			
     			PortfolioHistory history = port.getLatest();
     			LOGGER.info("Latest History: {}",history);
     			
+    			Span top = new Span();
+    			top.addClassName("top-entries");
+    			this.add(top);
+    			
+    			history.getTopEntries(4).forEach(entry -> {
+    				String imageUrl = imageService.getImageUrl(entry.getCurrency());
+    				if(imageUrl != null) {
+	    				Image image = new Image(imageUrl,"Icon");
+	    				image.setWidth(ManagePortfolioView.ICON_SIZE_SMALL);
+	    				image.setHeight(ManagePortfolioView.ICON_SIZE_SMALL);
+	    				top.add(image);
+    				}
+    			});
+    			
 	    		Long val = Math.round(history.getValue().doubleValue());
 	    		Span portValue = new Span(PortfolioEntryGrid.ReserveFormatWhole.format(val));
 	    		portValue.addClassName("portfolio-value");
-	    		portAlert.add(portValue);
+	    		this.add(portValue);
 	    		
 	    		
 	    		Integer warnLevel = PortfolioEntryGrid.getWarnLevel(history.getMaxToTriggerPercent());
@@ -304,8 +262,10 @@ public class HomeView extends VerticalLayout {
 	    		Long perc = Math.round(history.getMaxToTriggerPercent().doubleValue()*100);
 	    		Span portPerc = new Span(perc.toString());
 	    		portPerc.addClassName("alert-percent");
-	    		portAlert.add(portPerc);
-	    		portAlert.addClassName("warn-"+warnLevel);
+	    		this.add(portPerc);
+	    		this.addClassName("warn-"+warnLevel);
+	    		
+	    		
     		}
     		
     	}

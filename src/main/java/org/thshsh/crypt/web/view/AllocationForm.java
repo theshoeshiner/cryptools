@@ -1,6 +1,7 @@
 package org.thshsh.crypt.web.view;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,17 +12,28 @@ import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.CurrencyRepository;
-import org.thshsh.vaadin.entity.EntityForm;
+import org.thshsh.crypt.serv.BalanceService;
+import org.thshsh.crypt.serv.ImageService;
+import org.thshsh.crypt.serv.ManagePortfolioService;
+import org.thshsh.vaadin.SingleCheckboxGroup;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 
 @SuppressWarnings("serial")
 @Component
@@ -37,6 +49,12 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 
 	@Autowired
 	CurrencyRepository assetRepo;
+	
+	@Autowired
+	BalanceService balServ;
+	
+	@Autowired
+	ManagePortfolioService manageServ;
 
 	@Autowired
 	@Qualifier("hundred")
@@ -45,23 +63,25 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 	Portfolio portfolio;
 	Currency currency;
 	Binding<?,?> percentBinding;
+	
+	@Autowired
+	ImageService imageService;
 
+	BigDecimal max;
+	String maxString;
+	SingleCheckboxGroup undefinedCheckbox;
+	SingleCheckboxGroup detectField;
+	
 
-	/*public AllocationForm(Allocation entity) {
-		super(Allocation.class, entity);
-	}*/
 
 	public AllocationForm(Allocation entity,Portfolio p,Currency c) {
 		super(Allocation.class, entity);
 		this.portfolio=p;
 		this.currency = c;
+		this.confirm = false;
+		
 	}
 
-	/*public AllocationForm(Portfolio p,Currency c) {
-		super(Allocation.class, null);
-		this.portfolio=p;
-		this.currency = c;
-	}*/
 
 	@Override
 	protected JpaRepository<Allocation, Long> getRepository() {
@@ -78,108 +98,149 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 	@Override
 	protected void setupForm() {
 		
-		formLayout.setPadding(false);
+		this.setWidthFull();
 		
-		Span info = new Span(this.entity.getCurrency().getName());
-		info.addClassName("helper-text");
-		//
-		String color = getColor();
-		
-		if(color != null) {
-			info.getElement().getStyle().set("color", "#"+color);
+		if(currency != null) {
+			
+			this.titleLayout.removeAll();
+			
+
+			Image img = new Image(imageService.getImageUrl(currency),""); 
+			img.addClassName("allocation-icon");
+			titleLayout.add(img);
+			String color = getColor();
+			
+			//Span key = new Span(this.currency.getKey());
+			if(color != null) {
+				titleLayout.getElement().getStyle().set("color", "#"+color);
+			}
+			//header.add(key);
+			Div name = new Div();
+			name.add(new Span(this.currency.getName()));
+			name.add(new Span("Allocation"));
+			//Span name = ;
+			titleLayout.add(name);
+			
+			//replace(getTitle(), header);
+			//titleLayout.add(header);
+			
 		}
-		formLayout.add(info);
-
-		HorizontalLayout row = formLayout.startHorizontalLayout();
-
-		/*exchangeField = new ComboBox<>("Exchange");
-		exchangeField.setItemLabelGenerator(Exchange::getName);
-		exchangeField.setItems(context.getBean(HasNameDataProvider.class,exeRepo));
-		exchangeField.setWidth("250px");
-		formLayout.add(exchangeField);*/
-
-		//row.setAlignItems(Alignment.CENTER);
 		
 		
-		BigDecimalField percent = new BigDecimalField("Percent");
+		
+		formLayout.setPadding(false);
+
+		
+		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElseGet(() -> BigDecimal.ZERO);
+		max = BigDecimal.ONE.subtract(sum);
+		if(entity.getPercent()!=null) max = max.add(entity.getPercent());
+		
+		//BigDecimal remainder = portfolio.getAllocationRemainder();
+		maxString = PortfolioEntryGrid.PercentFormat.format(max);
+		
+		BigDecimalField percent = new BigDecimalField("Allocation 0-"+maxString+"");
+		percent.setWidth("150px");
 		formLayout.add(percent);
+		
+		
 
-		Checkbox undef = new Checkbox("Auto Allocate");
-		formLayout.add(undef);
-		undef.addValueChangeListener(change -> {
-			if(change.getValue()) {
-				percent.setReadOnly(true);
-				percent.setValue(null);
-				percentBinding.setAsRequiredEnabled(false);
+		undefinedCheckbox = new SingleCheckboxGroup("Undefined");
+		undefinedCheckbox.setHelperText("Recieves an equal share of any unallocated percentage.");
+		formLayout.add(undefinedCheckbox);
+		undefinedCheckbox.addValueChangeListener(change -> {
+			if(change.isFromClient()) {
+				percentBinding.setAsRequiredEnabled(!change.getValue());
+				if(change.getValue()) {
+					detectField.setValue(false);
+					percent.setValue(null);
+					percentBinding.setAsRequiredEnabled(false);
+				}
 			}
-			else {
-				percent.setReadOnly(false);
+		});
+		binder
+		.forField(undefinedCheckbox)
+		.bind(Allocation::getUndefined, Allocation::setUndefined);
+	
+		
+		detectField = new SingleCheckboxGroup("Detect & Adjust");
+		detectField.setHelperText("Automatically detects and sets allocation for this Currency. Beware this may override other allocations.");
+		formLayout.add(detectField);
+		detectField.addValueChangeListener(change -> {
+			if(change.isFromClient()) {
+				percentBinding.setAsRequiredEnabled(!change.getValue());
+				if(change.getValue()) {
+					percent.setValue(null);
+					undefinedCheckbox.setValue(false);
+				}
 			}
 		});
 		
-
-		formLayout.endLayout();
-		formLayout.startHorizontalLayout();
+		
 
 
-		ComboBox<Currency> ass = new ComboBox<>("Currency");
-		ass.setItemLabelGenerator(c -> {
-			return c.getName() +" ("+c.getKey()+")";
-		});
-		ass.setItems(context.getBean(CurrencyDataProvider.class));
-		ass.setWidth("250px");
-
-		if(currency==null)formLayout.add(ass);
-
-		binder.forField(ass)
-		.asRequired()
-		.bind(Allocation::getCurrency, Allocation::setCurrency);
-
-
-
-		/*TextField balance = new TextField("Balance");
-		formLayout.add(balance);*/
-
-		formLayout.endLayout();
-
-		/*binder.forField(exchangeField).asRequired().bind(b -> {
-			return null;
-			},
-			(b,e) -> {
-
+		percent.addValueChangeListener(change -> {
+			if(change.isFromClient()) {
+				LOGGER.info("value: {}",change.getValue());
+				if(change.getValue()!=null) {
+					detectField.setValue(false);
+					undefinedCheckbox.setValue(false);
+				}
 			}
-			);*/
-		//binder.forField(exchangeField).bind(Balance::getExchange,Balance::setExchange);
-
-
+		});
 
 		percentBinding = binder.forField(percent)
 		.asRequired()
-		.withConverter(v -> {
-			if(v == null) return null;
-			else return v.divide(hundred);
-		}, v -> {
-			if(v == null) return null;
-			else return v.multiply(hundred);
+		
+		.withConverter(new Converter<BigDecimal,BigDecimal>() {
+
+			
+			@Override
+			public Result<BigDecimal> convertToModel(BigDecimal value, ValueContext context) {
+				if(value == null) return Result.ok(null);
+				return Result.ok(value);
+			}
+
+			@Override
+			public BigDecimal convertToPresentation(BigDecimal value, ValueContext context) {
+				if(value == null) return  null;
+				return value.setScale(2, RoundingMode.HALF_EVEN);
+			}
+
+		
+			
 		})
+		.withValidator((value,context) -> {
+			if(value == null) return ValidationResult.ok();
+			value = value.divide(hundred);
+			if(value.compareTo(max) > 0) {
+				return ValidationResult.error("Must be < "+maxString);
+			}
+			else if(value.compareTo(BigDecimal.ZERO) < 0) {
+				return ValidationResult.error("Must be > 0");
+			}
+			
+			return ValidationResult.ok();
+		})
+				
+		.withConverter(new PercentConverter())
 
 		.bind(Allocation::getPercent, Allocation::setPercent);
 
-		if(entity.isUndefined()) {
-			undef.setValue(true);
-		}
+
 	}
 
 
 
 	@Override
 	protected void persist() {
-		LOGGER.info("persisting: {}",this.entity);
 		super.persist();
+		if(detectField.isTrue()) {
+			PortfolioHistory h = manageServ.createHistory(portfolio, false);
+			balServ.autoDetectAllocation(currency, portfolio, h);
+		}
 	}
 
 	protected Allocation createEntity() {
-		LOGGER.info("createEntity: {}",this.portfolio);
 		Allocation b = super.createEntity();
 		if(portfolio!=null) b.setPortfolio(portfolio);
 		if(currency!=null) b.setCurrency(currency);

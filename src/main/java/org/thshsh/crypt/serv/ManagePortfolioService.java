@@ -63,8 +63,8 @@ public class ManagePortfolioService {
 	
 	TransactionTemplate template;
 
-	BigDecimal indThreshold = new BigDecimal(".15");
-	BigDecimal portThreshold = new BigDecimal(".04");
+	//BigDecimal indThreshold = new BigDecimal(".15");
+	//BigDecimal portThreshold = new BigDecimal(".04");
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -72,22 +72,21 @@ public class ManagePortfolioService {
 	}
 
 	public PortfolioHistory createHistory(Portfolio p) {
+		return createHistory(p, true);
+	}
+	
+	public PortfolioHistory createHistory(Portfolio p, Boolean setLatest) {
 		
 		PortfolioHistory history = template.execute( (TransactionStatus action) -> {
-
-			//PortfolioHistory mostRecent = portHistRepo.findOneByPortfolioOrderByTimestampDesc(p);
 
 			Portfolio port = portRepo.findById(p.getId()).get();
 
 			PortfolioHistory portHistory = getSummary(port);
-			//PortfolioHistory portHistory = new PortfolioHistory(port, summary);
-			//portHistory.setValue(portHistory.getValue());
-			/*summary.getEntries().forEach(entry -> {
-				PortfolioEntryHistory hist = new PortfolioEntryHistory(portHistory, entry);
-				portHistory.addEntry(hist);
-			});*/
-			port.setLatest(portHistory);
-			portHistRepo.save(portHistory);
+
+			if(setLatest) {
+				port.setLatest(portHistory);
+				portHistRepo.save(portHistory);
+			}
 
 			return portHistory;
 		});
@@ -111,7 +110,7 @@ public class ManagePortfolioService {
 		BigDecimal remainder = BigDecimal.ONE.subtract(sum);
 		LOGGER.info("remainder: {}",remainder);
 		//Allocation remainderAllocation = new Allocation();
-		MutableInt remainderCount = new MutableInt(0);
+		MutableInt undefinedCount = new MutableInt(0);
 
 
 		List<Allocation> allocations = alloRepo.findByPortfolio(portfolio);
@@ -139,68 +138,71 @@ public class ManagePortfolioService {
 
 			LOGGER.info("cur: {}",cur);
 			
-			BigDecimal rate;
+			BigDecimal rate = BigDecimal.ZERO;
 			
 			if(rates.containsKey(cur)) {
 				rate = rates.get(cur).getRate();
-			
-	
-				BigDecimal value = bal.getAsBigDecimal().multiply(rate);
-				currencyValues.put(cur, value);
-				totalValue.inc(value);
-				Allocation allocation = null;
-				if(allocationMap.containsKey(cur)) {
-					allocation = allocationMap.get(cur);
-				}
-	
-				if(allocation == null || allocation.getPercent() == null) {
-					remainderCount.increment();
-				}
-				PortfolioEntryHistory pe = new PortfolioEntryHistory(history,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
-				pe.setValueReserve(value);
-				entryMap.put(cur, pe);
-				entries.add(pe);
-	
-				LOGGER.info("value: {}",value);
-			
 			}
 			else {
-				LOGGER.warn("No Market rate for: {}",cur);
+				LOGGER.warn("No market rate for: {}",cur);
 			}
 			
-		});
-
-		Long count = remainderCount.longValue();
-		if(count == 0) count++;
-		BigDecimal remainderPer = remainder.divide(BigDecimal.valueOf(count),4, RoundingMode.HALF_EVEN);
-		LOGGER.info("{} / {} = {}", remainder,remainderCount,remainderPer);
-		//remainderAllocation.setPercent(remainderPer);
-
-		
-		
-		entryMap.forEach(( currency,entry) -> {
 			
-			if(entry.getAllocation() == null || entry.getAllocation().getPercent() == null) {
-				//Allocation a = new Allocation(remainderPer);
-				Allocation temp = new Allocation();
-				temp.setPercent(remainderPer);
-				temp.setUndefined(true);
-				temp.setCurrency(currency);
-				temp.setPortfolio(portfolio);
-				if(entry.getAllocation()!=null)temp.setId(entry.getAllocation().getId());
-				entry.setAllocation(temp);
-				
+			//if(rates.containsKey(cur)) {
+	
+			BigDecimal value = bal.getAsBigDecimal().multiply(rate);
+			currencyValues.put(cur, value);
+			totalValue.inc(value);
+			Allocation allocation = null;
+			if(allocationMap.containsKey(cur)) {
+				allocation = allocationMap.get(cur);
 			}
-			//else if(entry.getAllocation().getPercent() == null) {
-				//temp.setUndefined(true);
-				//temp.setPercent(remainderPer);
-				
-			//	temp.setId(entry.getAllocation().getId());
+
+			if(allocation == null || allocation.getPercent() == null) {
+				undefinedCount.increment();
+			}
+			PortfolioEntryHistory pe = new PortfolioEntryHistory(history,bal.getAsBigDecimal(), cur,allocation,rates.get(cur));
+			pe.setValue(value);
+			entryMap.put(cur, pe);
+			entries.add(pe);
+
+			LOGGER.info("value: {}",value);
+		
+			//}
+			//else {
+				//LOGGER.warn("No Market rate for: {}",cur);
 			//}
 			
 		});
 
+		Long undefinedCountLong = undefinedCount.longValue();
+		
 
+		if(undefinedCountLong > 0) {
+			BigDecimal remainderPer = remainder.divide(BigDecimal.valueOf(undefinedCountLong),4, RoundingMode.HALF_EVEN);
+			LOGGER.info("{} / {} = {}", remainder,undefinedCount,remainderPer);
+			
+			entryMap.forEach(( currency,entry) -> {
+				if(entry.getAllocationPercent() == null) {
+					entry.setAllocationPercent(remainderPer);
+				}
+			});
+		}
+		else {
+			//there are no undefined allocations
+			if(remainder.compareTo(BigDecimal.ZERO) > 0) {
+				//we have an unallocated remainder
+				PortfolioEntryHistory pe = new PortfolioEntryHistory(history,BigDecimal.ZERO, null,null,null);
+				pe.setAllocationPercent(remainder);
+				pe.setAllocationUndefined(true);
+				pe.setValue(BigDecimal.ZERO);
+				entries.add(pe);
+				entryMap.put(null, pe);
+			}
+		}
+
+
+		//detect alerts
 
 		//LOGGER.info("remainderAllocation: {}",remainderAllocation);
 		LOGGER.info("currencyBalances: {}",currencyBalances.keySet());
@@ -210,36 +212,41 @@ public class ManagePortfolioService {
 		MutableBigDecimal maxToTriggerPercent = new MutableBigDecimal(0l);
 		MutableBigDecimal totalAdjust = new MutableBigDecimal(0);
 
-		currencyBalances.forEach((cur,bal)-> {
+		entryMap.forEach((cur,pe)-> {
 
 			LOGGER.info("cur: {}",cur);
 
-			PortfolioEntryHistory pe = entryMap.get(cur);
+			//PortfolioEntryHistory pe = entryMap.get(cur);
 			
-			if(pe != null) {
+			//if(pe != null) {
 				
-				BigDecimal percent = pe.getAllocation().getPercent();
+				BigDecimal percent = pe.getAllocationPercent();
 				BigDecimal targetValue = totalValue.getAsBigDecimal().multiply(percent);
 				LOGGER.info("targetValue: {}",targetValue);
 				pe.setTargetReserve(targetValue);
-	
-				BigDecimal adjPerc = pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
+				
+				//BigDecimal adjPerc = pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
+				BigDecimal adjPerc = totalValue.getAsBigDecimal().compareTo(BigDecimal.ZERO) == 0?
+						BigDecimal.ZERO
+						:pe.getAdjustReserve().divide(totalValue.getAsBigDecimal(),RoundingMode.HALF_EVEN);
 				LOGGER.info("adjPerc: {}",adjPerc);
 				pe.setAdjustPercent(adjPerc);
 				totalAdjust.inc(pe.getAdjustPercentAbsolute());
 	
 				//thresh - 15/4
+				BigDecimal indThreshold = portfolio.getSettings().getIndividualThreshold();
+				BigDecimal portThreshold = portfolio.getSettings().getPortfolioThreshold();
 				BigDecimal thresh;
-				BigDecimal ind = pe.getAllocation().getPercent().multiply(indThreshold);
-				LOGGER.info("ind thresh: {}",ind);
-				if(ind.compareTo(portThreshold) >0)  thresh = portThreshold;
-				else thresh = ind;
+				BigDecimal adjustedIndividual = pe.getAllocationPercent().multiply(indThreshold);
+				LOGGER.info("ind thresh: {}",adjustedIndividual);
+				if(adjustedIndividual.compareTo(portThreshold) >0)  thresh = portThreshold;
+				else thresh = adjustedIndividual;
 				pe.setThresholdPercent(thresh);
 	
 				LOGGER.info("Threshold: {}",thresh);
 	
 	
-				if(pe.getAllocation().getPercent().compareTo(BigDecimal.ZERO) != 0) {
+				if(pe.getAllocationPercent().compareTo(BigDecimal.ZERO) != 0) {
 	
 					BigDecimal toTrigger = adjPerc.divide(thresh, RoundingMode.HALF_EVEN).abs();
 					LOGGER.info("toTrigger: {}",toTrigger);
@@ -263,7 +270,7 @@ public class ManagePortfolioService {
 	
 				}
 			
-			}
+			//}
 
 
 		});

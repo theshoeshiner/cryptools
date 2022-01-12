@@ -11,6 +11,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.repo.CurrencyRepository;
+import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UiComponents;
@@ -19,6 +20,7 @@ import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Anchor;
@@ -30,7 +32,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
+@CssImport("./styles/currency-grid.css")
+public class CurrenciesGrid extends AppEntityGrid<Currency> {
 
 
 	@Autowired
@@ -38,12 +41,17 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 	
 	@Autowired
 	MarketRateService rateService;
+	
+	@Autowired
+	ImageService imageService;
 
 	public CurrenciesGrid() {
 		super(Currency.class, null, FilterMode.Example);
 		this.showButtonColumn=true;
 		this.showEditButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWrite);
 		this.showDeleteButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete);
+		this.defaultSortOrderProperty="rank";
+		this.defaultSortAsc=false;
 	}
 
 	@Override
@@ -56,7 +64,7 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 
 		Column<?> col = grid.addComponentColumn(entry -> {
 			if(entry.getImageUrl()!=null) {
-				String imageUrl = "/image/"+entry.getImageUrl();
+				String imageUrl = imageService.getImageUrl(entry);
 				Image image = new Image(imageUrl,"Icon");
 				image.setWidth(ManagePortfolioView.ICON_SIZE);
 				image.setHeight(ManagePortfolioView.ICON_SIZE);
@@ -83,6 +91,20 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 		.setFlexGrow(0)
 		;
 		
+		grid
+		.addComponentColumn(c -> {
+			Span s = new Span();
+			s.setText(c.getColorHex());
+			s.addClassName("currency-color");
+			//s.setWidth("50px");
+			s.getElement().getStyle().set("background-color", "#"+c.getColorHex());
+			s.getElement().getStyle().set("color", "#fff");
+			return s;
+		})
+		.setHeader("Color")
+		.setWidth("125px")
+		.setFlexGrow(0)
+		;
 		
 		grid
 		.addColumn(Currency::getActive)
@@ -94,6 +116,12 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 		.setWidth("125px")
 		.setSortable(true)
 		.setSortProperty("grade")
+		.setFlexGrow(0);
+		
+		grid.addColumn(Currency::getRank).setHeader("Rank")
+		.setWidth("125px")
+		.setSortable(true)
+		.setSortProperty("rank")
 		.setFlexGrow(0);
 		
 		grid.addColumn(Currency::getPlatformType).setHeader("Platform")
@@ -124,15 +152,17 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 	public void addButtonColumn(HorizontalLayout buttons, Currency e) {
 		super.addButtonColumn(buttons, e);
 
-		Button refresh = new Button(VaadinIcon.REFRESH.create());
-		refresh.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-		buttons.add(refresh);
-		UIUtils.setTitle(refresh, "Refresh");
-		refresh.addClickListener(click -> refreshRate(e));
+		if(SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete)) {
+			Button refresh = new Button(VaadinIcon.REFRESH.create());
+			refresh.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			buttons.add(refresh);
+			UIUtils.setTitle(refresh, "Refresh");
+			refresh.addClickListener(click -> refreshRate(e));
+		}
 	}
 
 	protected void refreshRate(Currency c) {
-		rateService.getUpToDateMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c));
+		rateService.getUpToDateMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c),true);
 	}
 	
 	/*protected void manage(Portfolio e) {
@@ -162,5 +192,7 @@ public class CurrenciesGrid extends AppEntityGrid<Currency,Long> {
 		filterEntity.setGrade(null);
 		
 	}
+	
+	
 	
 }

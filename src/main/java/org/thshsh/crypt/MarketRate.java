@@ -15,7 +15,7 @@ public class MarketRate extends IdedEntity {
 	@ManyToOne
 	Currency currency;
 
-	@Column
+	@Column(columnDefinition = "decimal")
 	BigDecimal rate;
 
 	@Column

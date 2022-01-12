@@ -16,7 +16,7 @@ import com.vaadin.flow.component.grid.Grid;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class UserGrid extends AppEntityGrid<User, Long> {
+public class UserGrid extends AppEntityGrid<User> {
 
 	@Autowired
 	UserRepository userRepo;

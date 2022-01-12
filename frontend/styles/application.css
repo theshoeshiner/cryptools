@@ -88,6 +88,7 @@ iron-icon.primary {
 	color:var(--lumo-primary-color);
 }
 
+
 .helper-text {
     display: block;
     color: var(--lumo-secondary-text-color);
@@ -104,6 +105,11 @@ iron-icon.primary {
 .helper-text.popup a {
 	color:var(--lumo-accent-color-2);
 }
+
+.helper-text.highlighted {
+	color:var(--lumo-accent-color-1);
+}
+
 
 vaadin-details[theme=stacktrace] :not([slot=summary]) {
 	font-size:var(--lumo-size-xxs);

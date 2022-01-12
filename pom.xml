@@ -176,11 +176,24 @@
 			<artifactId>popup</artifactId>
 			<version>2.2.4</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.vaadin.addons</groupId>
+			<artifactId>googleanalyticstracker</artifactId>
+			<!-- <version>4.0.1</version> -->
+			<version>4.0.2-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>org.vaadin.gatanaso</groupId>
 			<artifactId>multiselect-combo-box-flow</artifactId>
 			<version>3.0.2</version>
+		</dependency>
+		<!-- <dependency> <groupId>com.github.bad-pop</groupId> <artifactId>jcoinbase</artifactId> <version>0.2.0</version> </dependency> -->
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+			<version>2.3.3.RELEASE</version>
 		</dependency>
 
 		<dependency>
@@ -284,7 +297,7 @@
 		<dependency>
 			<groupId>org.thshsh</groupId>
 			<artifactId>crypto-compare-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -302,7 +315,7 @@
 		<dependency>
 			<groupId>org.thshsh</groupId>
 			<artifactId>commons-vaadin</artifactId>
-			<version>3.1.4-SNAPSHOT</version>
+			<version>3.1.5-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

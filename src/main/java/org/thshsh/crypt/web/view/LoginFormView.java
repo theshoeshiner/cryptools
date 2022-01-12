@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.thshsh.crypt.Activity;
+import org.thshsh.crypt.ActivityType;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
@@ -33,8 +36,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
-import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -44,6 +45,10 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Login")
 @Route(value = "login")
 public class LoginFormView extends VerticalLayout implements BeforeEnterObserver  {
+
+	protected static final String CONFIRM_PARAM = "confirm";
+
+
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(LoginFormView.class);
 	
@@ -59,6 +64,9 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 	
 	@Autowired
 	AppConfiguration appConfig;
+	
+	@Autowired
+	ActivityRepository actRepo;
 	
 	@Autowired
 	ApplicationContext context;
@@ -122,15 +130,7 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		buttons.add(loginButton);
 		//UIUtils.setElementAttribute(loginButton, "type", "submit");
 		loginButton.addClickListener(click -> {
-			//lf.getElement().executeJs("console.log('form: '+this);");
-			//lf.getElement().executeJs("console.log(this);");
-			//lf.getElement().executeJs("this.submit");
-			lf.getElement().executeJs("this.submit();");
-			//lf.getElement().executeJs("console.log(this.querySelector('vaadin-button'));");
-			//lf.getElement().executeJs("console.log(this.querySelector('vaadin-button').click);");
-			//lf.getElement().executeJs("this.querySelector('vaadin-button').click();");
-			//encoder.matches(lf.get, encodedPassword)
-			
+			lf.getElement().executeJs("this.submit();");			
 		});
 		
 	
@@ -143,10 +143,11 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		loginLayout.add(buttons);
 	}
 	
-	Binder<User> binder;
+	//Binder<User> binder;
 	Boolean login;
-	User registerUser;
-	VerticalLayout registerLayout;
+	//User registerUser;
+	//VerticalLayout registerLayout;
+	RegisterForm registerLayout;
 	
 	@Autowired
 	UserNameValidator userNameValidator;
@@ -157,19 +158,7 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 	@Autowired
 	UserService userService;
 	
-	//UserForm userForm;
 	
-	/*protected void showRegisterForm() {
-		userForm = context.getBean(UserForm.class,null,Type.Register);
-		
-		this.remove(loginLayout);
-		this.message.setText(" ");
-		
-		userForm.setWidth("300px");
-		userForm.setAlignItems(Alignment.CENTER);
-	
-		this.add(userForm);
-	}*/
 	
 	protected void showRegisterForm() {
 
@@ -178,155 +167,9 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		this.remove(loginLayout);
 		this.message.setText(" ");
 		
-		//getElement().removeChild(ironForm);
-
-		binder = new Binder<>();
-		registerUser = new User();
-
-		registerLayout = new VerticalLayout();
-		registerLayout.addClassName("form-layout");
-		registerLayout.setAlignItems(Alignment.CENTER);
-		registerLayout.setWidth("300px");
-
-		HorizontalLayout names = new HorizontalLayout();
-		names.setWidthFull();
-
-		TextField nameField = new TextField();
-		nameField.setMinWidth("0px");
-		nameField.setPlaceholder("Name (Optional)");
-
-		names.add(nameField);
-		names.setFlexGrow(1, nameField);
-
-	
-
-		PasswordField passwordField = new PasswordField();
-		passwordField.setPlaceholder("Password");
-		passwordField.getElement().setAttribute("name", "password"); //
-		passwordField.setWidthFull();
-
-		TextField userNameField = new TextField();
-		userNameField.setPlaceholder("Username (Optional)");
-		userNameField.setWidthFull();
-
-		TextField emailField = new TextField();
-		emailField.setPlaceholder("Email");
-		emailField.setWidthFull();
-
-		TextField apiKey = new TextField();
-		apiKey.setPlaceholder("CryptoCompare API Key");
-		apiKey.setWidthFull();
-
-		PasswordField confirmPasswordField = new PasswordField();
-		confirmPasswordField.setPlaceholder("Confirm Password");
-		// passwordField.getElement().setAttribute("name", "password"); //
-		confirmPasswordField.setWidthFull();
-		// confirmPasswordField.setVisible(false);
-
-		HorizontalLayout buttons = new HorizontalLayout();
-		buttons.setWidthFull();
-		buttons.setJustifyContentMode(JustifyContentMode.CENTER);
-		buttons.setMargin(false);
-
-		/*loginButton = new Button("Login");
-		loginButton.setId("submitbutton"); //
-		buttons.add(loginButton);*/
-
-		Button backButton = new Button("Back");
-		buttons.add(backButton);
-		backButton.addClickListener(click -> {
-			showLogin();
-		});
-
-		Button register = new Button("Register");
-		buttons.add(register);
-		register.addClickListener(click -> {
-			registerUser();
-
-		});
-
-		HorizontalLayout apikeyrow = new HorizontalLayout();
-		apikeyrow.setWidthFull();
-		apikeyrow.add(apiKey);
-
-		Button button = new Button("What's This?");
-		button.addClassName("helper-text");
-		button.addClassName("api-help");
-		button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-		button.setId("api-help-button");
-		Popup popup = new Popup();
-		popup.setFor(button.getId().orElse(null));
-		Div text = new Div();
-		text.addClassName("helper-text");
-		text.addClassName("popup");
-		//text.setWidth("250px");
-		Html h = new Html(
-				"<span>Price information for currencies is retrieved from the CryptoCompare API. Due to usage limits an API Key is necessary for each user. API Keys are free and can be obtained by following <a href='https://www.cryptocompare.com/coins/guides/how-to-use-our-api/' target='_blank'>this guide</a> and creating a \"Price Streaming and Polling\" Key</span>.");
-		// text.setText("Price data for portfolios is retrieved from the CryptoCompare
-		// API. An API Key can be obtained by following this guide.");
-		text.add(h);
-		/*Div text2 = new Div();
-		text2.setText("element 2");*/
-		popup.add(text);
-
-		apikeyrow.add(button, popup);
-
-		registerLayout.add(names, userNameField, emailField, apikeyrow, passwordField, confirmPasswordField, buttons);
 		
-
-		binder
-			.forField(emailField)
-			.asRequired()
-			.withValidator(new EmailValidator("Invalid Email Address"))
-			.withValidator((s, c) -> {
-				
-				if (userRepo.findByEmail(s).isPresent())
-					return ValidationResult.error("Email Address already in use");
-				else
-					return ValidationResult.ok();
-			})
-			.bind(User::getEmail, User::setEmail);
-
-		binder.forField(userNameField).withNullRepresentation(StringUtils.EMPTY)
-				/*.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
-				.withValidator((s, c) -> {
-					if (s != null && userRepo.findByUserNameIgnoreCase(s).isPresent())
-						return ValidationResult.error("Username already in use");
-					else
-						return ValidationResult.ok();
-				})*/
-				.withValidator(userNameValidator).bind(User::getUserName, User::setUserName);
-
-		binder
-			.forField(nameField)
-			.withNullRepresentation(StringUtils.EMPTY)
-			.bind(User::getDisplayName, User::setDisplayName);
-
-		BindingBuilder<User,String> bb = binder
-			.forField(apiKey)
-			.withNullRepresentation(StringUtils.EMPTY)
-			.withValidator(new ApiKeyValidator())
-			;
-		if(appConfig.getRequireApiKey()) bb.asRequired();
-		bb.bind(User::getApiKey, User::setApiKey);
-
-		// binder.forField(lastName).withNullRepresentation("").bind(User::getLastName,
-		// User::setLastName);
-
-		binder.forField(passwordField).asRequired().bind(u -> {return "";}, (u,s) -> {});
+		registerLayout = new RegisterForm();
 		
-		binder
-			.forField(confirmPasswordField)
-			.asRequired()
-			.withValidator((u, s) -> {
-				LOGGER.info("validate password {} vs {}", u, passwordField.getValue());
-				if (u.equals(passwordField.getValue()))
-					return ValidationResult.ok();
-				else
-					return ValidationResult.error("Passwords do not match");
-			})
-			.bind(User::getPassword, User::setPassword);
-
 		this.add(registerLayout);
 
 	}
@@ -335,9 +178,9 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 
 		try {
 			LOGGER.info("write bean");
-			binder.writeBean(registerUser);
+			registerLayout.binder.writeBean(registerLayout.registerUser);
 			try {
-				userService.registerUser(registerUser);
+				userService.registerUser(registerLayout.registerUser);
 				message.setText("Registration Successful. Check email for confirmation link.");
 				message.setVisible(true);
 
@@ -376,13 +219,15 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 			//emailLoginField.setInvalid(true);
 		
 		}
-		if (params.containsKey("confirm")) {
+		if (params.containsKey(CONFIRM_PARAM)) {
 
-			String token = params.get("confirm").get(0);
+			String token = params.get(CONFIRM_PARAM).get(0);
 			userRepo.findByConfirmToken(token).ifPresent(u -> {
 
 				u.setConfirmed(true);
 				userRepo.save(u);
+				
+				actRepo.save(new Activity(u, ActivityType.Confirm));
 
 			});
 
@@ -393,17 +238,173 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 		}
 	}
 
-	public static class ApiKeyValidator implements Validator<String> {
-		@Override
-		public ValidationResult apply(String s, ValueContext context) {
-			if (s == null || s.length() == 64 && StringUtils.isAlphanumeric(s)) {
-				return ValidationResult.ok();
-			} 
-			else {
-				return ValidationResult.error("Invalid API Key");
-			}
-		}
+	public class RegisterForm extends VerticalLayout {
 		
+		Binder<User> binder;
+		User registerUser;
+		VerticalLayout registerLayout;
+		
+		public RegisterForm() {
+			
+			//this.remove(loginLayout);
+			//this.message.setText(" ");
+			
+			//getElement().removeChild(ironForm);
+
+			binder = new Binder<>();
+			registerUser = new User();
+
+			registerLayout = this;
+			registerLayout.addClassName("form-layout");
+			registerLayout.setAlignItems(Alignment.CENTER);
+			registerLayout.setWidth("300px");
+
+			HorizontalLayout names = new HorizontalLayout();
+			names.setWidthFull();
+
+			TextField nameField = new TextField();
+			nameField.setMinWidth("0px");
+			nameField.setPlaceholder("Name (Optional)");
+
+			names.add(nameField);
+			names.setFlexGrow(1, nameField);
+
+		
+
+			PasswordField passwordField = new PasswordField();
+			passwordField.setPlaceholder("Password");
+			passwordField.getElement().setAttribute("name", "password"); //
+			passwordField.setWidthFull();
+
+			TextField userNameField = new TextField();
+			userNameField.setPlaceholder("Username (Optional)");
+			userNameField.setWidthFull();
+
+			TextField emailField = new TextField();
+			emailField.setPlaceholder("Email");
+			emailField.setWidthFull();
+
+			TextField apiKey = new TextField();
+			apiKey.setPlaceholder("CryptoCompare API Key");
+			apiKey.setWidthFull();
+
+			PasswordField confirmPasswordField = new PasswordField();
+			confirmPasswordField.setPlaceholder("Confirm Password");
+			// passwordField.getElement().setAttribute("name", "password"); //
+			confirmPasswordField.setWidthFull();
+			// confirmPasswordField.setVisible(false);
+
+			HorizontalLayout buttons = new HorizontalLayout();
+			buttons.setWidthFull();
+			buttons.setJustifyContentMode(JustifyContentMode.CENTER);
+			buttons.setMargin(false);
+
+			/*loginButton = new Button("Login");
+			loginButton.setId("submitbutton"); //
+			buttons.add(loginButton);*/
+
+			Button backButton = new Button("Back");
+			buttons.add(backButton);
+			backButton.addClickListener(click -> {
+				showLogin();
+			});
+
+			Button register = new Button("Register");
+			buttons.add(register);
+			register.addClickListener(click -> {
+				registerUser();
+
+			});
+
+			HorizontalLayout apikeyrow = new HorizontalLayout();
+			apikeyrow.setWidthFull();
+			apikeyrow.add(apiKey);
+
+			Button button = new Button("What's This?");
+			button.addClassName("helper-text");
+			button.addClassName("api-help");
+			button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			button.setId("api-help-button");
+			Popup popup = new Popup();
+			popup.setFor(button.getId().orElse(null));
+			Div text = new Div();
+			text.addClassName("helper-text");
+			text.addClassName("popup");
+			//text.setWidth("250px");
+			Html h = new Html(
+					"<span>Price information for currencies is retrieved from the CryptoCompare API. Due to usage limits an API Key is necessary for each user. API Keys are free and can be obtained by following <a href='https://www.cryptocompare.com/coins/guides/how-to-use-our-api/' target='_blank'>this guide</a> and creating a \"Price Streaming and Polling\" Key</span>.");
+			// text.setText("Price data for portfolios is retrieved from the CryptoCompare
+			// API. An API Key can be obtained by following this guide.");
+			text.add(h);
+			/*Div text2 = new Div();
+			text2.setText("element 2");*/
+			popup.add(text);
+
+			apikeyrow.add(button, popup);
+
+			registerLayout.add(names, userNameField, emailField, apikeyrow, passwordField, confirmPasswordField, buttons);
+			
+
+			binder
+				.forField(emailField)
+				.asRequired()
+				.withValidator(new EmailValidator("Invalid Email Address"))
+				.withValidator((s, c) -> {
+					
+					if (userRepo.findByEmail(s).isPresent())
+						return ValidationResult.error("Email Address already in use");
+					else
+						return ValidationResult.ok();
+				})
+				.bind(User::getEmail, User::setEmail);
+
+			binder.forField(userNameField).withNullRepresentation(StringUtils.EMPTY)
+					/*.withValidator(new RegexpValidator("Invalid Username", "\\p{Alnum}++"))
+					.withValidator((s, c) -> {
+						if (s != null && userRepo.findByUserNameIgnoreCase(s).isPresent())
+							return ValidationResult.error("Username already in use");
+						else
+							return ValidationResult.ok();
+					})*/
+					.withValidator(userNameValidator).bind(User::getUserName, User::setUserName);
+
+			binder
+				.forField(nameField)
+				.withNullRepresentation(StringUtils.EMPTY)
+				.bind(User::getDisplayName, User::setDisplayName);
+
+			BindingBuilder<User,String> bb = binder
+				.forField(apiKey)
+				.withNullRepresentation(StringUtils.EMPTY)
+				.withValidator(context.getBean(ApiKeyValidator.class))
+				;
+			
+			
+			if(appConfig.getRequireApiKey()) bb.asRequired();
+			bb.bind(User::getApiKey, User::setApiKey);
+
+			// binder.forField(lastName).withNullRepresentation("").bind(User::getLastName,
+			// User::setLastName);
+
+			binder.forField(passwordField).asRequired().bind(u -> {return "";}, (u,s) -> {});
+			
+			binder
+				.forField(confirmPasswordField)
+				.asRequired()
+				.withValidator((u, s) -> {
+					LOGGER.info("validate password {} vs {}", u, passwordField.getValue());
+					if (u.equals(passwordField.getValue()))
+						return ValidationResult.ok();
+					else
+						return ValidationResult.error("Passwords do not match");
+				})
+				.bind(User::getPassword, User::setPassword);
+
+			//this.add(registerLayout);
+
+			
+			
+		}
 	}
 
 }

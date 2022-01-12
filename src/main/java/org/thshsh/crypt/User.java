@@ -138,6 +138,11 @@ public class User extends IdedEntity {
 	public void setConfirmToken(String confirmToken) {
 		this.confirmToken = confirmToken;
 	}
+	
+	public String getUserNameOrEmail() {
+		if(userName!=null) return userName;
+		else return email;
+	}
 
 	public String getUserName() {
 		return userName;

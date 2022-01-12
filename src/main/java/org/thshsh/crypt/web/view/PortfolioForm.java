@@ -1,6 +1,6 @@
 package org.thshsh.crypt.web.view;
 
-import java.util.Collections;
+import java.math.BigDecimal;
 
 import org.apache.commons.collections4.map.SingletonMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,6 @@ import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UsernameEmailDataProvider;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.entity.EntityForm;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -29,14 +28,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteParameters;
 
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
 public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 
+	BigDecimal DEFAULT_IND_THRESH = new BigDecimal(".15");
+	BigDecimal DEFAULT_PORT_THRESH = new BigDecimal(".05");
+	
 	@Autowired
 	PortfolioHistoryService historyService;
 	
@@ -134,6 +134,8 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 		Portfolio p = super.createEntity();
 		p.getSettings().setReserve(assetRepo.findByKey("USD"));
 		p.setUser(session.getUser());
+		p.getSettings().setIndividualThreshold(DEFAULT_IND_THRESH);
+		p.getSettings().setPortfolioThreshold(DEFAULT_PORT_THRESH);
 		return p;
 	}
 

@@ -40,7 +40,7 @@ public class CurrencyDataProvider extends PageableDataProvider<Currency, String>
 	@Override
 	protected List<QuerySortOrder> getDefaultSortOrders() {
 		//return QuerySortOrder.asc("grade").thenAsc("name").build();
-		return QuerySortOrder.asc("grade").thenAsc("name").build();
+		return QuerySortOrder.desc("rank").thenAsc("name").build();
 		
 	}
 

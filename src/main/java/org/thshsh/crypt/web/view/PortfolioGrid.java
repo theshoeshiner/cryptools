@@ -1,7 +1,10 @@
 package org.thshsh.crypt.web.view;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.StringJoiner;
 
 import javax.annotation.PostConstruct;
 
@@ -14,6 +17,7 @@ import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
@@ -21,6 +25,7 @@ import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.RouterLinkRenderer;
 import org.thshsh.vaadin.StringSearchDataProvider;
+import org.thshsh.vaadin.ZonedDateTimeRenderer;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
@@ -34,13 +39,16 @@ import com.vaadin.flow.router.RouteConfiguration;
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
 @Scope("prototype")
-public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
+public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 
 	@Autowired
 	TaskExecutor executor;
 	
 	@Autowired
 	PortfolioRepository portRepo;
+	
+	@Autowired
+	AllocationRepository allRepo;
 	
 	@Autowired
 	PortfolioHistoryRepository histRepo;
@@ -116,6 +124,29 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 		.setFlexGrow(0)
 		;
 		
+		grid
+		.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(Portfolio::getLatest, PortfolioHistory::getValue), PortfolioEntryGrid.ReserveFormatWhole))
+		.setHeader("Value")
+		.setWidth("100px")
+		.setFlexGrow(0)
+		;
+		
+		grid.addColumn(p -> {
+			return String.join(", ", portRepo.findCurrencySymbols(p.getId()));
+		})
+		.setHeader("Currencies")
+		.setWidth("300px")
+		.setFlexGrow(0)
+		;
+		
+		grid.addColumn(p -> {
+			return String.join(", ", portRepo.findExchangeNames(p.getId()));
+		})
+		.setHeader("Exchanges")
+		.setWidth("300px")
+		.setFlexGrow(0)
+		;
+		
 		if(SecurityUtils.hasAccess(Feature.User, Access.Read)) {
 			grid.addColumn(FunctionUtils.nestedValue(Portfolio::getUser, User::getUserName))
 			.setHeader("User")
@@ -132,6 +163,16 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio,Long> {
 			})
 			.setHeader("History")
 			.setWidth("100px")
+			.setFlexGrow(0)
+			;
+			
+			//ZonedDateTimeRenderer<Source>
+			
+			grid
+			//.addColumn( FunctionUtils.nestedValue(Portfolio::getLatest, PortfolioHistory::getTimestamp))
+			.addColumn( new ZonedDateTimeRenderer<>(FunctionUtils.nestedValue(Portfolio::getLatest, PortfolioHistory::getTimestamp), DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
+			.setHeader("Latest")
+			.setWidth("150px")
 			.setFlexGrow(0)
 			;
 		}

@@ -2,29 +2,12 @@
 	box-shadow:none !important;
 }
 
-/* last column only shows on hover */
-
-:host(.button-column) tr td.grid-buttons-column ::slotted(*) {
-	opacity:0;
-	transition: opacity 0.1s;
-}
-
-:host(.button-column) tr:hover td.grid-buttons-column ::slotted(*) {
-	opacity:1;
-}
-
 
 [part~="row"]:hover > [part~="body-cell"] {
 	background-color: var(--lumo-primary-color-10pct);
 }
 
-/* hide checkbox for parent items on data point selector */
-
-
-:host(.hide-first-column) tr[aria-level="1"] td[first-column] ::slotted(*) {
-	visibility:hidden;
-}
-
+/* prevent overflow ellipsis on icon column */ 
 
 [part~="row"] [part~="body-cell"].icon ::slotted(*)  {
 	text-overflow:clip;

@@ -40,5 +40,15 @@ public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, Ex
 	@Query("delete from Portfolio p where p.id = ?1")
 	@Modifying
 	public void deleteById(Long id);
+	
+
+	@Query("select e.currency.key from #{#entityName} p join p.latest.entries e where p.id = ?1 order by e.value desc NULLS LAST")
+	public List<String> findCurrencySymbols(Long id);
+	
+	@Query("select distinct b.exchange.name from #{#entityName} p join p.balances b where p.id = ?1")
+	public List<String> findExchangeNames(Long id);
+	
+	//@Query("select a.currency.key from #{#entityName} a where a.portfolio = ?1 order by a.percent desc NULLS LAST")
+	//public List<String> findExchangeNames(Portfolio p);
 }
 

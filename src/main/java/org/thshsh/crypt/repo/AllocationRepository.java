@@ -24,4 +24,10 @@ public interface AllocationRepository extends BaseRepository<Allocation, Long>, 
 
 	@Query("select sum(a.percent) from #{#entityName} a where a.portfolio = ?1")
 	public Optional<BigDecimal> findAllocationSumByPortfolio(Portfolio p);
+	
+	@Query("select a.currency.key from #{#entityName} a where a.portfolio = ?1 order by a.percent desc NULLS LAST")
+	public List<String> findCurrencySymbols(Portfolio p);
+	
+	@Query("select a.currency.key from #{#entityName} a where a.portfolio = ?1 order by a.percent desc NULLS LAST")
+	public List<String> findExchangeNames(Portfolio p);
 }

@@ -19,6 +19,7 @@ import org.thshsh.crypt.Role;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.views.main.UserMenu;
@@ -36,6 +37,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.validator.EmailValidator;
 
 @SuppressWarnings("serial")
@@ -62,6 +64,9 @@ public class UserForm extends AppEntityForm<User,Long> {
 	
 	@Autowired
  	UserMenu userMenu;
+	
+	@Autowired
+	AppConfiguration appConfig;
 	
 	UserNameValidator userNameValidator;
 
@@ -178,10 +183,16 @@ public class UserForm extends AppEntityForm<User,Long> {
 		
 		TextField apiField = new TextField("API Key");
 		apiField.setWidthFull();
-		binder
+		
+	
+		
+		BindingBuilder<User,String> bb = binder
 		.forField(apiField)
 		.withNullRepresentation(StringUtils.EMPTY)
-		.bind(User::getApiKey, User::setApiKey);
+		.withValidator(context.getBean(ApiKeyValidator.class));
+		if(appConfig.getRequireApiKey()) bb.asRequired();
+		bb.bind(User::getApiKey, User::setApiKey);
+		
 		formLayout.add(apiField);
 		
 

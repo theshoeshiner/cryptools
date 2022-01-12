@@ -27,7 +27,7 @@ public class PortfolioHistoryService {
 			if(entity != null) {
 				t.getJobDataMap().put(HistoryJob.PORTFOLIO_ID_PROP, entity.getId().toString());
 			}
-			t.getJobDataMap().put(HistoryJob.FORCE_PROP, true);
+			//t.getJobDataMap().put(HistoryJob.FORCE_PROP, true);
 			scheduler.scheduleJob(t);
 		}
 		catch (SchedulerException e) {

@@ -21,7 +21,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ExchangesGrid extends AppEntityGrid<Exchange,Long> {
+public class ExchangesGrid extends AppEntityGrid<Exchange> {
 
 
 	@Autowired

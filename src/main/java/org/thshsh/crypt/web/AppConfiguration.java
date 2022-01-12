@@ -29,6 +29,7 @@ public class AppConfiguration {
 	String url;
 	
 	MediaConfiguration media;
+	
 
 	public Boolean getProductionMode() {
 		return productionMode;

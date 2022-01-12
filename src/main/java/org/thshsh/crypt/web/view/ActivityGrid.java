@@ -20,7 +20,7 @@ import com.vaadin.flow.component.grid.Grid;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ActivityGrid extends AppEntityGrid<Activity, Long> {
+public class ActivityGrid extends AppEntityGrid<Activity> {
 
 	@Autowired
 	ActivityRepository actRepo;

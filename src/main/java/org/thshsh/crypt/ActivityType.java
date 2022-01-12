@@ -5,7 +5,7 @@ import javax.persistence.EnumAttributeConverter;
 
 public enum ActivityType {
 	
-	Login;
+	Login,Register,Confirm;
 	
 	@Converter(autoApply = true)
 	public static class ActivityConverter extends EnumAttributeConverter<ActivityType> {

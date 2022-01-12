@@ -61,7 +61,7 @@ public class ApplicationErrorPage extends VerticalLayout
     	
     	ErrorLayout ed = context.getBean(ErrorLayout.class,header,exception,exceptionReference);
     	ed.setMargin(true);
-    	ed.verticalScrollLayout.setHeightFull();
+    	//ed.verticalScrollLayout.setHeightFull();
     	add(ed);
     	
 

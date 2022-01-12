@@ -29,6 +29,9 @@ public class Currency extends IdedEntity implements HasImage  {
 
 	@Column(name = "symbol",unique = true) 
 	String key;
+	
+	@Column() 
+	String unit;
 
 	@Column
 	String remoteName;
@@ -56,6 +59,9 @@ public class Currency extends IdedEntity implements HasImage  {
 	@Enumerated(EnumType.ORDINAL)
 	Grade grade;
 
+	@Column
+	Integer rank;
+	
 	@ManyToMany
 	@JoinTable(schema = CryptModel.SCHEMA,name="currency_exchange",
 	joinColumns = @JoinColumn(name="currency_id"),inverseJoinColumns = @JoinColumn(name="exchange_id"))
@@ -172,6 +178,14 @@ public class Currency extends IdedEntity implements HasImage  {
 
 	
 	
+
+	public Integer getRank() {
+		return rank;
+	}
+
+	public void setRank(Integer rank) {
+		this.rank = rank;
+	}
 
 	public Grade getGrade() {
 		return grade;

@@ -1,17 +1,8 @@
 
-.grid-buttons {
-	padding:0px 32px 0px 0px;
+
+.grid-buttons.allocation-buttons vaadin-button {
+
+    color: var(--lumo-primary-color-80pct);
+	
 }
 
-
-.grid-buttons vaadin-button {
-	color:var(--lumo-accent-color-4);
-}
-
-.grid-buttons vaadin-button:hover {
-	color:var(--lumo-contrast); 
-}
-
-.grid-buttons vaadin-button[aria-disabled=true] {
-	color:var(--lumo-contrast-20pct);
-} 

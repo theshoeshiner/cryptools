@@ -2,6 +2,7 @@ package org.thshsh.crypt.web.view;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriBuilderFactory;
 import org.thshsh.color.AbstractColor;
 import org.thshsh.color.ColorSpaceConverter;
 import org.thshsh.color.ColorUtils;
@@ -30,6 +35,7 @@ import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
+import org.thshsh.vaadin.ClickableAnchor;
 import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.componentfactory.Popup;
@@ -82,18 +88,45 @@ public class TestingView extends VerticalLayout {
 	@Autowired
 	ManagePortfolioService portService;
 
+	//coinbase oauth
+	//clientid: 4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25
+	//secret: d905f7b250a654762288560e694e246ebfc4546d5abc54d09c11275118c2030d
 
+	//https://www.coinbase.com/oauth/authorize?client_id=4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25&redirect_uri=https%3A%2F%2Fcryptools.thshsh.org%2Foauthcallback&response_type=code&scope=wallet%3Aaccounts%3Aread
+	//respose code 861655c572acef09c8a91064ee31afb3988f49e9c3b743940718806e1ddc7319
+	//curl https://api.coinbase.com/v2/accounts \
+	
 	// @Value("${ldap.user.base}")
 	// String ldapUserBase;
 
 	public TestingView() {
 
+		
+	}
+	
+	public void callCoinbase() {
+		//OAuth2RestTemplate rest = new OAuth2RestTemplate();
+		//OAuth2AuthorizedClientService as;
+		RestTemplate coinbase = new RestTemplate();
+		
+		UriBuilderFactory uriBuilder = new DefaultUriBuilderFactory();;
+		
+		//https://api.coinbase.com/oauth/token
+		UriBuilder builder = uriBuilder.uriString("");
+		//coinbase.postForObject(URI.create(""), request, responseType)
+		
 	}
 
 	@PostConstruct
 	public void postConstruct() {
 		// breadcrumbs.resetBreadcrumbs().addBreadcrumb(DashboardView.TITLE,
 		// DashboardView.class).addBreadcrumb("About", TestingView.class);
+		
+		{
+			ClickableAnchor ca = new ClickableAnchor("", "Text");
+			add(ca);
+		}
+		
 		
 		{
 			VerticalLayout runLayout = new VerticalLayout();

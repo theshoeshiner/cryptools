@@ -1,8 +1,11 @@
 package org.thshsh.crypt;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -34,8 +38,15 @@ public class Portfolio extends IdedEntity implements HasName {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	Set<PortfolioHistory> histories;
 	
+	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	Set<PortfolioAlert> alerts;
+	
 	@ManyToOne(cascade = CascadeType.ALL)
 	PortfolioHistory latest;
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	PortfolioAlert latestAlert;
 
 	@OneToMany(mappedBy = "portfolio",cascade = CascadeType.ALL)
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -44,7 +55,24 @@ public class Portfolio extends IdedEntity implements HasName {
 	@Embedded
 	PortfolioSettings settings;
 
+	
 
+	public Set<Allocation> getAllocations() {
+		if(allocations == null) allocations = new HashSet<>();
+		return allocations;
+	}
+	
+	public Optional<Allocation> getAllocation(Currency c) {
+		return getAllocations().stream().filter(a -> a.getCurrency().equals(c)).findFirst();
+	}
+	
+	public Boolean hasUndefinedAllocation() {
+		return getAllocations().stream().filter(a -> a.isUndefined()).findAny().isPresent();
+	}
+
+	public void setAllocations(Set<Allocation> allocations) {
+		this.allocations = allocations;
+	}
 
 	public User getUser() {
 		return user;
@@ -63,7 +91,12 @@ public class Portfolio extends IdedEntity implements HasName {
 	}
 
 	public Set<Balance> getBalances() {
+		if(balances == null) balances = new HashSet<Balance>();
 		return balances;
+	}
+	
+	public Set<Balance> getBalances(Currency c) {
+		return getBalances().stream().filter(b -> b.getCurrency().equals(c)).collect(Collectors.toSet());
 	}
 
 	public Set<Currency> getCurrencies(){
@@ -78,7 +111,18 @@ public class Portfolio extends IdedEntity implements HasName {
 		if(balances instanceof Set) this.balances = (Set<Balance>) balances;
 		else this.balances = new HashSet<>(balances);
 	}
+	
+	
 
+
+	public Set<PortfolioHistory> getHistories() {
+		if(histories==null)histories = new HashSet<>();
+		return histories;
+	}
+
+	public PortfolioAlert getLatestAlert() {
+		return latestAlert;
+	}
 
 	public PortfolioHistory getLatest() {
 		return latest;
@@ -101,7 +145,24 @@ public class Portfolio extends IdedEntity implements HasName {
 	public void setSettings(PortfolioSettings settings) {
 		this.settings = settings;
 	}
+	
+	public BigDecimal getAllocationRemainder() {
+		return BigDecimal.ONE.subtract(getAllocationTotal());
+	}
 
+	public BigDecimal getAllocationTotal() {
+		//BigDecimal total = BigDecimal.ZERO;
+		//MutableBigDecimal mbd;
+		MutableObject<BigDecimal> total = new MutableObject<>(BigDecimal.ZERO);
+		getAllocations().forEach(all -> {
+			if(all.getPercent()!=null) total.setValue(total.getValue().add(all.getPercent()));
+		});
+		return total.getValue();
+	}
 
+	public void setLatestAlert(PortfolioAlert latestAlert) {
+		this.latestAlert = latestAlert;
+	}
+	
 	
 }

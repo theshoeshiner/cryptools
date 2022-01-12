@@ -88,7 +88,9 @@ html {
 
    --lumo-primary-color: hsl(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit));
 	--lumo-primary-color-10pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.1);
+	--lumo-primary-color-20pct: hsla(var(--lumo-primary-hue),var(--lumo-primary-sat), var(--lumo-primary-lit), 0.2);
 	--lumo-primary-color-50pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.5);
+	--lumo-primary-color-60pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.60);
 	--lumo-primary-color-70pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.70);
 	--lumo-primary-color-80pct: hsla(var(--lumo-primary-hue), var(--lumo-primary-sat), var(--lumo-primary-lit), 0.80);
 
@@ -117,12 +119,19 @@ html {
   	--lumo-header-text-color:var(--lumo-primary-color);
 
   	/* --warn-0-color: #b34045; */
-  	 --warn-0-color: #c46065; 
+  	 /* --warn-0-color: #c46065; */ 
+  	 
+  	/*  --warn-0-color: rgba(234, 129, 113, 1);
+	--warn-1-color:rgba(234, 177, 113, 1);
+	--warn-2-color: rgba(234, 177, 113, 1) ; */
+	
+	--warn-0-color: hsla(8, 74%, 68%, 1);
+	--warn-1-color: hsla(32, 74%, 68%, 1);
+	--warn-2-color: hsla(32, 74%, 68%, 1);
 
-	--warn-1-color: #FEAB6D;
-	--warn-2-color: #fecf6d;
-
-
+	--warn-0-color-dark: hsla(8, 74%, 37%, 1);
+	--warn-1-color-dark: hsla(32, 74%, 37%, 1);
+	--warn-2-color-dark: hsla(32, 74%, 37%, 1);
 
     }
 

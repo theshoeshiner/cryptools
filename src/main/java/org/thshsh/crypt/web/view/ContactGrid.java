@@ -21,7 +21,7 @@ import com.vaadin.flow.component.grid.Grid;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ContactGrid extends AppEntityGrid<Contact, Long> {
+public class ContactGrid extends AppEntityGrid<Contact> {
 
 	@Autowired
 	ContactRepository contactRepo;

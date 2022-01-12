@@ -1,13 +1,13 @@
 package org.thshsh.crypt.web.view;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +45,6 @@ import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;
 import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
 import com.github.appreciated.apexcharts.config.builder.DataLabelsBuilder;
-import com.github.appreciated.apexcharts.config.builder.FillBuilder;
 import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
 import com.github.appreciated.apexcharts.config.builder.PlotOptionsBuilder;
 import com.github.appreciated.apexcharts.config.builder.StrokeBuilder;
@@ -59,11 +58,16 @@ import com.github.appreciated.apexcharts.config.plotoptions.Treemap;
 import com.github.appreciated.apexcharts.config.stroke.Curve;
 import com.github.appreciated.apexcharts.config.subtitle.Align;
 import com.github.appreciated.apexcharts.config.xaxis.XAxisType;
-import com.github.appreciated.apexcharts.config.xaxis.builder.LabelsBuilder;
 import com.github.appreciated.apexcharts.helper.Series;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.BeforeEvent;
@@ -77,6 +81,7 @@ import com.vaadin.flow.router.Route;
 @SuppressWarnings("serial")
 @Route(value = "portfolio", layout = MainLayout.class)
 @CssImport("./styles/portfolio.css")
+//@ScreenName("Portfolio")
 public class ManagePortfolioView  extends VerticalLayout implements HasUrlParameter<String>, HasDynamicTitle {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ManagePortfolioView.class);
@@ -87,6 +92,8 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	public static final String SILENCE_PARAM = "silence";
 
 	public static final String ICON_SIZE = "24px";
+	
+	public static final String ICON_SIZE_SMALL = "16px";
 
 	@Autowired
 	PortfolioHistoryService historyService;
@@ -119,14 +126,18 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	//Boolean create = false;
 	//NestedOrderedLayout<?> formLayout;
-	BasicTabSheet tabSheet;
+	
 	VerticalLayout mainLayout;
+	DistributionChart distroChart;
+	ValueChart valueChart;
+	
+	BasicTabSheet tabSheet;
 	Tab mainTab;
-	//VerticalLayout pages;
-	//Map<Tab, Component> tabsToPages;
-	//Tab main;
+	Tab distributionTab;
 	Tab chartTab;
-
+	Tab allocationTab;
+	PortfolioEntryGrid entriesList;
+	
 
 	//static NumberFormat usdFormat = new DecimalFormat("$#,##0.00");
 
@@ -151,25 +162,31 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		    	
 		    	
 		    	if(parametersMap.containsKey(SILENCE_PARAM)) {
-			    	//DurationFormatUtils.formatDuration(durationMillis, format);
-			    	String param = parametersMap.get(SILENCE_PARAM).get(0);
-			    	LOGGER.info("silence for duration: {}",param);
-			    	Duration duration = Duration.parse(param);
-			    	LOGGER.info("silence for duration: {}",duration);
-			    
-			    	LocalDateTime now = LocalDateTime.now();
-			    	LocalDateTime then = now.plus(duration);
-			    	//ZonedDateTime till = ZonedDateTime.now().plus(duration);
-			    	PrettyTime prettyTime = new PrettyTime(LocalDateTime.now());
-			    	
-			    	org.ocpsoft.prettytime.Duration approx = prettyTime.approximateDuration(then);
-			    	//prettyTime.approximateDuration(LocalDateTime.)
-			    	//String format = prettyTime.format(till);
-			    	LOGGER.info("silence for: {}",approx);
-			    	//PrettyTime pt = new PrettyTime();
-			    	//prettyTime.approximateDuration(then)
-			    	
-		    		//entity.getSettings().setSilentTill(then);	
+		    		
+			    		try {
+				    	String param = parametersMap.get(SILENCE_PARAM).get(0);
+				    	LOGGER.info("silence for duration: {}",param);
+				    	Duration duration = Duration.parse("P"+param.toUpperCase());
+				    	LOGGER.info("silence for duration: {}",duration);
+				    	ZonedDateTime now = ZonedDateTime.now();
+				    	ZonedDateTime then = now.plus(duration);
+				    	//PrettyTime prettyTime = new PrettyTime(LocalDateTime.now());
+				    	entity.getSettings().setSilentTill(then);
+				    	
+				    	String thenString = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(then);
+				    	
+				    	Span s = new Span("Silenced Portfolio Until "+thenString);
+				    	s.setWidth("300px");
+				    	Notification n = new Notification(s);
+				    	n.setPosition(Position.MIDDLE);
+				    	n.setDuration(2500);
+				    	n.open();
+
+			    		//entity.getSettings().setSilentTill(then);	
+		    		}
+		    		catch(DateTimeParseException e) {
+		    			LOGGER.warn("Could not silence",e);
+		    		}
 
 			    }
 
@@ -198,8 +215,30 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	    //tabSheet.getContentLayout().add(new AreaChartExample());
 
-	    mainLayout = createMainTab();
-	    mainTab = tabSheet.addTab("Summary", mainLayout);
+	    mainLayout = createMainTab(false);
+	    
+	    HorizontalLayout summary = new HorizontalLayout();
+	    summary.setSpacing(false);
+	    summary.setAlignItems(Alignment.CENTER);
+	    summary.add(new Span("Summary"));
+	    PressButton pb = new PressButton(VaadinIcon.ELLIPSIS_H.create());
+	    pb.addClickListener(click -> {
+	    	entriesList.showAdvanced(pb.getPressed());
+	    });
+	    
+		/*ToggleButton advancedButton = new ToggleButton(false);
+		advancedButton.addValueChangeListener(change -> {
+			//showAdvanced(change.getValue());
+		});
+		summary.add(advancedButton);*/
+	    //pb.addThemeVariants(ButtonVariant.LUMO_SMALL);
+	    pb.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+	    summary.add(pb);
+		
+	    
+	    mainTab = tabSheet.addTab(summary, mainLayout);
+	    
+	    
 	    //mainLayout = createMainTab();
 	    //tabSheet.addTab(new Tab("Portfolio"), mainLayout);
 
@@ -216,6 +255,11 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	   // Tab balTab = new Tab("Balances");
 	    VerticalLayout balancesLayout = createBalancesTab();
 	    tabSheet.addTab(new Tab("Balances"), balancesLayout);
+	    
+	    if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
+	    	  VerticalLayout alLlayout = createAllocationsTab();
+	    	  allocationTab =  tabSheet.addTab(new Tab("Allocations"), alLlayout);
+	    }
 
 	   // Tab allTab = new Tab("Allocations");
 	    //VerticalLayout allLayout = createAllocationsTab();
@@ -224,44 +268,28 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //Tab funcTab = new Tab("Functions");
 	  
 
-	    VerticalLayout settingsLayout = createSettingsTab();
-	    tabSheet.addTab(new Tab("Settings"), settingsLayout);
+	   
 
 	    //VerticalLayout chartsLayout = createChartsTab();
 	    //tabSheet.addTab(new Tab("Charts"), chartsLayout);
 
-	    ValueChart chartTabContent = new ValueChart();
-	    chartTab = tabSheet.addTab(new Tab("Value"), chartTabContent);
-	    chartTabContent.setVisible(true);
+	    valueChart = appContext.getBean(ValueChart.class,entity);
+	    chartTab = tabSheet.addTab(new Tab("Value"), valueChart);
+	    //brand new charts need to be set visible for them to render correctly
+	    valueChart.setVisible(true);
 	    
 
 		/*   TreeMapChart balanceChart = new TreeMapChart();
 		Tab balanceTab = tabSheet.addTab(new Tab("Balance"), balanceChart);
 		balanceChart.setVisible(true);*/
 	    
-	    DistributionChart distroChart = new DistributionChart();
-	    Tab distro = tabSheet.addTab(new Tab("Distribution"), distroChart);
+	    distroChart = new DistributionChart();
+	    distributionTab = tabSheet.addTab(new Tab("Distribution"), distroChart);
 	    distroChart.setVisible(true);
-	    //ex2.addClassName("invisible");
-
-		/* tabsToPages = new HashMap<>();
-		tabsToPages.put(main,mainLayout);
-		tabsToPages.put(balTab,balancesLayout);
-		tabsToPages.put(allTab,allLayout);
-		tabsToPages.put(funcTab,funcLayout);
-
-		Tabs tabs = new Tabs(main,balTab,allTab,funcTab);
-		pages = new VerticalLayout(mainLayout,balancesLayout,allLayout,funcLayout);
-		pages.setHeight("100%");
-
-		tabs.addSelectedChangeListener(e -> {
-		    tabsToPages.values().forEach(page -> page.setVisible(false));
-		    Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
-		    selectedPage.setVisible(true);
-		});
-
-		add(tabs, pages);
-		*/
+	
+	    
+	    VerticalLayout settingsLayout = createSettingsTab();
+	    tabSheet.addTab(new Tab("Settings"), settingsLayout);
 	    
 	    if(SecurityUtils.hasAccess(Feature.System, Access.ReadWrite)) {
 	    	VerticalLayout funcLayout = createFunctionsTab();
@@ -294,30 +322,54 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	}
 
 	protected void refreshChartTab() {
-		 ValueChart newChartTab = new ValueChart();
-		 //tabSheet.addTab(new Tab("Chart"), ex2);
-		 newChartTab.setVisible(true);
+		 ValueChart newChartTab = appContext.getBean(ValueChart.class,entity);
 		 tabSheet.replaceTab(chartTab, newChartTab);
-
+		 newChartTab.setVisible(true);
+		 this.valueChart = newChartTab;
 	}
 
-	protected void refreshMainTab() {
+	protected void refreshAllocationTab() {
+		
+		if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
+			VerticalLayout alLlayout = createAllocationsTab();
+	  	    //tabSheet.addTab(new Tab("Allocations"), alLlayout);
+	  	    tabSheet.replaceTab(allocationTab, alLlayout);
+			//this.mainLayout = newMainTab;
+	    }
+		
+	}
+	
+	protected void refreshValueRelatedTabs() {
+		
+		refreshSummaryTab(true);
+		
+		refreshDistributionChart();
+
+		refreshChartTab();
+		
+		
+	}
+	
+	public void refreshDistributionChart() {
+		DistributionChart newDistroChart = new DistributionChart();
+		tabSheet.replaceTab(distributionTab, newDistroChart);
+		newDistroChart.setVisible(true);
+		this.distroChart = newDistroChart;
+	}
+	
+	protected void refreshSummaryTab(boolean force) {
+		
 		LOGGER.info("refreshMainTab visible: {}",mainTab.isVisible());
-		VerticalLayout newMainTab = createMainTab();
+		VerticalLayout newMainTab = createMainTab(force);
 		newMainTab.setVisible(this.mainLayout.isVisible());
 		tabSheet.replaceTab(mainTab, newMainTab);
 		this.mainLayout = newMainTab;
 
-		//pages.replace(this.mainLayout, mainLayout);
-		//tabsToPages.put(main, mainLayout);
-		//mainLayout.setVisible(this.mainLayout.isVisible());
-		//this.mainLayout = mainLayout;
-
 	}
 
-	PortfolioEntryGrid entriesList;
+	
 
-	protected VerticalLayout createMainTab() {
+	protected VerticalLayout createMainTab(Boolean force) {
 
 		LOGGER.info("createMainTab");
 
@@ -325,26 +377,19 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		layout.setPadding(false);
 		layout.setMargin(false);
 
-		entriesList = appContext.getBean(PortfolioEntryGrid.class,this);
-		entriesList.setPadding(false);
-		entriesList.setMargin(false);
-		entriesList.setHeight("100%");
-		layout.add(entriesList);
-		layout.setHeight("100%");
-
-		/*//MutableBigDecimal mbd;
-		Map<Currency,MutableBigDecimal> currencyBalances = new HashMap<>();
-
-		balanceRepo.findByPortfolio(entity).forEach(bal -> {
-			LOGGER.info("Balance: {}",bal);
-			if(!currencyBalances.containsKey(bal.getCurrency())) currencyBalances.put(bal.getCurrency(), new MutableBigDecimal(0));
-			currencyBalances.get(bal.getCurrency()).inc(bal.getBalance());
-		});
-
-		currencyBalances.forEach((cur,bal)-> {
-			layout.add(new Span(cur.getSymbol()+": "+bal.getAsBigDecimal()));
-
-		});*/
+		if(balanceRepo.countByPortfolio(entity)==0) {
+			Span addBalances = new Span("Summary will be populated after adding balances on the Balances tab");
+			addBalances.addClassNames("helper-text","highlighted");
+			layout.add(addBalances);
+		}
+		else {
+			entriesList = appContext.getBean(PortfolioEntryGrid.class,this,force);
+			entriesList.setPadding(false);
+			entriesList.setMargin(false);
+			entriesList.setHeight("100%");
+			layout.add(entriesList);
+			layout.setHeight("100%");
+		}
 
 		return layout;
 
@@ -416,26 +461,26 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		layout.setVisible(false);
 
 
-		PortfolioSettingsForm sf = appContext.getBean(PortfolioSettingsForm.class,this.entity);
+		PortfolioSettingsForm sf = appContext.getBean(PortfolioSettingsForm.class,this,this.entity);
 		layout.add(sf);
 
 		return layout;
 	}
 
-	protected VerticalLayout createChartsTab() {
+	/*protected VerticalLayout createChartsTab() {
 		VerticalLayout vl = new VerticalLayout();
 		vl.setSizeFull();
-
+	
 		ZonedDateTime zdt = ZonedDateTime.now().minusDays(30);
 		 
 		List<PortfolioHistory> ph = histRepo.findByPortfolioAndTimestampGreaterThanOrderByTimestampAsc(entity, zdt);
-
+	
 		List<BigDecimal> valuePerHour = new ArrayList<>();
 		ph.forEach(hist -> {
 			valuePerHour.add(hist.getValue());
 		});
-
-
+	
+	
 		 ApexCharts areaChart = ApexChartsBuilder.get()
 	                .withChart(ChartBuilder.get()
 	                        .withType(Type.line)
@@ -447,7 +492,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	                        .withEnabled(false)
 	                        .build())
 	                .withStroke(StrokeBuilder.get().withCurve(Curve.smooth).build())
-
+	
 	                .withSeries(new Series<>("Value", valuePerHour))
 					 .withTitle(TitleSubtitleBuilder.get()
 					         .withText("Fundamental Analysis of Stocks")
@@ -469,98 +514,16 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		 Div chart = new Div(areaChart);
 		 chart.setSizeFull();
 		 vl.add(chart);
-
-
-
+	
+	
+	
 		return vl;
-	}
+	}*/
 
 
 
-	DateTimeFormatter dtf = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-
-	public class ValueChart extends Div {
-	    public ValueChart() {
-
-	    	ZonedDateTime zdt = ZonedDateTime.now().minusDays(30);
-			 
-			List<PortfolioHistory> ph = histRepo.findByPortfolioAndTimestampGreaterThanOrderByTimestampAsc(entity, zdt);
-	    	//List<PortfolioHistory> ph = histRepo.findByPortfolioOrderByTimestampAsc(entity);
-
-	    	List<String> dates = new ArrayList<>();
-			List<BigInteger> valuePerHour = new ArrayList<>();
-			List<BigDecimal> thresh = new ArrayList<>();
-			ph.forEach(hist -> {
-				if(hist.getValue()!=null) {
-					valuePerHour.add(hist.getValue().toBigInteger());
-					thresh.add(hist.getMaxToTriggerPercent());
-					dates.add(dtf.format(hist.getTimestamp().withZoneSameInstant(ZoneId.systemDefault())));
-					LOGGER.debug("adding: {}",hist);
-				}
-			});
-
-			LOGGER.debug("valuePerHour: {}",valuePerHour);
-
-			List<BigInteger> values = valuePerHour;
-			List<String> labels = dates;
-
-			LOGGER.debug("labels: {}",labels);
-
-
-	        ApexCharts areaChart = ApexChartsBuilder.get()
-
-	                .withChart(ChartBuilder.get()
-	                        .withType(Type.line)
-	                        .withZoom(ZoomBuilder.get()
-	                                .withEnabled(false)
-	                                .build())
-	                        .build())
-	                .withDataLabels(DataLabelsBuilder.get()
-	                        .withEnabled(false)
-	                        .build())
-	                .withStroke(StrokeBuilder.get()
-	                		.withCurve(Curve.smooth)
-	                		.withColors("var(--money-green)"
-	                				,"var(--lumo-accent-color-2)"
-	                				)
-	                		.withWidth(3d)
-	                		.build()
-	                		)
-	                .withFill(FillBuilder.get().withOpacity(0d).build())
-	                .withSeries(new Series<>("USD Value", values.toArray()),
-	                new Series<>("Alert Threshold", thresh.toArray()))
-	               .withLabels(labels.toArray(new String[labels.size()]))
-
-	                .withXaxis(XAxisBuilder.get()
-	                        .withType(XAxisType.datetime)
-	                        .withLabels(LabelsBuilder
-	                        		.get()
-	                        		.withFormat("MMM dd")
-	                        		.build())
-	                        .build())
-	                .withYaxis(
-	                		YAxisBuilder.get()
-		                		.withDecimalsInFloat(0d)
-		                		.withTickAmount(10d)
-		                        .withMin(0d)
-		                        .build()
-					/* ,YAxisBuilder.get()
-					 	.withOpposite(true)
-					 	.withMax(1)
-					 	.withMin(0)
-					 	.withDecimalsInFloat(2d)
-					 	.build()*/
-	                        )
-	                .withLegend(LegendBuilder.get().withHorizontalAlign(HorizontalAlign.left).build())
-	                .build();
-	        add(areaChart);
-	        areaChart.setHeight("600px");
-	        setWidth("100%");
-	        setHeight("600px");
-
-	    }
-	}
-
+	//DateTimeFormatter dtf = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+	
 	
 	public class DistributionChart extends Div {
 		
@@ -575,21 +538,26 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		    	List<String> labels = new ArrayList<>();
 		    	List<String> colors = new ArrayList<>();
 		    	
-		    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(entriesList.entries);
+		    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(
+		    			entriesList!=null?
+		    			entriesList.entries:
+		    			Collections.emptyList()
+		    			);
 		    	Collections.sort(sorted, (pe0,pe1) -> {
 		    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
 		    	});
 		    	
 		    	sorted.forEach(entry -> {
-		    		//values.add(entry.valueReserve.toBigInteger());
-		    		//labels.add(entry.getCurrency().getKey());
-		    		Map<String,Object> m = new HashMap<>();
-		    		m.put("x", entry.getCurrency().getKey());
-		    		m.put("y", entry.getValue().toBigInteger());
-		    		data.add(m);
-		    		labels.add(entry.getCurrency().getName());
-		    		series.add(entry.getValue().toBigInteger().doubleValue());
-		    		colors.add("#"+entry.getCurrency().getColorHex());
+		    		
+		    		if(entry.getCurrency()!=null) {
+			    		Map<String,Object> m = new HashMap<>();
+			    		m.put("x", entry.getCurrency().getKey());
+			    		m.put("y", entry.getValue().toBigInteger());
+			    		data.add(m);
+			    		labels.add(entry.getCurrency().getName());
+			    		series.add(entry.getValue().toBigInteger().doubleValue());
+			    		colors.add("#"+entry.getCurrency().getColorHex());
+		    		}
 		    	});
 		    	
 		    	LOGGER.info("colors: {}",colors);
@@ -750,14 +718,19 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    	List<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
 	    	List<String> colors = new ArrayList<>();
 	    	
-	    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(entriesList.entries);
+	    	
+	    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(
+	    			entriesList!=null?
+	    			entriesList.entries:
+	    			Collections.emptyList()
+	    			);
 	    	Collections.sort(sorted, (pe0,pe1) -> {
 	    		return pe1.getValueReserve().compareTo(pe0.getValueReserve());
 	    	});
 	    	
 	    	sorted.forEach(entry -> {
-	    		//values.add(entry.valueReserve.toBigInteger());
-	    		//labels.add(entry.getCurrency().getKey());
+	    		
+	    		
 	    		Map<String,Object> m = new HashMap<>();
 	    		m.put("x", entry.getCurrency().getKey());
 	    		m.put("y", entry.getValue().toBigInteger());

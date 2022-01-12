@@ -3,9 +3,15 @@ package org.thshsh.crypt.job;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobDataMap;
@@ -20,7 +26,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.PortfolioHistory;
+import org.thshsh.crypt.repo.PortfolioAlertRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.MailService;
@@ -36,12 +44,19 @@ public class HistoryJob implements InterruptableJob {
 	
 	public static final String PORTFOLIO_ID_PROP = "PORTFOLIO_ID";
 	public static final String FORCE_PROP = "FORCE";
+	
+	//public static final Integer[] ALERT_WAIT_HOURS = new Integer[] {1,2,3,5,8,13,21};
+	
+	public static final Integer[] ALERT_WAIT = new Integer[] {1,2,3};
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
 
 	@Autowired
 	PortfolioRepository portRepo;
+	
+	@Autowired
+	PortfolioAlertRepository alertRepo;
 
 	@Autowired
 	PortfolioHistoryRepository portHistRepo;
@@ -68,16 +83,25 @@ public class HistoryJob implements InterruptableJob {
 	String textFormat = "Total Portfolio Imbalance %d%%";
 	String entryFormat = "%s Imbalance: %d%%";
 
+	Duration onlyRunEvery;
+	
+	@PostConstruct
+	public void postConstruct() {
+		onlyRunEvery = Duration.ofMinutes(appConfig.getJob().getMinutes());
+	}
+	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 
-		LOGGER.info("Running Job");
+		
 		
 		JobDataMap map = context.getMergedJobDataMap();
-		
-		if(appConfig.getJob().getHistory() || map.containsKey(FORCE_PROP) ) {
+		//Boolean force = ;
+		MutableBoolean force = new MutableBoolean(map.containsKey(FORCE_PROP));
+		if(appConfig.getJob().getHistory() || force.booleanValue() ) {
 			
-
+			LOGGER.info("Running Job");
+			
 			Object portId = map.get(PORTFOLIO_ID_PROP);
 			
 			List<Portfolio> ports;
@@ -86,6 +110,7 @@ public class HistoryJob implements InterruptableJob {
 				ports = portRepo.findAll();
 			}
 			else {
+				force.setTrue();
 				ports = Arrays.asList(portRepo.findById(Long.valueOf(portId.toString())).get());
 			}
 	
@@ -95,8 +120,29 @@ public class HistoryJob implements InterruptableJob {
 			LOGGER.info("ports: {}",ports);
 	
 			ports.forEach((Portfolio p) -> {
+				
 				try {
-					runForPortfolio(p);
+					
+					if(force.booleanValue()) runForPortfolio(p);
+					else {
+						if(p.getLatest()!=null) {
+							LOGGER.info("latest: {}",p.getLatest());
+							
+							PortfolioHistory latest = p.getLatest();
+							ZonedDateTime nextRun = latest.getTimestamp().plus(onlyRunEvery);
+							if(nextRun.isBefore(ZonedDateTime.now())) {
+								runForPortfolio(p);
+							}
+							else {
+								LOGGER.info("Skipping Portfolio: {}",p);
+							}
+						}
+						else runForPortfolio(p);
+					}
+					
+					
+					
+					//runForPortfolio(p);
 				}
 				catch(Exception e) {
 					LOGGER.info("History Job Failed for Portfolio: {}",p,e);
@@ -107,23 +153,96 @@ public class HistoryJob implements InterruptableJob {
 
 	}
 
-	protected void runForPortfolio(Portfolio portfolio) {
-
-
+	protected void runForPortfolio(Portfolio p) {
 
 		template.executeWithoutResult((TransactionStatus action) -> {
+			
+			ZonedDateTime now = ZonedDateTime.now();
+			
+			LOGGER.info("runForPortfolio: {}",p);
 
-			Portfolio port = portRepo.findById(portfolio.getId()).get();
+			Portfolio port = portRepo.findById(p.getId()).get();
 			PortfolioHistory history = manageService.createHistory(port);
+			Boolean muted = false;
 			
-			
-			if(!port.getSettings().isAlertsDisabled() && history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
-				
-				mailService.sendPortfolioAlert(port);
-
-
+			//update silent till parameter
+			if(port.getSettings().getSilentTill() != null) {
+				muted = port.getSettings().getSilentTill().isAfter(now);
+				if(!muted) port.getSettings().setSilentTill(null);
 			}
 			
+			//check alerts disabled
+			muted = muted || Boolean.TRUE.equals(port.getSettings().getAlertsDisabled());
+			
+			LOGGER.info("Muted: {}",muted);
+			
+			if(history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0) {
+				
+				
+				Boolean skip = false;
+				Integer repeat = 0;
+				
+				//if we already have an alert then check the repeat interval
+				if(port.getLatestAlert() != null) {
+					//check repeat wait time
+					PortfolioAlert latest = port.getLatestAlert();
+					repeat = latest.getRepeat();
+					Integer wait = (repeat<ALERT_WAIT.length)?ALERT_WAIT[repeat]:ALERT_WAIT[ALERT_WAIT.length-1];
+					ZonedDateTime waitTill = latest.getTimestamp().plusDays(wait);
+					skip = waitTill.isAfter(now);
+					repeat = latest.getRepeat()+1;
+				}
+				
+				LOGGER.info("Skip: {}",skip);
+				
+				if(!skip) {
+					
+					//send alert and update latest
+					PortfolioAlert alert = new PortfolioAlert();
+					alert.setPortfolio(port);
+					alert.setRepeat(repeat);
+					alert.setTimestamp(now);
+					alert.setHistory(history);
+					alert.setMuted(muted);
+					alertRepo.save(alert);
+					port.setLatestAlert(alert);
+					//always save alert but only send if not muted
+					if(!muted) mailService.sendPortfolioAlert(alert);
+				}
+				else {
+					//skip alert for now based on timing
+				}
+			}
+			else {
+				//no alert
+				port.setLatestAlert(null);
+			}
+			/*
+			if(!port.getSettings().isAlertsDisabled() 
+				&& history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0
+				
+			) {
+				
+				PortfolioAlert latest = port.getLatestAlert();
+				Integer repeat = 0;
+				if(latest != null) {
+					//check repeat wait time
+				}
+				
+				PortfolioAlert alert = new PortfolioAlert();
+				alert.setPortfolio(port);
+			
+				
+				
+				//send alert
+				if(!muted) mailService.sendPortfolioAlert(port);
+			
+			
+			}
+			else {
+				port.setLatestAlert(null);
+			}
+			*/
 			
 		});
 
@@ -133,7 +252,8 @@ public class HistoryJob implements InterruptableJob {
 
 	}
 
-
+	
+	
 
 	@Override
 	public void interrupt() throws UnableToInterruptJobException {

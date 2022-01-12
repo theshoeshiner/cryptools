@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 
 @Configuration
@@ -19,9 +20,10 @@ public class Beans {
 	@Bean
 	@Scope("prototype")
 	public CryptoCompare cryptoCompare() {
-		return new CryptoCompare(apiKey,null);
+		return new CryptoCompare(apiKey,WebClient.builder());
 	}
-
+	
+	
 	@Bean
 	public JavaMailSender getJavaMailSender() {
 	    JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -35,7 +37,7 @@ public class Beans {
 	    props.put("mail.transport.protocol", "smtp");
 	    props.put("mail.smtp.auth", "true");
 	    props.put("mail.smtp.starttls.enable", "true");
-	    props.put("mail.debug", "true");
+	    //props.put("mail.debug", "true");
 
 
 	    props.put("mail.smtps.ssl.checkserveridentity", "false");

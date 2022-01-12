@@ -25,8 +25,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thshsh.crypt.Activity;
+import org.thshsh.crypt.ActivityType;
 import org.thshsh.crypt.Role;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.RoleRepository;
 import org.thshsh.crypt.repo.UserRepository;
 
@@ -49,6 +52,9 @@ public class UserService {
 
 	@Autowired
 	RoleRepository roleRepo;
+	
+	@Autowired
+	ActivityRepository actRepo;
 
 	@Value("${app.url}")
 	String baseUrl;
@@ -75,79 +81,10 @@ public class UserService {
 
 		
 		mailService.sendAccountConfirmEmail(u, confirmToken);
-		/*try {
-		
-			
-			
-			MimeMessage mimeMessage = mailSender.createMimeMessage();
-			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-			
-			 MimeMultipart multipart = new MimeMultipart("related");
-		
-			// first part (the html)
-			BodyPart messageBodyPart = new MimeBodyPart();
-			String htmlText = IOUtils.toString(UserService.class.getResourceAsStream("confirm-email.html"),Charset.defaultCharset());
-			
-			htmlText = String.format(htmlText, confirmToken,baseUrl+"login?confirm="+confirmToken);
-			
-			messageBodyPart.setContent(htmlText, "text/html");
-			// add it
-			multipart.addBodyPart(messageBodyPart);
-			//Next add the image by creating a Datahandler as follows:
-		
-			
-			// second part (the image)
-			MimeBodyPart imageBodyPart = new MimeBodyPart();
-			DataSource fds = new ClasspathDataSource(UserService.class,"cryptools-logo.png");
-			
-			//DataSource fds = new StreamDataSource(UserService.class.getResourceAsStream("cryptools-logo.png"), "cryptools-logo.png");
-		
-			imageBodyPart.setDataHandler(new DataHandler(fds));
-			//imageBodyPart.setHeader("Content-ID", "logoimage");
-			imageBodyPart.setContentID("<logoimage>");
-			//imageBodyPart.setFileName("cryptools-logo.png");
-			imageBodyPart.setDisposition(MimeBodyPart.INLINE);
-			
-			
-			multipart.addBodyPart(imageBodyPart);
-			//Next set the multipart in the message as follows:
-			mimeMessage.setContent(multipart);
-			
-			
-		
-			//String htmlMsg = String.format(CONFIRMATION_TEXT, confirmToken,baseUrl+"login?confirm="+confirmToken);
-			//mimeMessage.setContent(htmlMsg, "text/html");
-		
-			//helper.setText(htmlMsg, true); // Use this or above line.
-			
-			helper.setTo(u.getEmail());
-			String subject = "Cryptools Account Confirmation";
-			if(u.getUserName()!=null) {
-				subject+=u.getUserName();
-			}
-			else {
-				subject += u.getEmail();
-			}
-			helper.setSubject(subject);
-			helper.setFrom("cryptools@thshsh.org");
-			
-			mailSender.send(mimeMessage);
-		} 
-		catch (Exception e) {
-			LOGGER.warn("error",e);
-			throw new IllegalStateException(e);
-		}
-		*/
-
-		/*SimpleMailMessage message = new SimpleMailMessage();
-		message.setFrom("cryptools@thshsh.org");
-		message.setTo(u.getEmail());
-		message.setSubject("Account Confirmation");
-		message.setText(emailText.toString());*/
-
-		// mailSender.send(message);
 
 		userRepo.save(u);
+		
+		actRepo.save(new Activity(u, ActivityType.Register));
 		return true;
 	}
 

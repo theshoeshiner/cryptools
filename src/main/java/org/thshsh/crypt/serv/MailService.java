@@ -31,6 +31,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Portfolio;
+import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.serv.UserService.ClasspathDataSource;
 import org.thshsh.crypt.web.AppConfiguration;
@@ -57,7 +58,9 @@ public class MailService {
 		sendMailFromResource(user, "email-confirm.html", context,"Cryptools Account Confirmation");
 	}
 	
-	public void sendPortfolioAlert(Portfolio p) {
+	public void sendPortfolioAlert(PortfolioAlert alert) {
+		
+		Portfolio p = alert.getPortfolio();
 
 
 		//String subject = "Portfolio '' Imbalance Alert: "+format.format(history.getMaxToTriggerPercent().doubleValue());
@@ -102,7 +105,7 @@ public class MailService {
 	}
 	
 	public Map<String,Object> createContext(Map<String,Object> add){
-		String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ZonedDateTime.now());
+		String timestamp = DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now());
 		Map<String,Object> context = MapUtils.createHashMap("app",appConfig,"timestamp",timestamp);
 		context.putAll(add);
 		LOGGER.info("created context: {}",context.keySet());
@@ -122,12 +125,12 @@ public class MailService {
 		
 		try {	
 			
-			LOGGER.info("contentHtml: {}",contentHtml);
+			LOGGER.trace("contentHtml: {}",contentHtml);
 			
 			Map<String,Object> context = createContext(Collections.singletonMap("content", contentHtml));
 			String htmlText = createEmailContent("email-outer.html", context);
 			
-			LOGGER.info("htmlText: {}",htmlText);
+			LOGGER.trace("htmlText: {}",htmlText);
 			
 			MimeMessage mimeMessage = mailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -226,7 +229,7 @@ public class MailService {
 			String result = (String) expression.getValue(context, contextMap);
 			
 			//String result = expression.getValue(context,String.class);
-			LOGGER.info("result text: {}",result);
+			LOGGER.trace("result text: {}",result);
 			
 			return result;
 		} 

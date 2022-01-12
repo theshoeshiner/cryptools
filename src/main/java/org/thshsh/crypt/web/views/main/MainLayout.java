@@ -26,12 +26,17 @@ import org.thshsh.crypt.web.view.CurrenciesView;
 import org.thshsh.crypt.web.view.DarkModeButton;
 import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
+import org.thshsh.crypt.web.view.MarketRatesView;
+import org.thshsh.crypt.web.view.PortfolioAlertsView;
 import org.thshsh.crypt.web.view.PortfoliosView;
 import org.thshsh.crypt.web.view.SystemView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
 import org.thshsh.crypt.web.view.UsersView;
 import org.thshsh.vaadin.ClickableAnchor;
+import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics;
+import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics.LogLevel;
+import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics.SendMode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -63,6 +68,8 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport("./styles/login.css")
 @CssImport("./styles/toggle-button.css")
 @CssImport("./styles/dashboard.css")
+@CssImport("./styles/grid-buttons.css")
+@CssImport("./styles/confirm-dialog.css")
 @CssImport(value = "./styles/components/vaadin-grid.css",themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/vaadin-checkbox.css",themeFor = "vaadin-checkbox")
 @CssImport(value = "./styles/components/vaadin-button.css",themeFor = "vaadin-button")
@@ -72,6 +79,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup-overlay")
 @CssImport(value = "./styles/components/vcf-toggle-button.css", themeFor = "vcf-toggle-button")
 @UIScope
+@EnableGoogleAnalytics(value = "UA-114384488-4",debugMode = false,sendMode = SendMode.ALWAYS,devLogging = LogLevel.TRACE,productionLogging = LogLevel.TRACE)
 public class MainLayout extends AppLayout {
 
 	protected static final Logger LOGGER = LoggerFactory.getLogger(MainLayout.class);
@@ -291,9 +299,11 @@ public class MainLayout extends AppLayout {
     	//items.add(createMenuItem(VaadinIcon.TOOLS.create(),"Balances", BalancesView.class));
 
     	if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Read)) {
-    	
     		items.add(createMenuItem(VaadinIcon.CHART_GRID.create(),"Portfolios", PortfoliosView.class));
+    	}
     	
+    	if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
+    		items.add(createMenuItem(VaadinIcon.BELL.create(),"Alerts", PortfolioAlertsView.class));
     	}
     	
     	if(SecurityUtils.hasAccess(Feature.Exchange, Access.ReadWrite)) {
@@ -301,9 +311,8 @@ public class MainLayout extends AppLayout {
     	}
 
     	if(SecurityUtils.hasAccess(Feature.Currency, Access.ReadWrite)) {
-    	
     		items.add(createMenuItem(VaadinIcon.MONEY.create(),"Currencies", CurrenciesView.class));
-    	
+    		items.add(createMenuItem(VaadinIcon.CHART_LINE.create(),"Market Rates", MarketRatesView.class));
     	}
     	
     	if(SecurityUtils.hasAccess(Feature.User, Access.ReadWrite)) items.add(createMenuItem(VaadinIcon.USERS.create(),"Users", UsersView.class));

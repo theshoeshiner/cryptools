@@ -14,3 +14,8 @@ vaadin-grid::part(body-cell).warn-1 {
 vaadin-grid::part(body-cell).warn-2 {
 	background-color: var(--warn-2-color) !important;
 } */
+
+
+vaadin-button.press.pressed {
+	color:var(--lumo-accent-color-1) !important;
+}

@@ -3,10 +3,12 @@ package org.thshsh.crypt.web.view;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -18,23 +20,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioEntryHistory;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.crypt.PortfolioSummary;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
+import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
-import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.GridUtils;
 import org.thshsh.vaadin.ImageRenderer;
 import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -44,6 +48,8 @@ import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.FooterRow.FooterCell;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -56,12 +62,13 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Long> {
+public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
 
 	public static NumberFormat ReserveFormatWhole = new DecimalFormat("$#,##0");
 	public static NumberFormat ReserveFormat = new DecimalFormat("$#,##0.00");
+	public static NumberFormat ReserveFormatFull = new DecimalFormat("$#,##0.00#####");
 	public static NumberFormat PercentFormat = new DecimalFormat("##.#%");
 	public static NumberFormat CoinFormat = new DecimalFormat("####.########");
 
@@ -76,9 +83,12 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 
 	@Autowired
 	AllocationRepository alloRepo;
-
-	//@Autowired
-	//MarketRateService rateService;
+	
+	@Autowired
+	PortfolioHistoryRepository histRepo;
+	
+	@Autowired
+	PlatformTransactionManager transactionManager;
 
 	@Autowired
 	ManagePortfolioService portService;
@@ -97,8 +107,14 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 	BigDecimal portThreshold = new BigDecimal(".04");
 	FooterRow footer;
 	PortfolioHistory summary;
+	TransactionTemplate template;
+	Boolean force;
 
 	public PortfolioEntryGrid(ManagePortfolioView v) {
+		this(v,false);
+	}
+	
+	public PortfolioEntryGrid(ManagePortfolioView v, Boolean f) {
 		super(PortfolioEntryHistory.class, null, FilterMode.None);
 		//this.listOperationProvider = new PortfolioEntriesListProvider();
 		this.portfolio = v.entity;
@@ -109,25 +125,49 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 		this.view = v;
 		//this.entries = new HashSet<PortfolioEntryHistory>();
 		this.showHeader = true;
+		this.force = f;
 	}
 
 	@PostConstruct
 	public void postConstruct() {
-
-		summary = portService.createHistory(portfolio);
-		entries = summary.getEntries();
-		BigDecimal tot = summary.getValue();
-		dataProvider = new ListDataProvider<>(entries);
-		super.postConstruct();
-
-		totalValueCell.setText(ReserveFormat.format(tot));
 		
-		advancedButton.setVisible(true);
-		count.setVisible(false);
-		filter.setVisible(false);
+		this.template = new TransactionTemplate(transactionManager);
 		
-		Button addBalance = new Button("Add Balance");
-		countAndAdvanced.add(addBalance);
+		template.executeWithoutResult(action -> {
+	
+			PortfolioHistory latest = portfolio.getLatest();
+			if(force || latest == null || ZonedDateTime.now().minusMinutes(2).isAfter(latest.getTimestamp())) {
+				summary = portService.createHistory(portfolio);
+			}
+			else {
+				summary = histRepo.getById(latest.getId());
+			}
+			entries = summary.getEntries();
+			BigDecimal tot = summary.getValue();
+			dataProvider = new ListDataProvider<>(entries);
+			super.postConstruct();
+	
+			totalValueCell.setText(ReserveFormat.format(tot));
+			
+			advancedButton.setVisible(false);
+			count.setVisible(false);
+			filter.setVisible(false);
+			
+			//this.grid.setMaxHeight("100%");
+			//this.grid.setHeight(null);
+			
+			
+			if(this.dataProvider.size(new Query()) == 0) {
+				/*HeaderRow hr = this.grid.appendHeaderRow();
+				HeaderCell hc = hr.join(grid.getColumns().toArray(new Column[0]));
+				Span addBalances = new Span("Summary will be populated after adding currency balances on the Balances tab");
+				hc.setComponent(addBalances);*/
+			}
+			
+		});
+		
+		/*Button addBalance = new Button("Add Balance");
+		countAndAdvanced.add(addBalance);*/
 		
 
 	}
@@ -160,6 +200,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 
 	@Override
 	public Long getEntityId(PortfolioEntryHistory entity) {
+		if(entity.getCurrency()==null) return -1l;
 		return entity.getCurrency().getId();
 	}
 
@@ -171,21 +212,28 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 
 	protected void adjustAllocation(PortfolioEntryHistory pe) {
 
-		Allocation allo = pe.getAllocation();
+		Optional<Allocation> allo = alloRepo.findByPortfolioAndCurrency(portfolio, pe.getCurrency());
+
 		LOGGER.info("current allocation: {}",allo);
 		AllocationDialog dialog;
-		if(allo == null || allo.getId() == null) {
+		if(!allo.isPresent()) {
+			LOGGER.info("portfolio: {}",pe.getPortfolio());
+			LOGGER.info("currency: {}",pe.getCurrency());
 			//using the default allocation
-			dialog = this.appCtx.getBean(AllocationDialog.class,null,pe.getPortfolio(),pe.getCurrency());
+			dialog = this.appCtx.getBean(AllocationDialog.class,portfolio,pe.getCurrency());
 		}
 		else {
-			allo = alloRepo.findById(allo.getId()).get();
-			dialog = this.appCtx.getBean(AllocationDialog.class,allo,allo.getPortfolio(),allo.getCurrency());
+			//Allocation a = alloRepo.findById(allo.get().getId()).get();
+			Allocation a = allo.get();
+			//allo = alloRepo.findById(allo.getId()).get();
+			dialog = this.appCtx.getBean(AllocationDialog.class,a);
 		}
 		dialog.addOpenedChangeListener(changed -> {
 			if(dialog.getEntityForm().getSaved()) {
-				this.view.refreshMainTab();
-				view.runHistoryJob();
+				//this.view.refreshValueRelatedTabs();
+				this.view.refreshSummaryTab(true);
+				this.view.refreshAllocationTab();
+				//view.runHistoryJob();
 			}
 		});
 
@@ -214,8 +262,8 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 
 		grid.addComponentColumn(entry -> {
 			Span node = new Span();
-			String perc = PercentFormat.format(entry.getAllocation().getPercent());
-			if(entry.getAllocation().isUndefined()) {
+			String perc = PercentFormat.format(entry.getAllocationPercent());
+			if(entry.getAllocationUndefined()) {
 				Span auto = new Span("(auto)");
 				auto.addClassName("auto");
 				node.add(auto);
@@ -228,7 +276,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 		//.setSortProperty("allocation.percent")
 		.setTextAlign(ColumnTextAlign.END)
 		.setComparator(Comparator
-				.comparing(FunctionUtils.nestedValue(PortfolioEntryHistory::getAllocation, Allocation::getPercent)))
+				.comparing(PortfolioEntryHistory::getAllocationPercent))
 		.setWidth("100px")
 		.setFlexGrow(0);
 		;
@@ -237,41 +285,38 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 		grid.addComponentColumn(e -> {
 
 			HorizontalLayout buttons = new HorizontalLayout();
-			buttons.addClassName("grid-buttons");
+			buttons.addClassNames("grid-buttons","allocation-buttons");
 			buttons.setPadding(true);
 			buttons.setWidthFull();
 			buttons.setJustifyContentMode(JustifyContentMode.END);
 
-			Button manageButton = new Button(VaadinIcon.PENCIL.create());
-			manageButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-			buttons.add(manageButton);
-			UIUtils.setTitle(manageButton, "Allocation");
-			manageButton.addClickListener(click -> adjustAllocation(e));
-			manageButton.addClassName("link");
-			buttons.add(manageButton);
+			if(e.getCurrency()!=null) {
+				Button allocationButton = new Button(VaadinIcon.PENCIL.create());
+				allocationButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				buttons.add(allocationButton);
+				UIUtils.setTitle(allocationButton, "Allocation");
+				allocationButton.addClickListener(click -> adjustAllocation(e));
+				allocationButton.addClassName("link");
+				buttons.add(allocationButton);
 
-
+			}
 			return buttons;
 		})
 		.setFlexGrow(0)
 		.setClassNameGenerator(val -> {
-			return "grid-buttons-column";
+			return EntityGrid.SHOW_ON_HOVER_COLUMN_CLASS;
 		})
 		.setWidth("40px");
 		
 
-		grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate),ReserveFormat))
-			.setHeader("Price")
-			.setTextAlign(ColumnTextAlign.END)
-			.setComparator(Comparator.comparing(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate)))
-			.setWidth("100px")
-			.setFlexGrow(0);
+		
 
 		grid.addColumn(PortfolioEntryHistory::getBalance)
 			.setSortProperty("balance")
 			.setTextAlign(ColumnTextAlign.END)
 			.setComparator(Comparator.comparing(PortfolioEntryHistory::getBalance))
 			.setHeader("Balance")
+			.setAutoWidth(true)
 			.setWidth("125px")
 			.setFlexGrow(0);
 
@@ -387,7 +432,15 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory, Lon
 		
 		coll.add(adjustColumn);
 		
-		GridUtils.reorderColumns(grid, c,6,adjustColumn,8);
+		Column<PortfolioEntryHistory> priceColumn = grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate),ReserveFormat))
+		.setHeader("Price")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate)))
+		.setWidth("100px")
+		.setFlexGrow(0);
+		coll.add(priceColumn);
+		
+		GridUtils.reorderColumns(grid, c,6,adjustColumn,8,priceColumn,4);
 		
 		totalAdjustCell = footer.getCell(adjustColumn);
 		totalAdjustCell.setText(PercentFormat.format(summary.getTotalAdjustPercent()));

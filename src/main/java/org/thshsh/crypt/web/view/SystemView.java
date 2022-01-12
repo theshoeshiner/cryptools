@@ -5,7 +5,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
+import org.thshsh.crypt.Access;
+import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.serv.PortfolioHistoryService;
+import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.ConfirmDialogs;
 
@@ -18,6 +21,7 @@ import com.vaadin.flow.router.Route;
 @SuppressWarnings("serial")
 @Route(value = "system", layout = MainLayout.class)
 @PageTitle("System")
+@SecuredByFeatureAccess(feature=Feature.System,access=Access.Super)
 public class SystemView extends VerticalLayout {
 	
 	@Autowired
