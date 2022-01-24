@@ -64,7 +64,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 @Scope("prototype")
 public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioBalanceGrid.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioEntryGrid.class);
 
 	public static NumberFormat ReserveFormatWhole = new DecimalFormat("$#,##0");
 	public static NumberFormat ReserveFormat = new DecimalFormat("$#,##0.00");
