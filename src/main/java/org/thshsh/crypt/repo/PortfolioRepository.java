@@ -23,7 +23,7 @@ public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, Ex
 	@Query("select e from #{#entityName} e where e.id =?1 and "+OWNER_OR_SUPER_IN)
 	public Portfolio findByIdSecured(Long is);
 
-	@Query("select distinct e from #{#entityName} e  where "+OWNER_OR_SUPER_IN)
+	@Query("select e from #{#entityName} e join e.user owner where "+OWNER_OR_SUPER_IN)
 	public Page<Portfolio> findAllSecured(Pageable p);
 	
 	@Query("select count(distinct e.id) from #{#entityName} e where "+OWNER_OR_SUPER_IN)
