@@ -66,8 +66,9 @@ public class UserService {
 	public Boolean registerUser(User u) throws UserExistsException {
 
 		LOGGER.info("registerUser: {}", u);
+		u.setEmail(u.getEmail().toLowerCase());
 
-		boolean email = userRepo.findByEmail(u.getEmail().toLowerCase()).isPresent();
+		boolean email = userRepo.findByEmail(u.getEmail()).isPresent();
 		boolean name = u.getUserName() != null && userRepo.findByUserNameIgnoreCase(u.getUserName()).isPresent();
 
 		if (email || name)
