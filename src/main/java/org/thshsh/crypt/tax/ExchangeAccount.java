@@ -7,15 +7,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Account {
+/**
+ * represents an account at a specific exchange
+ */
+public class ExchangeAccount {
 
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(Account.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(ExchangeAccount.class);
 
 	String id;
 	Map<String,BigDecimal> balances;
 
-	public Account(String id) {
+	public ExchangeAccount(String id) {
 		this.id = id;
 		this.balances = new HashMap<>();
 	}

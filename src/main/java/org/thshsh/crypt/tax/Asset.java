@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.ComparatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +18,13 @@ public class Asset {
 	public static String FIAT_ASSET = "USD";
 
 	String name;
-	List<BuyRecord> buyRecords;
+	List<Record> buyRecords;
 	List<SellRecord> sellRecords;
 	List<Record> records;
 	BigDecimal balance;
 
+	BigDecimal fiatExternal = new BigDecimal(0);
+	
 	Asset(String name) {
 		this.name = name;
 		this.buyRecords = new ArrayList<>();
@@ -30,15 +33,19 @@ public class Asset {
 		this.balance = BigDecimal.ZERO;
 		//this.accounts = new Map();
 	}
+	
+	//Deposit and Withdraw do not affect buy/sell records, but they do affect the total asset balance
 
 	void deposit(BigDecimal quantity, Transaction transaction){
 
-		this.balance = this.balance.add(quantity);
+		BigDecimal newBalance = this.balance.add(quantity);
+		LOGGER.info("{} Deposit: {}  Current: {} New: {}",new Object[] {this.name,quantity,this.balance,newBalance});
+		this.balance = newBalance;
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).add(quantity));
-		LOGGER.info("Deposit {}: {} Balance: {}",new Object[] {this.name,quantity,this.balance});
+		//LOGGER.info("Deposit {}: {} Balance: {}",new Object[] {this.name,quantity,this.balance});
 
+		//TODO better way to track external deposits
 		if(transaction.external && this.name == FIAT_ASSET) {
-			//LOGGER.info("Deposit {}: {} Balance: {}",new Object[] {this.name,quantity,this.balance});
 			fiatExternal = fiatExternal.add(quantity);
 			LOGGER.info("fiatExternal: {}",fiatExternal);
 		}
@@ -47,12 +54,11 @@ public class Asset {
 
 	void withdraw(BigDecimal quantity, Transaction transaction){
 
-		this.balance = this.balance.subtract(quantity);
+		BigDecimal newBalance = this.balance.subtract(quantity);
+		LOGGER.info("{} Withdraw: {}  Current: {} New: {}",new Object[] {this.name,quantity,this.balance,newBalance});
+		this.balance = newBalance;
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).subtract(quantity));
 
-		/*if(transaction.external) {
-			LOGGER.debug("Withdraw External: {} Asset: {} Balance: {}",new Object[] {quantity,this.name,this.balance});
-		}*/
 	}
 
 	IncomeRecord income(BigDecimal quantity, Transaction transaction){
@@ -60,12 +66,13 @@ public class Asset {
 		this.balance = this.balance.add(quantity);
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).add(quantity));
 
-		RecordGains gains = new RecordGains();
+		Gains gains = new Gains();
 		gains.addIncome(transaction);
 
-		IncomeRecord record = new IncomeRecord(transaction);
+		IncomeRecord record = new IncomeRecord(this,transaction.quantityTo,transaction.fiatTo,transaction);
 		record.gains = gains;
 		this.records.add(record);
+		this.buyRecords.add(record);
 
 		LOGGER.debug("Income: {} {} Balance: {}",new Object[] {quantity,this.name,this.balance});
 		return record;
@@ -75,23 +82,21 @@ public class Asset {
 	BuyRecord buy(BigDecimal quantity, BigDecimal price, Transaction transaction) {
 
 
-
 		this.balance = this.balance.add(quantity);
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).add(quantity));
 
-		LOGGER.debug("Bought: {} {} Balance: {}",new Object[] {quantity,this.name,this.balance});
+		//LOGGER.debug("Bought: {} {} Balance: {}",new Object[] {quantity,this.name,this.balance});
 
 		if(!this.name.equals(FIAT_ASSET)) {
 
-
-			//var time = transaction.time;
 			LOGGER.info("Buy: {} {} For: {} {} / {} USD",new Object[] {quantity,this.name,transaction.getTotalFrom(),transaction.assetFrom,price});
 
-			BuyRecord r = new BuyRecord(quantity, price, transaction);
-			r.asset = this;
+			BuyRecord r = new BuyRecord(quantity, price, transaction,this);
 			this.buyRecords.add(r);
 			this.records.add(r);
 
+			LOGGER.debug("Bought {}: {} Balance: {}",new Object[] {this.name,quantity,this.balance});
+			
 			return r;
 		}
 
@@ -101,51 +106,35 @@ public class Asset {
 		//console.log(this.name + " bought: " + quantity + " balance: " + this.balance);
 	}
 
-	BigDecimal fiatExternal = new BigDecimal(0);
+	
 
 	SellRecord sell(BigDecimal quantity, BigDecimal price, Transaction transaction) {
 
+		this.balance = this.balance.subtract(quantity);
+		if(this.balance.compareTo(BigDecimal.ZERO)<0) throw new IllegalStateException("Asset Balance is < 0");
+		
+		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).subtract(quantity));
+		LOGGER.debug("Sell: {} Asset: {} New Balance: {}",new Object[] {quantity,this.name,this.balance});
 
-
-		//if the transaction is external and a buy, then the thing we're selling is not part of our accounts
-		/*if(transaction.external && transaction.type == Type.Buy) {
-			if (this.name == FIAT_ASSET) {
-				fiatExternal = fiatExternal.add(quantity);
-				LOGGER.info("fiatExternal: {}",fiatExternal);
-			}
-		}
-		else {*/
-			this.balance = this.balance.subtract(quantity);
-			transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).subtract(quantity));
-			LOGGER.debug("Sell: {} Asset: {} New Balance: {}",new Object[] {quantity,this.name,this.balance});
-		//}
-
-
-
-		//selling fiat is not a taxable transaction, so we dont need to create tax records
+		//selling fiat (ie buying a crypto with fiat) is not a taxable transaction, so we dont need to create tax records
 		//TODO track FIAT
 		if (this.name == FIAT_ASSET) {
 			return null;
 		}
 		else {
 
-			SellRecord sellBlock = new SellRecord(quantity, price,transaction);
-			sellBlock.asset = this;
-
-			//var gains = this.sellFifo(sell);
-			RecordGains gains = this.sellMlmg(sellBlock);
+			SellRecord sellBlock = new SellRecord(quantity, price,this,transaction);
+			
+			Gains gains = this.processSell(sellBlock);
 			sellBlock.gains = gains;
 			this.sellRecords.add(sellBlock);
 			this.records.add(sellBlock);
-
-
-			//this.addToTable(sellBlock);
 
 			return sellBlock;
 		}
 	}
 
-	RecordGains sellMlmg(SellRecord sell) {
+	Gains processSell(SellRecord sell) {
 
 		//need to see if this sell record is going to end up being a wash
 
@@ -153,48 +142,68 @@ public class Asset {
 		LOGGER.info("sellMlmg: {}",sell);
 		LOGGER.debug("check records: {}",this.buyRecords.size());
 
-		Map<BuyRecord,GainSort> sortMap = new HashMap<>();
-		List<GainSort> sorted = new ArrayList<>();
+		Map<Record,GainSort> sortMap = new HashMap<>();
+		List<GainSort> sortedBuyRecords = new ArrayList<>();
 
-		for(BuyRecord record : this.buyRecords){
-			Boolean isShort = Accounts.isShortTerm(record.timestamp, sell.timestamp);
-			//var isLoss = record.pricePer.gt(sell.pricePer);
-			BigDecimal gainPer = sell.pricePer.subtract(record.pricePer);
-			GainSort gs = new GainSort(sell,record,isShort,gainPer);
-			sortMap.put(record,gs);
-			sorted.add(gs);
+		for(Record record : this.buyRecords){
+			//only add records that have a balance
+			if(record.balance.compareTo(BigDecimal.ZERO) > 0) {
+				Boolean isShort = Accounts.isShortTerm(record.timestamp, sell.timestamp);
+				//gain per asset share
+				BigDecimal gainPer = sell.pricePer.subtract(record.pricePer);
+				GainSort gs = new GainSort(sell,record,isShort,gainPer);
+				sortMap.put(record,gs);
+				sortedBuyRecords.add(gs);
+			}
 		}
 
 		//sorted.sort(this.taxCategorySort);
 		//sorted.sort(this.taxAmountSort);
-		Collections.sort(sorted,Asset::taxAmountSort);
+		//List<GainSort> copy = new ArrayList<GainSort>(sortedBuyRecords);
+		
+		
+		//Collections.sort(sortedBuyRecords,Asset::taxGainSort2);
+		Collections.sort(sortedBuyRecords,Asset::taxRateSort);
+		
+		/*Collections.sort(copy,Asset::taxRateSort);
+		if(!sortedBuyRecords.equals(copy)) {
+			LOGGER.info("Lists were not equal");
+			
+			LOGGER.info("taxAmountSort");
+			for(int i=0;i<20 && i<sortedBuyRecords.size();i++) {
+				LOGGER.info("Record: {}",sortedBuyRecords.get(i).record);
+				LOGGER.info("Sort: {}",sortedBuyRecords.get(i));
+			}
+			
+			LOGGER.info("taxRateSort");
+			for(int i=0;i<20 && i<copy.size();i++) {
+				LOGGER.info("Record: {}",copy.get(i).record);
+				LOGGER.info("Sort: {}",copy.get(i));
+			}
+		}*/
+		
+	
+		
+		
 
 		LOGGER.debug("Sorted buy records");
+		
+		
 
-		if(sell.transaction.id == "1858647934") {
-			LOGGER.info("Sorted records...");
-			for(GainSort gs : sorted){
-				//var s1 = sortMap.get(record);
-				BuyRecord record = gs.record;
-				if(gs.hasBalance) {
-					LOGGER.info("Record: {}, {} = {}",new Object[] {record.id,gs,record});
-				}
-			}
-		}
-
-
-		RecordGains gains = new RecordGains();
-		//Integer saleIndex = 1;
+		Gains gains = new Gains();
 
 		List<Sale> shortTermSales = new ArrayList<>();
 		List<Sale> longTermSales = new ArrayList<>();
 
-		for (int i = 0; i < sorted.size() && sell.balance.compareTo(BigDecimal.ZERO) > 0; i++) {
-			GainSort gainSort = sorted.get(i);
-			BuyRecord buy = gainSort.record;
+		
+		//Go through sorted buy records and sell portions of each until we are done
+		for (int i = 0; i < sortedBuyRecords.size() && sell.balance.compareTo(BigDecimal.ZERO) > 0; i++) {
+			GainSort gainSort = sortedBuyRecords.get(i);
+			Record buy = gainSort.record;
+			LOGGER.debug("checking gainSort: {}",gainSort);
 			LOGGER.debug("checking record: {}",buy);
 
-			Sale sale = this.getSaleRecord(buy,sell);
+			Sale sale = this.sellFromBuyRecord(buy,sell);
 			if(sale != null){
 				sale.id = sell.id+"-"+buy.id;
 				sell.saleRecords.add(sale);
@@ -211,40 +220,32 @@ public class Asset {
 			}
 
 		}
+		
+		if(sell.balance.compareTo(BigDecimal.ZERO) > 0) {
+			throw new IllegalStateException("Could not find assets to sell");
+		}
 
-		//aggregate sale records
+		//combine short and long term sales into single aggregate record
 		if(shortTermSales.size() > 0){
-			//return new Sale(basis,proceeds,take,buy,sell);
-			Sale agg = new Sale(BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,null,null);
-			agg.id = sell.id+"-short";
-			for(Sale sr : shortTermSales) {
-				agg.aggregate(sr);
-			}
-			sell.shortTermAggregate = agg;
+			sell.shortTermAggregate =  new SaleAggregate(sell.id+"-short",sell, shortTermSales);
 		}
 
 		if(longTermSales.size() > 0){
-			//return new Sale(basis,proceeds,take,buy,sell);
-			Sale agg = new Sale(BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,null,null);
-			agg.id = sell.id+"-long";
-			for(Sale sr : longTermSales) {
-				agg.aggregate(sr);
-			}
-			sell.longTermAggregate = agg;
+			sell.longTermAggregate = new SaleAggregate(sell.id+"-long",sell,longTermSales);
 		}
 
-		//its possible to have short term / gains losses in the sale Sell record because we might be selling different tax lots with different cost basises
+		//its possible to have short term / gains losses in the same Sell record because we might be selling different tax lots with different cost basises
 
 		return gains;
-		//return [gainsS, gainsL];
 
 	}
 
-	Sale getSaleRecord(BuyRecord buy,SellRecord sell) {
+	Sale sellFromBuyRecord(Record buy,SellRecord sell) {
 
 		if (buy.balance.compareTo(BigDecimal.ZERO) > 0) {
 			//console.debug("buy has: " + buy.balance);
 			LOGGER.debug("buy has: {}",buy.balance);
+			LOGGER.debug("price per: {}",buy.pricePer);
 			BigDecimal left = sell.balance;
 			BigDecimal take = left;
 			//if the buy record doesn't have enough then take all of it
@@ -252,7 +253,7 @@ public class Asset {
 			//console.debug("taking: " + take);
 			LOGGER.debug("taking: {}",take);
 			BigDecimal basis = take.multiply(buy.pricePer);
-			LOGGER.debug("basis at: {} = {}",new Object[] {buy.pricePer,basis});
+			LOGGER.debug("total basis: {}",basis);
 			//console.debug("basis at: " + buy.pricePer + " = " + basis);
 			sell.balance = left.subtract(take);
 			buy.balance = buy.balance.subtract(take);
@@ -260,7 +261,7 @@ public class Asset {
 			BigDecimal proceeds = take.multiply(sell.pricePer);
 
 			//console.debug("left: " + sell.balance);
-			LOGGER.debug("left: {}",sell.balance);
+			LOGGER.debug("left to sell: {}",sell.balance);
 
 			return new Sale(basis,proceeds,take,buy,sell);
 
@@ -268,72 +269,91 @@ public class Asset {
 		}
 		return null;
 	}
+	
+	/** 
+	 * This is a tax optimzied sort, in that we optimize the rate that we are saving at, but not the actual savings
+	 * This is not much differnet from MLMG in early years since there are fewer lots to choose from
+	 * But in later years you will see less short term gains and more long term
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	static int taxRateSort(GainSort s1,GainSort s2) {
+		int comp = 0;
+		
+		//sort losses to front
+		comp = s2.isLoss.compareTo(s1.isLoss);
+		if(comp == 0) {
+			//sort by tax rate
+			comp = s1.taxRate.compareTo(s2.taxRate);
+			//if its a loss then we want higher tax rates first (this should auto account for long/short term, right?)
+			if(s1.isLoss) comp = comp * -1;
+			if(comp == 0) {
+				//sort by actual gain/loss
+				comp = s1.gainPer.compareTo(s2.gainPer);
+				//if it's a gain then we want greater losses at the top
+				//if(s1.isLoss) comp = comp *-1;
+			}
+		}
+		
+		
+		return comp;
+	}
+	
+	static int taxGainSort2(GainSort s1,GainSort s2) {
+		int comp = 0;
+		
+		//sort losses to front
+		//comp = s2.isLoss.compareTo(s1.isLoss);
+		//if(comp == 0) {
+			//sort by actual taxes
+		comp = s1.taxPer.compareTo(s2.taxPer);
+		//if its a loss then we want higher taxes first
+		//if(s1.isLoss) comp = comp * -1;
+		if(comp == 0) {
+			LOGGER.info("TaxPer was same for {} and {}",s1,s2);
+			//sort by oldest timestamps
+			comp = s1.record.timestamp.compareTo(s2.record.timestamp);
+			if(comp == 0) {
+				LOGGER.info("timestamp was same for {} and {}",s1,s2);
+			}
+			//if it's a gain then we want greater losses at the top
+			//if(s1.isLoss) comp = comp *-1;
+		}
+		//}
+		
+		
+		return comp;
+	}
 
-	static int taxAmountSort(GainSort s1,GainSort s2) {
+	static int taxGainSort(GainSort s1,GainSort s2) {
 
 		int comp = 0;
-		//if one is empty, sort it to the end
-		if(s1.hasBalance != s2.hasBalance){
-			if(s1.hasBalance) comp = -1;
-			else comp = 1;
-		}
-		else if(s1.isLoss == s2.isLoss){
+		
+		if(s1.isLoss == s2.isLoss){
 			//both are the same (loss/gain)
+			
 			if(s1.isLoss) {
 
 				//both are a loss, find the greatest loss
-				int pc = s2.taxPer.compareTo(s1.taxPer);
-				if(pc == 0) {
+				comp = s2.taxPerAbs.compareTo(s1.taxPerAbs);
+				if(comp == 0) {
 					//losses are the same, there is no great way to continue to sort, so nearest first
 					comp = s2.timestamp.compareTo(s1.timestamp);
 				}
-				else comp = pc;
+				//else comp = pc;
 
-				/*
-				if(s1.isShort == s2.isShort) {
-
-					//both are short losses, so highest price to front (causes largest loss)
-					var pc = s2.pricePer.compare(s1.pricePer);
-					if(pc == 0) {
-						//compare timestamps, for short losses return the oldest (smallest timestamp) first, this will leave more records in the short term range for longer time
-						return s1.timestamp - s2.timestamp;
-					}
-					comp = pc;
-				}
-				else {
-					//one is a short term loss, to sort it to the front
-					if(s1.isShort) comp = -1;
-					else comp = 1;
-				}
-				*/
 			}
 			else {
 				//both are a gain
 
 				//return the smallest taxes first
-				int pc = s1.taxPer.compareTo(s2.taxPer);
-				if(pc == 0) {
+				comp = s1.taxPerAbs.compareTo(s2.taxPerAbs);
+				if(comp == 0) {
 					//gains are the same, there is no great way to continue to sort, so return youngest first
 					comp = s2.timestamp.compareTo(s1.timestamp);
 				}
-				else comp = pc;
-
-				/*
-				if(s1.isShort == s2.isShort) {
-					//both are short gains, so push higher price to the front (causes less profit)
-					var pc = s2.pricePer.compare(s1.pricePer);
-					if(pc == 0) {
-						//compare timestamps, for short gains return the youngest (largest timestamp) first
-						return s2.timestamp - s1.timestamp;
-					}
-					comp = pc;
-				}
-				else {
-					//one is short tern gain, so sort it to the end
-					if(s1.isShort) comp = 1;
-					else comp = -1;
-				}
-				*/
+				//else comp = pc;
 			}
 
 		}
@@ -348,5 +368,30 @@ public class Asset {
 		return comp;
 
 	}
+	
+	
 
+	public String getName() {
+		return name;
+	}
+	
+	
+
+	public BigDecimal getBalance() {
+		return balance;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[name=");
+		builder.append(name);
+		builder.append(", balance=");
+		builder.append(balance);
+		builder.append("]");
+		return builder.toString();
+	}
+
+	
+	
 }

@@ -9,9 +9,15 @@ public class ExchangeFile {
 	String type;
 	Map<Column,Integer> columns;
 	Map<String,Object> force;
-	Boolean negativePrice;
-	Boolean negativeQuantity;
-	Boolean allowDuplicates;
+	Boolean negativePrice = false;
+	//this means we allow negative quantities, even though we perform abs() on all of them anyways
+	Boolean negativeQuantity = false;
+	//normally we allow duplicates and will just combine the info
+	Boolean allowDuplicates = true;
+	//these are used for coinmetro, which swaps the meaning on some of their columns for buy/sell
+	Boolean swapPriceForSell = false;
+	Boolean swapFeeForBuy = false;
+	//this determines how we pick between duplicates and is used for coinbase
 	Integer priority = 100;
 
 	String exchange;
@@ -25,9 +31,6 @@ public class ExchangeFile {
 		this.type = type;
 		this.columns = new HashMap<>();
 		this.force = new HashMap<>();
-		this.negativePrice = false;
-		this.negativeQuantity = false;
-		this.allowDuplicates = true;
 	}
 
 	public void mapColumn(Column type,Integer index){

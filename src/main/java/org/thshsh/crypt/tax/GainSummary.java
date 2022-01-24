@@ -4,7 +4,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaleSummary {
+/**
+ * Represents an aggregation of sales
+ * @author Dan
+ *
+ */
+public class GainSummary {
 
 	BigDecimal basis;
 	BigDecimal proceeds;
@@ -12,9 +17,9 @@ public class SaleSummary {
 	BigDecimal gains;
 	List<Sale> saleRecords;
 
-	BuyRecord buyRecord;
+	Record buyRecord;
 
-	SaleSummary(){
+	GainSummary(){
 
 		this.basis = BigDecimal.ZERO;
 		this.proceeds =  BigDecimal.ZERO;

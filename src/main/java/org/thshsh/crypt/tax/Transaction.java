@@ -1,15 +1,32 @@
 package org.thshsh.crypt.tax;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+
+import org.thshsh.crypt.MarketRate;
 
 public class Transaction {
 
 	public enum Type {
 		Buy,Sell,Deposit,Withdrawal,Income;
+		public Type opposite() {
+			switch(this) {
+			case Buy:
+				return Sell;
+			case Deposit:
+				return Withdrawal;
+			case Sell:
+				return Buy;
+			case Withdrawal:
+				return Deposit;
+			case Income:
+				throw new IllegalArgumentException("Income has no opposite");
+			default:
+				throw new IllegalArgumentException();
+			
+			}
+		}
 		//,Delist;
 	}
 
@@ -17,10 +34,11 @@ public class Transaction {
 	public Type type;
 	String id;
 	String externalId;
-	LocalDateTime timestamp;
+	ZonedDateTime timestamp;
 
 	BigDecimal quantity;
 	BigDecimal fee;
+	BigDecimal feeInverse;
 	BigDecimal remaining;
 	String asset;
 	String exchange;
@@ -56,7 +74,10 @@ public class Transaction {
 	Transfer transfer;
 
 	//holds a reference to the exchange account
-	Account account;
+	ExchangeAccount account;
+	
+	MarketRate fromRate;
+	MarketRate toRate;
 
 	public Transaction(String id) {
 		this.externalId = id;
@@ -64,17 +85,17 @@ public class Transaction {
 		this.id = Integer.toUnsignedString(this.externalId.hashCode());
 	}
 
-	public Long getEpochSecond() {
-		return timestamp.toEpochSecond(ZoneOffset.UTC);
-	}
+	/*public Long getEpochSecond() {
+		return timestamp.toEpochSecond();
+	}*/
 
-	public void setTimestamp(LocalDateTime ts) {
+	public void setTimestamp(ZonedDateTime ts) {
 		this.timestamp = ts;
-		this.time = ts.toEpochSecond(ZoneOffset.UTC);
+		this.time = ts.toEpochSecond();
 	}
 
 
-	public Transaction(String id,LocalDateTime timestamp,Type type,BigDecimal quantity,String asset,String exchange,BigDecimal price,String[] market){
+	public Transaction(String id,ZonedDateTime timestamp,Type type,BigDecimal quantity,String asset,String exchange,BigDecimal price,String[] market){
 
 		this.externalId = id;
 		//var hc = id.hashCode(); //
@@ -98,7 +119,7 @@ public class Transaction {
 		// TODO Auto-generated constructor stub
 	}*/
 
-	public Transaction(String string, LocalDateTime ofEpochSecond, Type deposit, BigDecimal total, String asset2,String exchange2) {
+	public Transaction(String string, ZonedDateTime ofEpochSecond, Type deposit, BigDecimal total, String asset2,String exchange2) {
 		this.externalId = string;
 		//this.id = ((Integer)this.externalId.hashCode()).toString();
 		this.id = Integer.toUnsignedString(this.externalId.hashCode());
@@ -135,9 +156,16 @@ public class Transaction {
 	public String toString() {
 		return "[type=" + type + ", id=" + id + ", externalId=" + externalId
 				+ ", timestamp=" + timestamp
+				+ ", market=" +  Arrays.toString(market)
 				+ ", quantity=" + quantity
-
-				+ ", exchange=" + exchange + ", assetFrom=" + assetFrom + ", assetTo=" + assetTo + "]";
+				+ ", price=" + price
+				+ ", assetFrom=" + assetFrom 
+				+ ", quantityFrom=" + quantityFrom
+				+ ", feeFrom=" + feeFrom
+				+  ", assetTo=" + assetTo
+				+ ", quantityTo=" + quantityTo
+				+ ", feeTo=" + feeTo
+				+ ", exchange=" + exchange + "]";
 	}
 
 	public String toStringPreInit() {
@@ -145,5 +173,44 @@ public class Transaction {
 				+ ", asset=" + asset + ", market=" + Arrays.toString(market) + "]";
 	}
 
+	public Type getType() {
+		return type;
+	}
 
+	public String getId() {
+		return id;
+	}
+
+	public ZonedDateTime getTimestamp() {
+		return timestamp;
+	}
+
+	public String getExchange() {
+		return exchange;
+	}
+
+	public String getAssetFrom() {
+		return assetFrom;
+	}
+
+	public String getAssetTo() {
+		return assetTo;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public MarketRate getFromRate() {
+		return fromRate;
+	}
+
+	public MarketRate getToRate() {
+		return toRate;
+	}
+
+
+	
+	
+	
 }

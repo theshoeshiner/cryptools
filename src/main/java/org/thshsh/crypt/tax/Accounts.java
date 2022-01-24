@@ -1,11 +1,13 @@
 package org.thshsh.crypt.tax;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +17,8 @@ public class Accounts {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Accounts.class);
 
 	Map<String,Asset> assetMap;
-	Map<String,Account> accountMap;
-	List<RecordGains> gainsList;
+	Map<String,ExchangeAccount> accountMap;
+	List<Gains> gainsList;
 	List<Record> records;
 
 	public Accounts() {
@@ -28,9 +30,9 @@ public class Accounts {
 		//this.LOGGER = LoggerFactory.getLogger("Accounts");
 	}
 
-	public Account getAccount(String name){
+	public ExchangeAccount getAccount(String name){
 		if (!this.accountMap.containsKey(name)) {
-			Account a = new Account(name);
+			ExchangeAccount a = new ExchangeAccount(name);
 			this.accountMap.put(name, a);
 		}
 		return this.accountMap.get(name);
@@ -49,7 +51,6 @@ public class Accounts {
 	public void processTransaction(Transaction t) {
 
 		LOGGER.info("processTransaction: {}",t);
-		//LOGGER.info("external: {}",t.external);
 		t.account = this.getAccount(t.exchange);
 
 		if(t.type == Transaction.Type.Deposit) {
@@ -66,6 +67,7 @@ public class Accounts {
 		}
 		else if(t.type == Transaction.Type.Income) {
 			Asset to = this.getAsset(t.assetTo);
+			
 			IncomeRecord record = to.income(t.quantityTo,t);
 			this.records.add(record);
 		}
@@ -83,55 +85,44 @@ public class Accounts {
 
 			//Create a sell record that removes the quantity from the "FROM" asset
 			SellRecord sellRecord = from.sell(t.quantityFrom.add(t.feeFrom), t.fiatTo, t);
-			if(sellRecord!=null) this.records.add(sellRecord);
-
-
+	
 			if (sellRecord != null) {
-
-				RecordGains gains = sellRecord.gains;
-				gains.transaction = t;
-				this.gainsList.add(gains);
-
+				this.records.add(sellRecord);
+				this.gainsList.add(sellRecord.gains);
 
 			}
 
 		}
 
 	}
+	
+	
 
-	static Boolean isShortTerm(LocalDateTime t0,LocalDateTime t1) {
+	public List<Record> getRecords() {
+		return records;
+	}
+
+	public Stream<SaleAggregate> getTaxableRecords(){
+		
+		return getRecords().stream()
+				.filter(r -> r instanceof SellRecord)
+				.flatMap(r -> {
+					SellRecord sr = (SellRecord) r;
+					List<SaleAggregate> aggs = new ArrayList<>();
+					if(sr.longTermAggregate != null) aggs.add(sr.longTermAggregate);
+					if(sr.shortTermAggregate != null) aggs.add(sr.shortTermAggregate);
+					return aggs.stream();
+				});
+		
+	}
+	
+	static Boolean isShortTerm(ZonedDateTime t0,ZonedDateTime t1) {
 		Long diff = Accounts.getDaysBetween(t0,t1);
 		return diff <= 365;
 	}
 
-	static Long getDaysBetween(LocalDateTime t0,LocalDateTime t1){
-
-		//console.log("getDaysBetween "+t0+" "+t1);
-
+	static Long getDaysBetween(ZonedDateTime t0,ZonedDateTime t1){
 		return ChronoUnit.DAYS.between(t0, t1);
-
-		/*Integer y0 = t0.getYear();
-		Integer y1 = t1.getYear();
-
-		if(y1 < y0) return false;
-
-		var d0 = t0.getDOY();
-		var d1 = t1.getDOY();
-
-		//console.log("DOY = {} / {}",[d0,d1]);
-
-		var add = 0;
-		for(var i=y0;i<y1;i++){
-			add+=Date.getDaysInYear(i);
-		}
-
-		//console.log("add: {}",[add]);
-
-		var diff = d1-d0+add;
-
-		//console.log("diff between "+t0+" and "+t1+" = "+diff);
-
-		return diff;*/
 	}
 
 }

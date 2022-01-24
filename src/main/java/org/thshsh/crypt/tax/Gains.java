@@ -4,7 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecordGains {
+/**
+ * Represents the gains made for a specific GainRecord
+ * Can also be used to aggregate gains from multiple records
+ * @author Dan
+ *
+ */
+public class Gains {
 
 	List<Sale> shortTermRecords;
 	List<Sale> longTermRecords;
@@ -20,10 +26,10 @@ public class RecordGains {
 	BigDecimal shortTermProceeds;
 	BigDecimal longTermProceeds;
 
-	Transaction transaction;
+	//Transaction transaction;
 
 
-	public RecordGains(){
+	public Gains(){
 		this.shortTermRecords = new ArrayList<>();
 		this.longTermRecords = new ArrayList<>();
 		this.incomeRecords = new ArrayList<>();
@@ -64,7 +70,7 @@ public class RecordGains {
 		return this.longTermGain.compareTo(BigDecimal.ZERO) < 0 || this.shortTermGain.compareTo(BigDecimal.ZERO) < 0;
 	}
 
-	public void addGains(RecordGains gains){
+	public void addGains(Gains gains){
 
 
 		this.shortTermRecords.addAll(gains.shortTermRecords);
@@ -81,5 +87,30 @@ public class RecordGains {
 
 		this.incomeGain = this.incomeGain.add(gains.incomeGain);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[shortTermGain=");
+		builder.append(shortTermGain);
+		builder.append(", longTermGain=");
+		builder.append(longTermGain);
+		builder.append(", incomeGain=");
+		builder.append(incomeGain);
+		builder.append(", shortTermBasis=");
+		builder.append(shortTermBasis);
+		builder.append(", longTermBasis=");
+		builder.append(longTermBasis);
+		builder.append(", shortTermProceeds=");
+		builder.append(shortTermProceeds);
+		builder.append(", longTermProceeds=");
+		builder.append(longTermProceeds);
+		//uilder.append(", transaction=");
+		//builder.append(transaction);
+		builder.append("]");
+		return builder.toString();
+	}
+	
+	
 
 }

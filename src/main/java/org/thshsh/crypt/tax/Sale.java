@@ -1,9 +1,12 @@
 package org.thshsh.crypt.tax;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
+/** 
+ * Represents a specific sell from a lot. Multiple of these can be created by any given SELL transaction.
+ * @author Dan
+ *
+ */
 public class Sale {
 
 	String id;
@@ -12,43 +15,91 @@ public class Sale {
 	BigDecimal proceeds;
 	BigDecimal gain;
 	BigDecimal quantity;
-	BuyRecord buyRecord;
+	Record buyRecord;
 	SellRecord sellRecord;
-
-	List<BuyRecord> buyRecords;
 	Boolean shortTerm;
 
-	Sale(BigDecimal basis, BigDecimal proceeds, BigDecimal quantity,BuyRecord buyRecord,SellRecord sellRecord) {
-		/*
-		this.quantity = quan;
-		this.timestamp = transaction.time;
-		this.price = pri;
-		this.pricePer = this.price.divide(quan);
-		this.balance = quan;
-		this.saleRecords = new Array();
-		*/
+	Sale(BigDecimal basis, BigDecimal proceeds, BigDecimal quantity,Record buyRecord,SellRecord sellRecord) {
 		this.basis = basis;
 		this.proceeds = proceeds;
 		this.gain = proceeds.subtract(basis);
 		this.quantity = quantity;
 		this.buyRecord = buyRecord;
 		this.sellRecord = sellRecord;
-
-		this.buyRecords = new ArrayList<>();
 	}
 
-	void aggregate(Sale sale) {
-		this.basis = this.basis.add(sale.basis);
-		this.proceeds = this.proceeds.add(sale.proceeds);
-		this.quantity = this.quantity.add(sale.quantity);
-		this.gain = this.proceeds.subtract(this.basis);
-		this.buyRecords.add(sale.buyRecord);
+	
 
-		if(this.buyRecord == null ||
-				//this.buyRecord.timestamp.getTime() < sale.buyRecord.timestamp.getTime()
-				this.buyRecord.timestamp.compareTo(sale.buyRecord.timestamp) < 0
-				) this.buyRecord = sale.buyRecord;
-
+	public String getId() {
+		return id;
 	}
 
+
+
+	public BigDecimal getBasis() {
+		return basis;
+	}
+
+
+
+	public BigDecimal getProceeds() {
+		return proceeds;
+	}
+
+
+
+	public BigDecimal getGain() {
+		return gain;
+	}
+
+
+
+	public BigDecimal getQuantity() {
+		return quantity;
+	}
+
+
+
+	public Record getBuyRecord() {
+		return buyRecord;
+	}
+
+
+
+	public SellRecord getSellRecord() {
+		return sellRecord;
+	}
+
+
+
+	public Boolean getShortTerm() {
+		return shortTerm;
+	}
+
+
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[id=");
+		builder.append(id);
+		builder.append(", basis=");
+		builder.append(basis);
+		builder.append(", proceeds=");
+		builder.append(proceeds);
+		builder.append(", gain=");
+		builder.append(gain);
+		builder.append(", quantity=");
+		builder.append(quantity);
+		builder.append(", buyRecord=");
+		builder.append(buyRecord);
+		builder.append(", sellRecord=");
+		builder.append(sellRecord);
+		builder.append(", shortTerm=");
+		builder.append(shortTerm);
+		builder.append("]");
+		return builder.toString();
+	}
+
+	
 }

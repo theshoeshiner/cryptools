@@ -45,10 +45,18 @@ public class GainsReport {
 		*/
 		Integer[] years = new Integer[] {2017,2018,2019,2020,2021};
 
+		List<YearGainSummary> summaries = new ArrayList<YearGainSummary>();
+		
 		for(Integer year : years){
-			RecordGains g = this.processYear(year);
-			LOGGER.warn("{} Gains - long: {} short: {} income: {}",new Object[] {year,g.longTermGain,g.shortTermGain,g.incomeGain});
+			summaries.add(this.processYear(year));
+			
 		}
+		
+		
+		summaries.forEach(sum -> {
+			LOGGER.warn("{} Gains - long: {} short: {} income: {}",new Object[] {sum.year,sum.gains.longTermGain,sum.gains.shortTermGain,sum.gains.incomeGain});
+		});
+		
 		/*
 		this.LOGGER.warn("2017 Gains - long: {} short: {} income: {}",[g17.longTermGain,g17.shortTermGain,g17.incomeGain]);
 		this.LOGGER.warn("2018 Gains - long: {} short: {}",[g18.longTermGain,g18.shortTermGain]);
@@ -58,18 +66,19 @@ public class GainsReport {
 		*/
 	}
 
-	public RecordGains processYear(Integer year){
+	public YearGainSummary processYear(Integer year){
 
-		RecordGains gains = new RecordGains();
+		LOGGER.info("processYear: {}",year);
+		
 
-		YearSummary summary = new YearSummary();
+		YearGainSummary summary = new YearGainSummary(year);
 
 		for(GainRecord record : this.yearMap.get(year)){
 			if(record.gains != null) {
 
-				//this.LOGGER.info("adding record: {}",[record]);
+				LOGGER.info("gains: {} record: {}",record.gains, record);
 				//this.LOGGER.info("adding - long: {} short: {} income: {}",[record.gains.longTermGain,record.gains.shortTermGain,record.gains.incomeGain]);
-				gains.addGains(record.gains);
+				summary.gains.addGains(record.gains);
 				//this.LOGGER.info("total - long: {} short: {}",[gains.longTermGain,gains.shortTermGain]);
 
 				if(record instanceof SellRecord) {
@@ -86,7 +95,7 @@ public class GainsReport {
 
 		LOGGER.info("Yearly Summary: {}",summary);
 
-		return gains;
+		return summary;
 	}
 
 	List<GainRecord> getRecordsForYear(Integer year){

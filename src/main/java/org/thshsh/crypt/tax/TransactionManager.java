@@ -5,8 +5,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
@@ -24,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thshsh.crypt.tax.ExchangeFile.Column;
+import org.thshsh.crypt.tax.Transaction.Type;
 
 public class TransactionManager {
 
@@ -45,6 +48,8 @@ public class TransactionManager {
 		Column.Description = "Description";
 		*/
 	//}
+	
+	public static final String FIAT_ASSET = "USD";
 
 	List<ExchangeFile> files;
 	Map<String,Transaction> transactions;
@@ -64,29 +69,21 @@ public class TransactionManager {
 
 	public TransactionManager(){
 		//LOGGER = LoggerFactory.getLogger("TransactionManager");
-		this.files = new ArrayList();
-		this.transactions = new HashMap();
-		this.transactionsList = new ArrayList();
-		this.externalIds = new ArrayList();
+		this.files = new ArrayList<>();
+		this.transactions = new HashMap<>();
+		this.transactionsList = new ArrayList<>();
+		this.externalIds = new ArrayList<>();
 		//this.forceIncomeType = new Array();
-		this.internalIds = new ArrayList();
-		this.missingTransfers = new HashMap();
-		this.forceMatchIds = new ArrayList();
-		this.forceMatchArrays = new ArrayList();
+		this.internalIds = new ArrayList<>();
+		this.missingTransfers = new HashMap<>();
+		this.forceMatchIds = new ArrayList<>();
+		this.forceMatchArrays = new ArrayList<>();
 		this.orphanTransactions = new ArrayList<>();
 		this.currencyNameMap.put("STRAT","STRAX");
+		this.currencyNameMap.put("ZUSD","USD");
+		this.currencyNameMap.put("XBT","BTC");
 
 		formats.add(DateTimeFormatter.ISO_DATE_TIME);
-
-		/* .optionalStart()
-         .appendOffsetId()
-         .optionalStart()
-         .appendLiteral('[')
-         .parseCaseSensitive()
-         .appendZoneRegionId()
-         .appendLiteral(']')*/
-
-
 
 		formats.add(new DateTimeFormatterBuilder()
 	            .parseCaseInsensitive()
@@ -134,7 +131,7 @@ public class TransactionManager {
 
 
 
-	public void loadRow(CSVRecord row,ExchangeFile file) {
+	public void mapRow(CSVRecord row,ExchangeFile file) {
 
 
 		Map<Column,Integer> mapping = file.columns;
@@ -186,7 +183,11 @@ public class TransactionManager {
 				for(DateTimeFormatter dtf : formats) {
 					try {
 						LocalDateTime ldt = LocalDateTime.from(dtf.parse(ts));
-						transaction.setTimestamp(ldt);
+						//convert to UTC and assume all local dates are already UTC
+						ZonedDateTime zdt = ldt.atZone(ZoneId.of("Z"));
+						//ldt = ldt.withZoneSameLocal(ZoneId.of("Z"));
+						//LocalDateTime ldt = LocalDateTime.from(dtf.parse(ts));
+						transaction.setTimestamp(zdt);
 						break;
 					}
 					catch (DateTimeParseException e) {}
@@ -278,10 +279,7 @@ public class TransactionManager {
 
 	}
 
-	public static BigDecimal toBigDecimal(String s) {
-		if(StringUtils.isBlank(s)) return BigDecimal.ZERO;
-		else return new BigDecimal(s);
-	}
+	
 
 	//Map<String,Asset>
 
@@ -289,13 +287,13 @@ public class TransactionManager {
 
 		if(value == null) return value;
 		if(value.startsWith("XX")) value = value.substring(1);
-		if(value.equals("XBT"))value = "BTC";
+		//if(value.equals("XBT"))value = "BTC";
 		if(currencyNameMap.containsKey(value)) value = currencyNameMap.get(value);
 
 		return value;
 	}
 
-	public static final String FIAT_ASSET = "USD";
+	
 
 	public void mapTrade(ExchangeFile file,CSVRecord row,Map<Column,Integer> mapping,Transaction transaction){
 
@@ -309,6 +307,19 @@ public class TransactionManager {
 				markets = row.get(mapping.get(Column.MarketInverse));
 			}
 			transaction.market = this.splitMarket(markets,mapping.containsKey(Column.MarketInverse));
+			
+			if(mapping.containsKey(Column.Asset)) {
+				//if it contains an asset column as well then we need to use the asset column to swap the price and quantity
+				//This is only setup to use for BUY transactions
+				String asset = row.get(mapping.get(Column.Asset));
+				LOGGER.info("Trade has asset: {}",asset);
+				if(asset.equalsIgnoreCase(transaction.market[1])) {
+					//swap markets
+					//transaction.market = new String[] {transaction.market[1],transaction.market[0]};
+					transaction.type = Type.Sell;
+				}
+				
+			}
 		}
 		else if(mapping.containsKey(Column.Asset)) {
 			//if we have an asset column then the other side is USD so asset is base and quote is USD
@@ -322,9 +333,12 @@ public class TransactionManager {
 
 		if(mapping.containsKey(Column.Quantity)) {
 			BigDecimal quantity = toBigDecimal(row.get(mapping.get(Column.Quantity)));
-			if(quantity.compareTo(BigDecimal.ZERO) < 0 && !file.negativeQuantity) {
-				LOGGER.error("row had negative quantity: {}",row);
-				throw new RuntimeException("Transaction had negative quantity: "+quantity);
+			if(quantity.compareTo(BigDecimal.ZERO) < 0) {
+				if(file.negativeQuantity) {
+					//use quantity to swap type
+					transaction.type = transaction.type.opposite();
+				}
+				else throw new RuntimeException("Transaction had negative quantity: "+quantity);
 			}
 			quantity = quantity.abs();
 			transaction.quantity = quantity;
@@ -352,6 +366,18 @@ public class TransactionManager {
 
 		if(mapping.containsKey(Column.Remaining)) {
 			transaction.remaining = toBigDecimal( row.get(mapping.get(Column.Remaining)));
+		}
+		
+		if(file.swapPriceForSell && transaction.type == Type.Sell) {
+			BigDecimal q = transaction.price;
+			transaction.price = transaction.quantity;
+			transaction.quantity = q;
+		}
+		
+		if(file.swapFeeForBuy && transaction.type == Type.Buy) {
+			BigDecimal fee = transaction.fee;
+			transaction.fee = transaction.feeInverse;
+			transaction.feeInverse = fee;
 		}
 
 	}
@@ -394,6 +420,7 @@ public class TransactionManager {
 				transaction.assetFrom = transaction.market[1];
 				transaction.quantityFrom = transaction.price;
 				transaction.feeFrom = transaction.fee;
+				transaction.feeTo = transaction.feeInverse;
 				transaction.assetTo = transaction.market[0];
 				transaction.quantityTo = transaction.quantity;
 			}
@@ -401,6 +428,7 @@ public class TransactionManager {
 				transaction.assetTo = transaction.market[1];
 				transaction.quantityTo = transaction.price;
 				transaction.feeTo = transaction.fee;
+				transaction.feeFrom = transaction.feeInverse;
 				transaction.assetFrom = transaction.market[0];
 				transaction.quantityFrom = transaction.quantity;
 			}
@@ -419,6 +447,8 @@ public class TransactionManager {
 				transaction.assetFrom = transaction.asset;
 				transaction.feeFrom = transaction.fee;
 			}
+			
+			
 
 		}
 		else {
@@ -474,7 +504,7 @@ public class TransactionManager {
 
 	public void loadFile(ExchangeFile file) throws IOException{
 
-		//Reader in = new FileReader("path/to/file.csv");
+
 		LOGGER.info("loading file: {}",file);
 
 		Reader in = new InputStreamReader(TransactionManager.class.getResourceAsStream(file.url));
@@ -488,40 +518,18 @@ public class TransactionManager {
 				//.withHeader((String[])null)
 				.parse(in);
 
-		/*for (CSVRecord record : records) {
-		    String lastName = record.get("Last Name");
-		    String firstName = record.get("First Name");
-		}*/
 
 		LOGGER.info("load file: {}",file);
 
 		records.forEach(record -> {
-			this.loadRow(record, file);
+			this.mapRow(record, file);
 
 		});
 
-		/*
-		var loaded = d3.text(file.url+"?"+randomQueryAttribute());
-		var self = this;
-		self.index = 0;
-		loaded.then(function(text){
-
-			self.LOGGER.info("load file: {}",file);
-
-			self.loadCsv(self,text,function(row){
-				self.loadRow(row,file);
-			});
-
-		});*/
-
-		//return loaded;
 	}
 
-	public void processTransactions() {
+	protected void processTransactions() {
 
-		//LOGGER.info("processTransactions");
-
-		//TransactionManager self = this;
 		this.transactions.forEach( (key,transaction) -> {
 			initAndAddTransaction(transaction);
 		});
@@ -531,7 +539,7 @@ public class TransactionManager {
 
 	public void initAndAddTransaction(Transaction transaction) {
 		this.initTransaction(transaction);
-		if(transaction.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli()  < this.maxTimestamp) {
+		if(transaction.timestamp.toInstant().toEpochMilli()  < this.maxTimestamp) {
 			this.transactionsList.add(transaction);
 		}
 		else {
@@ -539,7 +547,7 @@ public class TransactionManager {
 		}
 	}
 
-	public void initTransactions(){
+	protected void initTransactions(){
 
 		LOGGER.info("initTransactions");
 
@@ -654,11 +662,11 @@ public class TransactionManager {
 		Transaction.Type findType = t0.type == Transaction.Type.Deposit?Transaction.Type.Withdrawal:Transaction.Type.Deposit;
 		Long rangeMs = 8*3600000l;
 		BigDecimal quantityRange = new BigDecimal(.01f); //% fee
-		Long time0 = t0.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+		Long time0 = t0.timestamp.toInstant().toEpochMilli();
 		BigDecimal q0 = t0.quantity;
 		for(Transaction t1 : this.transactionsList){
 			//var t1 = this.transactionsList[i];
-			Long time1 = t1.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+			Long time1 = t1.timestamp.toInstant().toEpochMilli();
 			BigDecimal q1 = t1.quantity;
 			if(t1.type == findType) {
 				if( time0 <= (time1+rangeMs) && time0 >= (time1-rangeMs)){
@@ -674,8 +682,6 @@ public class TransactionManager {
 	}
 
 	public void removeDuplicates(){
-
-		//LOGGER.info("removeDuplicates");
 
 		/* Find and Remove Duplicates */
 
@@ -747,10 +753,11 @@ public class TransactionManager {
 				LOGGER.debug("Need to create phantom deposit for: {}",t);
 				//generic.addTransaction(new Transaction("manual-CB-to-CBP-Transfer-1",new Date("2019-04-08T15:47:07Z"),Transaction.Type.Withdrawal,new BigNum("0.018313"),"BTC","coinbase"));
 				BigDecimal total = t.quantityFrom.add(t.feeFrom);
-				Long time = t.timestamp.toInstant(ZoneOffset.UTC).getEpochSecond()-5;
+				Long time = t.timestamp.toInstant().getEpochSecond()-5;
+				
 				//Transaction newt = new Transaction("phantom-"+t.externalId,new Date(t.timestamp.getTime()-1000),Transaction.Type.Deposit,total,t.assetFrom,t.exchange);
 				//Transaction newt = new Transaction("phantom-"+t.externalId,LocalDateTime.ofEpochSecond(time, 0, ZoneOffset.UTC),Transaction.Type.Deposit,total,t.assetFrom,t.exchange);
-				Transaction newt = new Transaction("phantom-"+t.externalId,LocalDateTime.ofEpochSecond(time, 0, ZoneOffset.UTC),Transaction.Type.Deposit,total,t.assetFrom,t.exchange);
+				Transaction newt = new Transaction("phantom-"+t.externalId,ZonedDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.of("Z")),Transaction.Type.Deposit,total,t.assetFrom,t.exchange);
 				newt.assetTo = t.assetFrom;
 				newt.phantom = true;
 				newt.external = true;
@@ -773,9 +780,9 @@ public class TransactionManager {
 				String exchange = this.missingTransfers.get(t.externalId);
 				Transaction.Type type = (t.type == Transaction.Type.Withdrawal) ? Transaction.Type.Deposit : Transaction.Type.Withdrawal;
 				LOGGER.warn("Need to create phantom {} for: {}",type,t);
-				Long time = (type == Transaction.Type.Withdrawal)? t.timestamp.toEpochSecond(ZoneOffset.UTC)-5000 : t.timestamp.toEpochSecond(ZoneOffset.UTC)+5000;
+				Long time = (type == Transaction.Type.Withdrawal)? t.timestamp.toEpochSecond()-5000 : t.timestamp.toEpochSecond()+5000;
 
-				Transaction newt = new Transaction("phantom-"+t.externalId,LocalDateTime.ofEpochSecond(time, 0, ZoneOffset.UTC),type,t.quantity,t.asset,exchange);
+				Transaction newt = new Transaction("phantom-"+t.externalId,ZonedDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.of("Z")),type,t.quantity,t.asset,exchange);
 				newt.assetTo = t.asset;
 				newt.phantom = true;
 
@@ -787,6 +794,18 @@ public class TransactionManager {
 
 		}
 
+		
+	}
+
+
+	public List<Transaction> getTransactionsList() {
+		return transactionsList;
+	}
+	
+	
+	public static BigDecimal toBigDecimal(String s) {
+		if(StringUtils.isBlank(s)) return BigDecimal.ZERO;
+		else return new BigDecimal(s);
 	}
 
 }

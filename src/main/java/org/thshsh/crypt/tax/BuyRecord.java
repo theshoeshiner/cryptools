@@ -2,38 +2,41 @@ package org.thshsh.crypt.tax;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thshsh.crypt.tax.Transaction.Type;
 
 public class BuyRecord extends Record {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(BuyRecord.class);
 
-	String id;
-	BigDecimal quantity;
-	BigDecimal price;
-	BigDecimal pricePer;
-	BigDecimal balance;
-	LocalDateTime timestamp;
-	Asset asset;
-
-
-	BuyRecord(BigDecimal quan,BigDecimal pri,Transaction transaction) {
-		this.id = transaction.id;
-		this.transaction = transaction;
-		this.quantity = quan;
-		this.timestamp = transaction.timestamp;
-		this.price = pri;
-		this.pricePer = this.price.divide(quan,RoundingMode.HALF_EVEN);
-
-		//used to track how many we have left from this lot
+	BuyRecord(BigDecimal quan,BigDecimal pri,Transaction transaction, Asset a) {
+		super(a,quan,pri,Transaction.Type.Buy,transaction);
 		this.balance = quan;
-		//this.washedLosses = new BigNum(0);
+	}
 
-		//this.LOGGER = LoggerFactory.getLogger("BuyRecord");
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("BuyRecord [id=");
+		builder.append(id);
+		builder.append(", asset=");
+		builder.append(asset);
+		builder.append(", quantity=");
+		builder.append(quantity);
+		builder.append(", price=");
+		builder.append(price);
+		builder.append(", pricePer=");
+		builder.append(pricePer);
+		builder.append(", balance=");
+		builder.append(balance);
+		builder.append(", timestamp=");
+		builder.append(timestamp);
+		builder.append("]");
+		return builder.toString();
 	}
 
 
