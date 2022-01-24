@@ -127,6 +127,12 @@
 			<artifactId>a-vaadin-helper</artifactId>
 			<version>1.5.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.vaadin.haijian</groupId>
+			<artifactId>exporter</artifactId>
+			<version>3.0.1</version>
+		</dependency>
 		<dependency>
 			<groupId>com.github.appreciated</groupId>
 			<artifactId>apexcharts</artifactId>
@@ -335,35 +341,24 @@
 			<artifactId>tuples</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-
-		<!-- <dependency>
-			<groupId>org.thshsh</groupId>
-			<artifactId>cryptax</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
- -->
 		<dependency>
 			<groupId>org.atteo</groupId>
 			<artifactId>evo-inflector</artifactId>
 			<version>1.2.2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
 			<version>4.4</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-quartz</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.ldap</groupId>
 			<artifactId>spring-ldap-core</artifactId>
