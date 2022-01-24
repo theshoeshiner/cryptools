@@ -1,14 +1,20 @@
 package org.thshsh.crypt.web.view;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
-import org.thshsh.crypt.Exchange;
+import org.thshsh.crypt.Activity;
+import org.thshsh.crypt.ActivityType;
 import org.thshsh.crypt.User;
+import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.vaadin.ZonedDateTimeRenderer;
 
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -20,6 +26,9 @@ public class UserGrid extends AppEntityGrid<User> {
 
 	@Autowired
 	UserRepository userRepo;
+
+	@Autowired
+	ActivityRepository actRepo;
 	
 	public UserGrid() {
 		super(User.class, UserDialog.class, FilterMode.Example);
@@ -56,6 +65,26 @@ public class UserGrid extends AppEntityGrid<User> {
 		grid
 		.addColumn(User::getEmail)
 		.setHeader("Email");
+		
+		/*grid
+		.addColumn(user -> {
+			actRepo.findTopByUserAndTypeOrderByTimestampDesc(user, ActivityType.Login);
+		})
+		.setHeader("Last Logim")
+		.setWidth("100px")
+		.setFlexGrow(0)
+		;*/
+		
+		grid
+		.addColumn(new ZonedDateTimeRenderer<>( user -> {
+			Activity a = actRepo.findTopByUserAndTypeOrderByTimestampDesc(user, ActivityType.Login);
+			return a!=null?a.getTimestamp():null;
+		}, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT) ))
+		.setHeader("Last Login")
+		.setSortable(false)
+		.setWidth("150px")
+		.setFlexGrow(0)
+		;
 		
 		grid
 		.addColumn(User::getConfirmed)

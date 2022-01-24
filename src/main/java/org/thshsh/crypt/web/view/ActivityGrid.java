@@ -55,7 +55,7 @@ public class ActivityGrid extends AppEntityGrid<Activity> {
 		.setFlexGrow(0);
 		
 		grid
-		.addColumn(FunctionUtils.nestedValue(Activity::getUser, User::getUserName))
+		.addColumn(FunctionUtils.nestedValue(Activity::getUser, User::getUserNameOrEmail))
 		.setHeader("User")
 		.setSortProperty("user.userName")
 		;

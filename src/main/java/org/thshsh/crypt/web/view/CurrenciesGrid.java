@@ -162,7 +162,7 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 	}
 
 	protected void refreshRate(Currency c) {
-		rateService.getUpToDateMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c),true);
+		rateService.getMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c),true,null);
 	}
 	
 	/*protected void manage(Portfolio e) {
