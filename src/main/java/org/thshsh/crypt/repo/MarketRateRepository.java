@@ -1,10 +1,8 @@
 package org.thshsh.crypt.repo;
 
-import java.util.Collection;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
 import org.thshsh.vaadin.ExampleFilterRepository;
@@ -15,5 +13,7 @@ public interface MarketRateRepository extends BaseRepository<MarketRate, Long>, 
 	//Stream<MarketRate> findByCurrencyInOrderByTimestampDesc(Collection<Currency> c);
 
 	MarketRate findTopByCurrencyOrderByTimestampDesc(Currency c);
+	
+	List<MarketRate> findByCurrencyAndTimestampGreaterThanAndTimestampLessThanOrderByTimestampDesc(Currency c,ZonedDateTime min, ZonedDateTime max);
 
 }
