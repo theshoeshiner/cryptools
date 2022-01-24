@@ -30,6 +30,7 @@ import org.thshsh.crypt.web.view.MarketRatesView;
 import org.thshsh.crypt.web.view.PortfolioAlertsView;
 import org.thshsh.crypt.web.view.PortfoliosView;
 import org.thshsh.crypt.web.view.SystemView;
+import org.thshsh.crypt.web.view.TaxReportView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
 import org.thshsh.crypt.web.view.UsersView;
@@ -331,6 +332,8 @@ public class MainLayout extends AppLayout {
     		items.add(createMenuItem(VaadinIcon.CURSOR.create(),"Activity", ActivityView.class));
 
     		items.add(createMenuItem(VaadinIcon.COG.create(),"System", SystemView.class));
+    		
+    		items.add(createMenuItem(VaadinIcon.MONEY.create(),"Tax Report", TaxReportView.class));
     		
     		items.add(createMenuItem(VaadinIcon.ENVELOPE.create(),"Contacts", ContactsView.class));
     		
