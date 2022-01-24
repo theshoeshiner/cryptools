@@ -130,11 +130,13 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	VerticalLayout mainLayout;
 	DistributionChart distroChart;
 	ValueChart valueChart;
+	BalanceChart balChart;
 	
 	BasicTabSheet tabSheet;
 	Tab mainTab;
 	Tab distributionTab;
 	Tab chartTab;
+	Tab balanceChartTab;
 	Tab allocationTab;
 	PortfolioEntryGrid entriesList;
 	
@@ -275,6 +277,12 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	    valueChart = appContext.getBean(ValueChart.class,entity);
 	    chartTab = tabSheet.addTab(new Tab("Value"), valueChart);
+	    
+	    balChart = appContext.getBean(BalanceChart.class,entity);
+	    if(SecurityUtils.hasAccess(Feature.System, Access.Read)) {
+	    	balanceChartTab = tabSheet.addTab(new Tab("Balance"), balChart);
+	    }
+	    
 	    //brand new charts need to be set visible for them to render correctly
 	    valueChart.setVisible(true);
 	    
