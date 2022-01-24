@@ -1,15 +1,30 @@
 "Asset","Date","Description","Amount","Fee","Price","Pair","Other Currency","Other Amount","IBAN","Transaction Hash","Address","Tram","Additional Info"
 # sold XRP for USD
-#positive quantity indicates a SELL type (from-to)               BUY=(to-from) and SELL=(from-to)
-#negative indicates the other side
+#CM has two rows for each transaction, but all the necessary info is present in 1, so we can ignore the dup
+# BUY=(to-from) and SELL=(from-to)
+# sell
+#"XRP","2021-04-30 10:52:36","Order 46a38676ba8aae7f","-20.0","0","0.00002825","XRP/BTC","BTC","0.0005649","n/a","n/a","n/a","n/a","n/a"
+#buy
+#"BTC","2021-04-30 10:52:36","Order 46a38676ba8aae7f","0.0005644","0.000001","0.00002825","XRP/BTC","XRP","-20.0","n/a","n/a","n/a","n/a","n/a"
+# looks like fee is always present on the row with positive value first
+###########
+# a standard BUY of XRP from market XRP/USD , except fee is in XRP, which is abnormal because fee is usually in base currency
+# usually a buy
+#"XRP","2021-12-06 00:33:39","Order f02b87907994230b","59.94","0.06","0.8","XRP/USD","USD","-48.0","n/a","n/a","n/a","n/a","n/a"# 
+#
+################## BELOW HERE IS ACTUAL FILE ####################################
 "XRP","2021-12-06 00:33:39","Order f02b87907994230b","59.94","0.06","0.8","XRP/USD","USD","-48.0","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-12-06 00:33:39","Order f02b87907994230b","-48.0","0","0.8","XRP/USD","XRP","60.0","n/a","n/a","n/a","n/a","n/a"
+#
 "XRP","2021-10-25 11:11:44","Order 0b5c9ebf827b145b","39.96","0.04","1.08867","XRP/USD","USD","-43.55","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-10-25 11:11:44","Order 0b5c9ebf827b145b","-43.55","0","1.08867","XRP/USD","XRP","40.0","n/a","n/a","n/a","n/a","n/a"
+#
 "XRP","2021-09-20 01:38:12","Order 17db6e5069470d0f","49.95","0.05","1.03288","XRP/USD","USD","-51.64","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-09-20 01:38:12","Order 17db6e5069470d0f","-51.64","0","1.03288","XRP/USD","XRP","50.0","n/a","n/a","n/a","n/a","n/a"
+
 "XRP","2021-08-14 23:45:17","Order 18c894012a5facd7","-45.0","0","1.28578","XRP/USD","USD","57.86","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-08-14 23:45:17","Order 18c894012a5facd7","57.8","0.05786","1.28578","XRP/USD","XRP","-45.0","n/a","n/a","n/a","n/a","n/a"
+#
 "XRP","2021-08-14 11:10:37","Order 7943436e169c4277","-30.0","0","1.12803","XRP/USD","USD","33.84","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-08-14 11:10:37","Order 7943436e169c4277","33.81","0.03384","1.12803","XRP/USD","XRP","-30.0","n/a","n/a","n/a","n/a","n/a"
 "USD","2021-08-11 20:54:38","Order e58991fede567e67","51.17","0.05122","1.02438","XRP/USD","XRP","-50.0","n/a","n/a","n/a","n/a","n/a"
