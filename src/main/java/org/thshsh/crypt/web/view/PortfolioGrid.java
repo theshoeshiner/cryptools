@@ -114,6 +114,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 		.setHeader("Name")
 		.setAutoWidth(true)
 		.setFlexGrow(0)
+		.setSortProperty("name")
 		;
 		
 		
@@ -122,12 +123,14 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 		.setHeader("Alert")
 		.setWidth("100px")
 		.setFlexGrow(0)
+		.setSortable(false)
 		;
 		
 		grid
 		.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(Portfolio::getLatest, PortfolioHistory::getValue), PortfolioEntryGrid.ReserveFormatWhole))
 		.setHeader("Value")
 		.setWidth("100px")
+		.setSortable(false)
 		.setFlexGrow(0)
 		;
 		
@@ -136,6 +139,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 		})
 		.setHeader("Currencies")
 		.setWidth("300px")
+		.setSortable(false)
 		.setFlexGrow(0)
 		;
 		
@@ -144,13 +148,14 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 		})
 		.setHeader("Exchanges")
 		.setWidth("300px")
+		.setSortable(false)
 		.setFlexGrow(0)
 		;
 		
 		if(SecurityUtils.hasAccess(Feature.User, Access.Read)) {
-			grid.addColumn(FunctionUtils.nestedValue(Portfolio::getUser, User::getUserName))
+			grid.addColumn(FunctionUtils.nestedValue(Portfolio::getUser, User::getEmail))
 			.setHeader("User")
-			.setSortProperty("user.userName")
+			.setSortProperty("user.email")
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
@@ -164,6 +169,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 			.setHeader("History")
 			.setWidth("100px")
 			.setFlexGrow(0)
+			.setSortable(false)
 			;
 			
 			//ZonedDateTimeRenderer<Source>
