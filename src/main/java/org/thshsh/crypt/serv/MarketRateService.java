@@ -59,8 +59,10 @@ public class MarketRateService {
 	Currency usd;
 	MarketRate usdRate;
 
+	//radius of considering a quote uptodate
 	Duration ageRadius = MIN_20;
-	//only prefer a ranged quote if it is this much closer to the time
+	
+	//only prefer a ranged quote if its mid-point is much closer to the target time
 	Duration rangePreferenceThreshold = ageRadius.dividedBy(2);
 
 	@PostConstruct
@@ -134,22 +136,15 @@ public class MarketRateService {
 			ZonedDateTime maxAage = time.plus(ageRadius);
 	
 			currencies.forEach(cur -> {
-				
 				//if we have rates within the radius then we use those
 				List<MarketRate> rates = new ArrayList<>(rateRepo.findByCurrencyAndTimestampGreaterThanAndTimestampLessThanOrderByTimestampDesc(cur, minAge, maxAage));
-	
 				if(rates.size() > 0) {
-					
 					LOGGER.info("Found rates in database: {}",rates);
 					ratesListMap.put(cur, rates);
-					
-					
 				}
 				else {
 					getRatesFor.add(cur);
 				}
-	
-				
 			});
 		
 		}
@@ -184,11 +179,14 @@ public class MarketRateService {
 				}
 				else {
 					
+					//we are grabbing a historical rate - this doesnt happen for the hourly job
+					
 					symMap.keySet().forEach(sym -> {
 						Currency cur = symMap.get(sym);
 						MutableBoolean first = new MutableBoolean(true);
 						HistoricalPrices hps = compare.getHourlyHistoricalPrice(sym,usd.getKey(), time.withZoneSameInstant( ZoneId.of("Z")).toEpochSecond());
 						//each row will create at least 2 rates, which we will then check to see which is closest
+				
 						List<MarketRate> rates = new ArrayList<>();
 						hps.getHistoricalPrices().forEach(hp -> {
 							ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(hp.getTime().longValue()), ZoneId.of("Z"));
