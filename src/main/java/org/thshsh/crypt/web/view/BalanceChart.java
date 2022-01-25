@@ -56,7 +56,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 @Scope("prototype")
 public class BalanceChart extends Div {
 	
-	public static final Logger LOGGER = LoggerFactory.getLogger(ValueChart.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(BalanceChart.class);
 	
 	@Autowired
 	PortfolioHistoryRepository histRepo;
