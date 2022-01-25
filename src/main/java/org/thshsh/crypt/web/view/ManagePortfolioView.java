@@ -1,9 +1,6 @@
 package org.thshsh.crypt.web.view;
 
-import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -13,11 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
-import org.ocpsoft.prettytime.PrettyTime;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +25,6 @@ import org.thshsh.crypt.Activity;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioEntryHistory;
-import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
@@ -40,24 +34,14 @@ import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.security.UnauthorizedException;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.BasicTabSheet;
+import org.thshsh.vaadin.UIUtils;
 
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;
 import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
-import com.github.appreciated.apexcharts.config.builder.DataLabelsBuilder;
-import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
 import com.github.appreciated.apexcharts.config.builder.PlotOptionsBuilder;
-import com.github.appreciated.apexcharts.config.builder.StrokeBuilder;
-import com.github.appreciated.apexcharts.config.builder.TitleSubtitleBuilder;
-import com.github.appreciated.apexcharts.config.builder.XAxisBuilder;
-import com.github.appreciated.apexcharts.config.builder.YAxisBuilder;
 import com.github.appreciated.apexcharts.config.chart.Type;
-import com.github.appreciated.apexcharts.config.chart.builder.ZoomBuilder;
-import com.github.appreciated.apexcharts.config.legend.HorizontalAlign;
 import com.github.appreciated.apexcharts.config.plotoptions.Treemap;
-import com.github.appreciated.apexcharts.config.stroke.Curve;
-import com.github.appreciated.apexcharts.config.subtitle.Align;
-import com.github.appreciated.apexcharts.config.xaxis.XAxisType;
 import com.github.appreciated.apexcharts.helper.Series;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -129,7 +113,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	
 	VerticalLayout mainLayout;
 	DistributionChart distroChart;
-	ValueChart valueChart;
+	PortfolioValueChart valueChart;
 	BalanceChart balChart;
 	
 	BasicTabSheet tabSheet;
@@ -219,42 +203,23 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 	    mainLayout = createMainTab(false);
 	    
-	    HorizontalLayout summary = new HorizontalLayout();
-	    summary.setSpacing(false);
-	    summary.setAlignItems(Alignment.CENTER);
-	    summary.add(new Span("Summary"));
-	    PressButton pb = new PressButton(VaadinIcon.ELLIPSIS_H.create());
+	    HorizontalLayout summaryTabButton = new HorizontalLayout();
+	    summaryTabButton.setSpacing(false);
+	    summaryTabButton.setAlignItems(Alignment.CENTER);
+	    summaryTabButton.add(new Span("Summary"));
+	    PressButton pb = new PressButton(VaadinIcon.ELLIPSIS_CIRCLE_O.create());
 	    pb.addClickListener(click -> {
 	    	entriesList.showAdvanced(pb.getPressed());
+	    	pb.setIcon(pb.getPressed()?VaadinIcon.ELLIPSIS_CIRCLE.create():VaadinIcon.ELLIPSIS_CIRCLE_O.create());
+	    	
 	    });
+	    UIUtils.setTitle(pb, "Toggle Advanced View");
 	    
-		/*ToggleButton advancedButton = new ToggleButton(false);
-		advancedButton.addValueChangeListener(change -> {
-			//showAdvanced(change.getValue());
-		});
-		summary.add(advancedButton);*/
-	    //pb.addThemeVariants(ButtonVariant.LUMO_SMALL);
+	
 	    pb.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-	    summary.add(pb);
-		
-	    
-	    mainTab = tabSheet.addTab(summary, mainLayout);
-	    
-	    
-	    //mainLayout = createMainTab();
-	    //tabSheet.addTab(new Tab("Portfolio"), mainLayout);
-
-
-	   // Tabs tabs = new Tabs();
-	    //add(tabs);
-
-	    //main = new Tab("Portfolio");
-	   // tabs.add(main);
-
-	    //mainLayout = createMainTab();
-	    //mainLayout.setVisible(true);
-
-	   // Tab balTab = new Tab("Balances");
+	    summaryTabButton.add(pb);
+	    mainTab = tabSheet.addTab(summaryTabButton, mainLayout);
+	   
 	    VerticalLayout balancesLayout = createBalancesTab();
 	    tabSheet.addTab(new Tab("Balances"), balancesLayout);
 	    
@@ -275,7 +240,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //VerticalLayout chartsLayout = createChartsTab();
 	    //tabSheet.addTab(new Tab("Charts"), chartsLayout);
 
-	    valueChart = appContext.getBean(ValueChart.class,entity);
+	    valueChart = appContext.getBean(PortfolioValueChart.class,entity);
 	    chartTab = tabSheet.addTab(new Tab("Value"), valueChart);
 	    
 	    balChart = appContext.getBean(BalanceChart.class,entity);
@@ -329,8 +294,8 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		template = new TransactionTemplate(transactionManager);
 	}
 
-	protected void refreshChartTab() {
-		 ValueChart newChartTab = appContext.getBean(ValueChart.class,entity);
+	protected void refreshValueChart() {
+		 PortfolioValueChart newChartTab = appContext.getBean(PortfolioValueChart.class,entity);
 		 tabSheet.replaceTab(chartTab, newChartTab);
 		 newChartTab.setVisible(true);
 		 this.valueChart = newChartTab;
@@ -353,7 +318,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		
 		refreshDistributionChart();
 
-		refreshChartTab();
+		refreshValueChart();
 		
 		
 	}
@@ -452,7 +417,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		Button clearHistory = new Button("Clear History",click -> {
 			this.template.executeWithoutResult(action -> {
 				histRepo.deleteAllByPortfolio(entity);
-				refreshChartTab();
+				refreshValueChart();
 			});
 
 		});
