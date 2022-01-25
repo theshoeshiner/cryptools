@@ -52,9 +52,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class ValueChart extends Div {
+public class PortfolioValueChart extends Div {
 	
-	public static final Logger LOGGER = LoggerFactory.getLogger(ValueChart.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioValueChart.class);
 	
 	@Autowired
 	PortfolioHistoryRepository histRepo;
@@ -64,15 +64,15 @@ public class ValueChart extends Div {
 
 	TransactionTemplate template;
 	
-	protected long totalpoints = 500l;
+	protected long maxPoints = 500l;
 	//long days = 60;
-	protected Duration subtract = Duration.ofDays(90);
+	protected Duration selectedDuration = Duration.ofDays(90);
 	protected ApexCharts chart;
 	protected Button selected;
 	
 	protected Portfolio entity;
 	
-    public ValueChart(Portfolio e) {
+    public PortfolioValueChart(Portfolio e) {
 
     	this.entity = e;
     	
@@ -109,7 +109,7 @@ public class ValueChart extends Div {
     protected Button button(String name, Duration dur, boolean prim) {
     	Button b = new Button(name);
 	    b.addClickListener(click -> {
-	    	subtract = dur;
+	    	selectedDuration = dur;
 	    	b.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 	    	if(selected != null) selected.removeThemeVariants(ButtonVariant.LUMO_PRIMARY); 
 	    	selected = b;
@@ -129,58 +129,56 @@ public class ValueChart extends Div {
 
 	    	if(chart != null) this.remove(chart);
 	    	
-	    	
-	    	
-	    	long minutes = subtract.toMinutes();
-	    	LOGGER.info("minutes: {}",minutes);
-	    	long pointsEveryMinute = minutes/totalpoints;
-	    	LOGGER.info("points are: {} min apart",pointsEveryMinute);
-	    	//long days = 30;
-	    	//long valueEveryHours = 30*24
-	    	ZonedDateTime zdt = ZonedDateTime.now().minus(subtract);
+	    	ZonedDateTime now = ZonedDateTime.now();
+	    	ZonedDateTime zdt = now.minus(selectedDuration);
 	    	LOGGER.info("start time: {}",zdt);
 	    	
 	    	if(entity.getLatest()!=null) {
 	    	
-		    	//PortfolioHistory latest = histRepo.getById(entity.getLatest().getId());
-		    	
 
-		    	//TODO
-				/*Map<Currency,List<BigInteger>> currencyValueMap = new HashMap<>();
-				latest.getEntries().forEach(entry -> {
-					currencyValueMap.put(entry.getCurrency(), new ArrayList<>());
-				});*/
-		    	
-		    	
 				List<PortfolioHistory> ph = histRepo.findByPortfolioAndTimestampGreaterThanOrderByTimestampAsc(entity, zdt);
+		
 				LOGGER.info("history: {}",ph.size());
 				LOGGER.info("history: {}",ph.get(0).getTimestamp());
-				
-		   
-				
+
 		    	List<String> dates = new ArrayList<>();
 				List<BigInteger> valuePerHour = new ArrayList<>();
 				List<BigDecimal> thresh = new ArrayList<>();
 				MutableObject<ZonedDateTime> last = new MutableObject<>();
-				ph.forEach(hist -> {
-					if(hist.getValue()!=null) {
-						if(last.getValue()==null || last.getValue().plusMinutes(pointsEveryMinute).isBefore(hist.getTimestamp())) {
-							valuePerHour.add(hist.getValue().toBigInteger());
-							thresh.add(hist.getMaxToTriggerPercent());
-							dates.add(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(hist.getTimestamp().withZoneSameInstant(ZoneId.systemDefault())));
-							LOGGER.debug("adding: {}",hist);
-							last.setValue(hist.getTimestamp());
+					
+					
+				if(ph.size() > 0) {
+					
+					PortfolioHistory firstPoint = ph.iterator().next();
+					ZonedDateTime actualStart = firstPoint.getTimestamp();
+					Duration actualDuration = Duration.between(actualStart, now);
+					
+					long minutes = actualDuration.toMinutes();
+			    	LOGGER.info("minutes: {}",minutes);
+			    	long pointsEveryMinute = minutes/maxPoints;
+			    	LOGGER.info("points are: {} min apart",pointsEveryMinute);
+					
+					ph.forEach(hist -> {
+						if(hist.getValue()!=null) {
+							if(last.getValue()==null || last.getValue().plusMinutes(pointsEveryMinute).isBefore(hist.getTimestamp())) {
+								valuePerHour.add(hist.getValue().toBigInteger());
+								thresh.add(hist.getMaxToTriggerPercent());
+								dates.add(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(hist.getTimestamp().withZoneSameInstant(ZoneId.systemDefault())));
+								LOGGER.debug("adding: {}",hist);
+								last.setValue(hist.getTimestamp());
+								
 							
-						
-							//TODO
-							/*currencyValueMap.keySet().forEach(curr -> {
-								PortfolioEntryHistory entryHist = hist.getEntry(curr).orElse(null);
-								currencyValueMap.get(curr).add(entryHist==null?BigInteger.ZERO:entryHist.getValue().toBigInteger());
-							});*/
-						
+								//TODO
+								/*currencyValueMap.keySet().forEach(curr -> {
+									PortfolioEntryHistory entryHist = hist.getEntry(curr).orElse(null);
+									currencyValueMap.get(curr).add(entryHist==null?BigInteger.ZERO:entryHist.getValue().toBigInteger());
+								});*/
+							
+							}
 						}
-					}
-				});
+					});
+				
+				}
 		
 				LOGGER.debug("valuePerHour: {}",valuePerHour);
 				LOGGER.debug("dates: {}",dates);
