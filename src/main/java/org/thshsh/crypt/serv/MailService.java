@@ -71,9 +71,11 @@ public class MailService {
 
 		StringBuilder assets = new StringBuilder();
 		p.getLatest().getEntries().forEach(entry -> {
-			Map<String,Object> c = createContext(MapUtils.createHashMap("entry", entry));
-			String content = createEmailContent("email-alert-entry.html", c);
-			assets.append(content);
+			if(entry.getCurrency()!=null) {
+				Map<String,Object> c = createContext(MapUtils.createHashMap("entry", entry));
+				String content = createEmailContent("email-alert-entry.html", c);
+				assets.append(content);
+			}
 		});
 		
 		//Map<String,Object> context = MapUtils.createHashMap("portfolio", p,"summary",assets.toString());
