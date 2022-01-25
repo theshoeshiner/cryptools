@@ -104,7 +104,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 		manageService.createHistory(portfolio);
 		manageView.refreshSummaryTab(true);
 		manageView.refreshDistributionChart();
-		manageView.refreshChartTab();
+		manageView.refreshValueChart();
 		manageView.refreshAllocationTab();
 	}
 
