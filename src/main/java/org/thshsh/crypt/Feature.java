@@ -35,7 +35,6 @@ public enum Feature {
 	public static Feature getFeatureForEntity(Class<?> classs) {
 		for(Feature f : Feature.values()) {
 			if(ArrayUtils.contains(f.classes, classs)) {
-				LOGGER.info("getFeatureForEntity {} = {}",classs,f);
 				return f;
 			}
 		}

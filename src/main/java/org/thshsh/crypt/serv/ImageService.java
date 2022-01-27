@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.thshsh.crypt.HasImage;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.repo.ExchangeRepository;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
-
-import com.vaadin.flow.component.html.Image;
 
 @Service
 @RestController
@@ -71,18 +69,39 @@ public class ImageService {
 	public void syncImage(HasImage entity, String mediaUrl) throws IOException {
 		LOGGER.info("sync image: {} , {}",entity,mediaUrl);
 
-		String imageName = entity.getKey().toLowerCase()+"."+FilenameUtils.getExtension(mediaUrl);
-		
-		LOGGER.info("sync image: {}",imageName);
+		String name = RegExUtils.removeAll(entity.getName(), "[^\\p{Alnum}]").toLowerCase();
+		String newImageName = entity.getKey().toLowerCase()+"_"+name+"."+FilenameUtils.getExtension(mediaUrl);
+				
+		LOGGER.info("image name: {}",newImageName);
 
 		if(entity.getImageUrl()!=null) {
-			LOGGER.info("Checking for file: {}",entity.getImageUrl());
+			File currentFile = new File(imageFolder,entity.getImageUrl());
+			if(!currentFile.exists()) entity.setImageUrl(null);
+			else {
+				if(!newImageName.equals(entity.getImageUrl())) {
+					//copy current file to new path
+					File newFile = new File(imageFolder,newImageName);
+					LOGGER.info("Copying OLD file");
+					FileInputStream fis = new FileInputStream(currentFile);
+					FileOutputStream fos = new FileOutputStream(newFile);
+					IOUtils.copy(fis, fos);
+					fos.close();
+					fis.close();
+					currentFile.delete();
+					entity.setImageUrl(newImageName);
+				}
+			}
+			
+			
+			
+			/*LOGGER.info("Checking for file: {}",entity.getImageUrl());
 			File imageFile = new File(imageFolder,entity.getImageUrl());
 			if(!imageFile.exists()) {
 				//check for old file
 				//String adjusted = mediaUrl.replaceAll(mediaUrl, imageName);
-				File mediaUrlFile = new File(mediaUrl);
-				File old = new File("./images/"+mediaUrlFile.getName());
+				//File mediaUrlFile = new File(mediaUrl);
+				//File old = new File("./images/"+mediaUrlFile.getName());
+				File old = new File(imageFolder,oldImageName);
 				LOGGER.info("Checking for OLD file: {}",old);
 				if(old.exists()) {
 					//copy old file
@@ -90,26 +109,26 @@ public class ImageService {
 					FileInputStream fis = new FileInputStream(old);
 					FileOutputStream fos = new FileOutputStream(imageFile);
 					IOUtils.copy(fis, fos);
-					entity.setImageUrl(imageName);
+					entity.setImageUrl(newImageName);
 				}
 				else {
 					LOGGER.info("Setting null");
 					entity.setImageUrl(null);
 				}
-			}
+			}*/
 		
 		}
-
-		if(entity.getImageUrl()==null) {
-			File imageFile = new File(imageFolder,imageName);
+		
+		if(entity.getImageUrl() == null) {
+			File imageFile = new File(imageFolder,newImageName);
 
 			if(imageFile.exists()) {
-				entity.setImageUrl(imageName);
+				entity.setImageUrl(newImageName);
 			}
 			else {
 				if(copyFromApi(mediaUrl, imageFile)) {
 					LOGGER.info("saving image: {}",imageFile);
-					entity.setImageUrl(imageName);
+					entity.setImageUrl(newImageName);
 				}
 			}
 		}
@@ -118,9 +137,12 @@ public class ImageService {
 
 	protected boolean copyFromApi(String mediaUrl,File archive) throws IOException {
 		InputStream is = compare.getImage(mediaUrl);
+		LOGGER.info("Image Stream: {}",is);
 		if(is != null) {
 			FileOutputStream fos = new FileOutputStream(archive);
 			IOUtils.copy(is, fos);
+			fos.flush();
+			fos.close();
 			return true;
 		}
 		return false;

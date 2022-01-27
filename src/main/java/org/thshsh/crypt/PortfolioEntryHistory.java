@@ -24,45 +24,45 @@ public class PortfolioEntryHistory extends IdedEntity {
 
 
 	@ManyToOne()
-	Currency currency;
+	protected Currency currency;
 
 	@Column(columnDefinition = "decimal")
-	BigDecimal balance;
+	protected BigDecimal balance;
 
 	@Column(columnDefinition = "decimal")
-	BigDecimal value;
+	protected BigDecimal value;
 
 	@ManyToOne
-	PortfolioHistory portfolio;
+	protected PortfolioHistory portfolio;
 
 	@Column(columnDefinition = "decimal")
-	BigDecimal thresholdPercent;
+	protected BigDecimal thresholdPercent;
 
 	@Column(columnDefinition = "decimal")
-	BigDecimal toTriggerPercent;
+	protected BigDecimal toTriggerPercent;
 
 	@Column(columnDefinition = "decimal")
-	BigDecimal adjustPercent;
+	protected BigDecimal adjustPercent;
 	
 	
 	@ManyToOne()
-	MarketRate rate;
+	protected MarketRate rate;
 	@Column(columnDefinition = "decimal")
-	BigDecimal targetReserve;
+	protected BigDecimal targetReserve;
 	@Column(columnDefinition = "decimal")
-	BigDecimal adjustReserve;
+	protected BigDecimal adjustReserve;
 	@Column(columnDefinition = "decimal")
-	BigDecimal adjust;
+	protected BigDecimal adjust;
 	@Column(columnDefinition = "decimal")
-	BigDecimal adjustAbsolute;
+	protected BigDecimal adjustAbsolute;
 	@Column(columnDefinition = "decimal")
-	BigDecimal adjustPercentAbsolute;
+	protected BigDecimal adjustPercentAbsolute;
 	
 	@Column(columnDefinition = "decimal")
-	BigDecimal allocationPercent;
+	protected BigDecimal allocationPercent;
 
 	@Column
-	Boolean allocationUndefined;
+	protected Boolean allocationUndefined;
 
 
 	public PortfolioEntryHistory() {}
@@ -92,20 +92,7 @@ public class PortfolioEntryHistory extends IdedEntity {
 		this.rate = rate;
 	}
 	
-	
-	//TODO figure out how to handle this
-	//@Transient
-	//Allocation allocation;
-	
-	/*public Allocation getAllocation() {
-		return allocation;
-	}
-	
-	public void setAllocation(Allocation allocation) {
-		this.allocation = allocation;
-	}*/
 
-	
 
 	public Currency getCurrency() {
 		return currency;

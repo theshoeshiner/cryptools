@@ -146,9 +146,7 @@ public class ManagePortfolioService {
 			else {
 				LOGGER.warn("No market rate for: {}",cur);
 			}
-			
-			
-			//if(rates.containsKey(cur)) {
+
 	
 			BigDecimal value = bal.getAsBigDecimal().multiply(rate);
 			currencyValues.put(cur, value);
@@ -248,24 +246,25 @@ public class ManagePortfolioService {
 	
 				if(pe.getAllocationPercent().compareTo(BigDecimal.ZERO) != 0) {
 	
-					BigDecimal toTrigger = adjPerc.divide(thresh, RoundingMode.HALF_EVEN).abs();
-					LOGGER.info("toTrigger: {}",toTrigger);
+					BigDecimal toTriggerSigned = adjPerc.divide(thresh, RoundingMode.HALF_EVEN);
+					BigDecimal toTriggerAbs = toTriggerSigned.abs();
+					LOGGER.info("toTrigger: {}",toTriggerAbs);
 	
 	
 					if(portfolio.getSettings().getMinimumAdjust() != null) {
 						if(pe.getAdjustAbsolute().compareTo(portfolio.getSettings().getMinimumAdjust()) < 0) {
 							//adjust is less than minimum so change our to trigger
 							BigDecimal toMinTrigger = pe.getAdjustAbsolute().divide(portfolio.getSettings().getMinimumAdjust(),RoundingMode.HALF_EVEN);
-							if(toMinTrigger.compareTo(toTrigger) < 0) {
-								toTrigger = toMinTrigger;
+							if(toMinTrigger.compareTo(toTriggerAbs) < 0) {
+								toTriggerAbs = toMinTrigger;
 							}
 						}
 					}
 	
 	
-					pe.setToTriggerPercent(toTrigger);
-					if(toTrigger.compareTo(maxToTriggerPercent.getAsBigDecimal()) >0) {
-						maxToTriggerPercent.set(toTrigger);
+					pe.setToTriggerPercent(toTriggerAbs);
+					if(toTriggerAbs.compareTo(maxToTriggerPercent.getAsBigDecimal()) >0) {
+						maxToTriggerPercent.set(toTriggerAbs);
 					}
 	
 				}

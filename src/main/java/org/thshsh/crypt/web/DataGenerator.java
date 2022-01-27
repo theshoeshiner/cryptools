@@ -7,9 +7,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -141,25 +143,18 @@ public class DataGenerator {
 		}
 		
 		if(appConfig.getCryptocompare().getImages()) {
-			future = future
-					.thenRunAsync(this::checkForLocalImages, executor)
-					.thenRunAsync(this::getColors, executor);
+			future = future.thenRunAsync(this::checkForLocalImages, executor);
+		}
+		
+		if(appConfig.getCryptocompare().getColors()) {
+			future = future.thenRunAsync(this::syncColors, executor);
 		}
 		
 		//if(appConfig.getCryptoCompareSync()) {
 			
-			
+		updateFiats();
 			
 
-			//if(images != null) {
-				/*future
-				.thenRunAsync(this::updateCurrencies, executor)
-				.thenRunAsync(this::fiat, executor);*/
-			//}
-			/*CompletableFuture
-				.runAsync(this::currencies, executor)
-				.thenRunAsync(this::fiat, executor);*/
-		//}
 		
 		}
 		catch(RuntimeException re) {
@@ -177,10 +172,12 @@ public class DataGenerator {
 				if(cur.getImageUrl() == null) {
 					String checkName = cur.getKey().toLowerCase()+".png";
 					if(imageService.checkForImage(checkName)) {
+						LOGGER.info("Found Image: {}",checkName);
 						cur.setImageUrl(checkName);
 					}
 				}
 				else if(cur.getImageUrl().endsWith("jpg")) {
+					//if its a jpg, see if we have a png replacement
 					String checkName = cur.getImageUrl().replace(".jpg", ".png");
 					if(imageService.checkForImage(checkName)) {
 						cur.setImageUrl(checkName);
@@ -191,7 +188,7 @@ public class DataGenerator {
 		});
 	}
 	
-	protected void getColors() {
+	protected void syncColors() {
 
 			List<Currency> save = new ArrayList<>();
 			
@@ -351,6 +348,12 @@ public class DataGenerator {
 				else {
 					c.setName(cur.get(0));
 					c.setPlatformType(PlatformType.fiat);
+					c.setRank(10000);
+					c.setRemoteId(null);
+					c.setRemoteName(null);
+					c.setGrade(Grade.AA);
+					c.setActive(true);
+					c.setDecimalPoints(2);
 				}
 				LOGGER.info("saving: {}",c);
 				currencyRepo.save(c);
@@ -361,28 +364,31 @@ public class DataGenerator {
 		});
 	}
 
-	protected void updateCurrency(Coin coin) {
+	protected Currency updateCurrency(Coin coin) {
 		
 		LOGGER.info("updateCurrency coin: {}",coin);
 
-		template.executeWithoutResult(action -> {
+		Currency c = template.execute(action -> {
 
 			Currency currency = currMap.get(coin.getId());
+			
+			LOGGER.info("Entity: {}",currency);
+			
 			if(currency == null) currency = new Currency(null, null, coin.getId());
 			currency.setName(coin.getName());
 			currency.setKey(coin.getSymbol());
+			if(coin.getDecimalPoints()!=null) currency.setDecimalPoints(coin.getDecimalPoints().intValue());
 			
 			LOGGER.info("Coin: {}",coin);
 			LOGGER.info("supply: {}",coin.getCirculatingSupply());
 			LOGGER.info("rating: {}",coin.getRating());
-					
+					 
 			
 			if((coin.getCirculatingSupply()!= null && coin.getCirculatingSupply().compareTo(BigDecimal.ZERO) > 0) || coin.hasRating()) {
 				currency.setActive(true);
 			}
-			else {
-				currency.setActive(false);
-			}
+			else currency.setActive(false);
+			
 
 			if(coin.getBuiltOn()!=null) {
 				Currency b = currencyRepo.findByKey(coin.getBuiltOn());
@@ -391,68 +397,75 @@ public class DataGenerator {
 			currency.setPlatformType(coin.getPlatformType()==null?null:PlatformType.valueOf(coin.getPlatformType()));
 
 
-			try {
-				imageService.syncImage(currency, coin.getImageUrl());
-
-			}
-			catch (IOException ioe) {
-				LOGGER.error("",ioe);
-			}
-
-			/*if(coin.getImageUrl() != null) {
-				if(c.getImageUrl() == null) {
-					File imagepath = new File(coin.getImageUrl());
-					try {
-						InputStream is = curService.getImage(imagepath.getName());
-						if(is != null) {
-							LOGGER.info("Image {} already existed",imagepath);
-							c.setImageUrl(imagepath.getName());
-						}
-						else {
-							InputStream remoteImage = compare.getImage(coin);
-							curService.saveImage(c, remoteImage, imagepath.getName());
-						}
-					}
-					catch (IOException e) {
-						LOGGER.error("error",e);
-					}
+			
+			
+			if(currency.getId() == null || appConfig.getCryptocompare().getImages()) {
+				
+				currencyRepo.save(currency);
+				
+				try {
+					imageService.syncImage(currency, coin.getImageUrl());
 				}
-			}*/
-
+				catch (IOException ioe) {
+					LOGGER.error("",ioe);
+				}
+			}
+			
 			currencyRepo.save(currency);
+			
+			return currency;
 
 		});
 
+		return c;
 	}
 
 	protected void syncCurrencies() {
 		
 		LOGGER.info("updateCurrencies");
-
+ 
+		//remote ids are unique
 		currMap = currencyRepo.findByRemoteIdNotNull().stream().collect(Collectors.toMap(Currency::getRemoteId,Function.identity()));
+		LOGGER.info("currMap: {}",currMap.size());
 
+		List<Currency> updated = new ArrayList<Currency>();
 		Collection<Coin> coins = compare.getCoins();
 		LOGGER.info("coins: {}",coins.size());
 		coins.forEach(coin -> {
-			updateCurrency(coin);
+			Currency c = updateCurrency(coin);
+			updated.add(c);
 		});
 
+		//any currencies that are no longer valid should be unlinked to CC api
+		Set<Currency> left = new HashSet<>(currMap.values());
+		left.removeAll(updated);
+		
+		template.executeWithoutResult(action -> {
+			left.forEach(curr -> {
+				curr.setRemoteId(null);
+				currencyRepo.save(curr);
+			});
+		});
+		
 
 	}
 	
 	protected void syncGrades() {
 		
-		LOGGER.info("updateGrades");
+		LOGGER.info("syncGrades");
 		
 		ExchangesCurrencyPairs response = compare.getExchangeCurrencyPairs(false);
 		Map<String,ExchangePairs> pairsMap = response.getExchangeNamePairsMap();
 		
-		//LOGGER.info("pairsMap: {}",pairsMap.size());
+		LOGGER.info("pairsMap: {}",pairsMap.size());
 		
 		List<Currency> currencies = currencyRepo.findAll();
-		Map<String,Currency> keyMap = currencies.stream().collect(Collectors.toMap(c -> {
-			return c.getKey().toLowerCase();
-		}, Function.identity()));
+		currencies.removeIf(c -> c.getPlatformType() == PlatformType.fiat);
+		
+		Map<String,Currency> officialKeyMap = currencies
+				.stream()
+				.filter(c -> c.getRemoteId() != null)
+				.collect(Collectors.toMap(c -> {return c.getKey().toLowerCase();}, Function.identity()));
 
 		Map<Currency,MutableInt> usageMap = new HashMap<>();
 		currencies.forEach(curr -> {
@@ -472,16 +485,15 @@ public class DataGenerator {
 						
 						//LOGGER.info("currency: {}",currencyKey);
 						
-						Currency curr = keyMap.get(currencyKey.toLowerCase());
-						
-						//LOGGER.info("currency: {}",curr);
+						Currency curr = officialKeyMap.get(currencyKey.toLowerCase());
+
 						
 						if(curr != null) {
 
 							usageMap.get(curr).add(e.getGrade().ordinalReverse());
 							
 							if((curr.getGrade() == null || curr.getGrade().compareTo(e.getGrade())>0 )) {
-								//LOGGER.info("Update grade for {} to {}",curr,e.getGrade());
+								//increase grade if necessary
 								curr.setGrade(e.getGrade());
 								currencyRepo.save(curr);
 							}
@@ -498,6 +510,7 @@ public class DataGenerator {
 		
 		
 		currencies.forEach(curr -> {
+			LOGGER.info("RankMap {} = {}",curr.getId(),usageMap.get(curr));
 			curr.setRank(usageMap.get(curr).toInteger());
 			currencyRepo.save(curr);
 		});
@@ -569,11 +582,17 @@ public class DataGenerator {
 				e.setGrade(Grade.from(ex.getGrade()));
 				e.setKey(e.getName().replaceAll("[^\\p{Alnum}]+?", "").toLowerCase());
 				
-				try {
-					imageService.syncImage(e, ex.getLogoUrl());
-				}
-				catch (IOException ioe) {
-					LOGGER.error("",ioe);
+				
+				if(e.getId() == null || appConfig.getCryptocompare().getImages()) {
+					
+					exchangeRepo.save(e);
+					
+					try {
+						imageService.syncImage(e, ex.getLogoUrl());
+					}
+					catch (IOException ioe) {
+						LOGGER.error("",ioe);
+					}
 				}
 				exchangeRepo.save(e);
 			});

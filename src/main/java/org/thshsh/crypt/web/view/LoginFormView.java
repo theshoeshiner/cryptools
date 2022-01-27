@@ -224,10 +224,11 @@ public class LoginFormView extends VerticalLayout implements BeforeEnterObserver
 			String token = params.get(CONFIRM_PARAM).get(0);
 			userRepo.findByConfirmToken(token).ifPresent(u -> {
 
-				u.setConfirmed(true);
-				userRepo.save(u);
-				
-				actRepo.save(new Activity(u, ActivityType.Confirm));
+				if(!u.isConfirmed()) {
+					u.setConfirmed(true);
+					userRepo.save(u);
+					actRepo.save(new Activity(u, ActivityType.Confirm));
+				}
 
 			});
 

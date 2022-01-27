@@ -1,6 +1,7 @@
 package org.thshsh.crypt.web.view;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.ZonedDateTime;
@@ -31,6 +32,7 @@ import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
+import org.thshsh.crypt.serv.BalanceService;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.UiComponents;
@@ -38,6 +40,7 @@ import org.thshsh.vaadin.FunctionUtils;
 import org.thshsh.vaadin.GridUtils;
 import org.thshsh.vaadin.ImageRenderer;
 import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.entity.ConfirmDialogs;
 import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.button.Button;
@@ -72,9 +75,19 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 	public static NumberFormat PercentFormat = new DecimalFormat("##.#%");
 	public static NumberFormat CoinFormat = new DecimalFormat("####.########");
 
-	//@Autowired
-	//ApplicationContext appContext;
+	static BigDecimal[] WARN = new BigDecimal[] { 
+			new BigDecimal("1"), 
+			new BigDecimal(".85"), 
+			new BigDecimal(".75"),
+			new BigDecimal(".5") ,
+			new BigDecimal("0") 		
+	};
+	
+	static Integer MAX_SCALE = 6;
 
+	@Autowired
+	BalanceService balanceServ;
+	
 	@Autowired
 	BalanceRepository balanceRepo;
 	
@@ -189,8 +202,16 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 		return (long) dataProvider.size(new Query<>());
 	}
 
-	static BigDecimal[] warn = new BigDecimal[] { new BigDecimal("1"), new BigDecimal(".75"), new BigDecimal(".5"),
-			new BigDecimal(".25") };
+	
+	
+	
+	/*static String[] WARN_STATUS = new String[] { 
+			"Over Threshold", 
+			"Near Threshold", 
+			"Balanced",
+			"Balanced", 
+			"Balanced"
+	};*/
 
 
 	@Override
@@ -251,16 +272,15 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 		UiComponents.iconColumn(curCol);
 
-		Column<?> sym = grid.addColumn(FunctionUtils.nestedValue(PortfolioEntryHistory::getCurrency, Currency::getKey))
+		Column<?> sym = grid.addColumn(FunctionUtils.nestedValueDefault(PortfolioEntryHistory::getCurrency, Currency::getKey,"Unallocated"))
 				.setHeader("Currency")
 				.setWidth("90px")
 				.setFlexGrow(0)
 				.setSortProperty("currency.symbol");
 		UiComponents.iconLabelColumn(sym);
-
-
-
-		grid.addComponentColumn(entry -> {
+		
+		
+		Column<PortfolioEntryHistory> allocationColumn = grid.addComponentColumn(entry -> {
 			Span node = new Span();
 			String perc = PercentFormat.format(entry.getAllocationPercent());
 			if(entry.getAllocationUndefined()) {
@@ -281,6 +301,75 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 		.setFlexGrow(0);
 		;
 
+		
+		grid.addColumn(entry -> {
+			int sign = entry.getAdjustPercent().signum();
+			Integer warnLevel = getWarnLevel(entry.getToTriggerPercent());
+			String buySell = sign < 0? "Sell":"Buy";
+			if(warnLevel == 0) {
+				return "Over Threshold ("+buySell+")";
+			}
+			else if (warnLevel == 1 || warnLevel == 2) {
+				return "Near Threshold ("+buySell+")";
+			}
+			//return "Balanced ("+buySell+")";
+			return "Balanced";
+		})
+		.setHeader("Status")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(PortfolioEntryHistory::getToTriggerPercentOrZero))
+		.setWidth("150px")
+		.setFlexGrow(0)
+	;
+
+		
+		grid.addColumn(entry -> {
+			Integer dp = entry.getCurrency().getDecimalPoints();
+			if(dp == null || dp > MAX_SCALE) dp = MAX_SCALE;
+			BigDecimal adjust = entry.getAdjust();
+			if(dp != null && adjust.scale() > dp) {
+				adjust = adjust.setScale(dp, RoundingMode.HALF_EVEN);
+			}
+			return adjust.toString();
+		})
+		.setHeader("Adjust ©")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(PortfolioEntryHistory::getAdjust))
+		.setWidth("125px")
+		.setFlexGrow(0);
+		
+		
+		grid.addColumn(PortfolioEntryHistory::getBalance)
+		.setSortProperty("balance")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(PortfolioEntryHistory::getBalance))
+		.setHeader("Balance ©")
+		.setAutoWidth(true)
+		.setWidth("125px")
+		.setFlexGrow(0);
+	
+		
+		grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getAdjustReserve, ReserveFormat))
+		.setHeader("Adjust $")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(PortfolioEntryHistory::getAdjustAbsolute))
+		.setWidth("125px")
+		.setFlexGrow(0);
+		
+		
+
+	
+
+		Column<?> valueColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getValueReserve, ReserveFormat))
+			.setHeader("Value $")
+			.setTextAlign(ColumnTextAlign.END)
+			.setSortProperty("value")
+			.setComparator(Comparator.comparing(PortfolioEntryHistory::getValueReserve))
+			.setWidth("110px")
+			.setFlexGrow(0);
+
+
+		
 		
 		grid.addComponentColumn(e -> {
 
@@ -311,57 +400,17 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 		
 
-		grid.addColumn(PortfolioEntryHistory::getBalance)
-			.setSortProperty("balance")
-			.setTextAlign(ColumnTextAlign.END)
-			.setComparator(Comparator.comparing(PortfolioEntryHistory::getBalance))
-			.setHeader("Balance")
-			.setAutoWidth(true)
-			.setWidth("125px")
-			.setFlexGrow(0);
-
-		Column<?> valueColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getValueReserve, ReserveFormat))
-			.setHeader("Value")
-			.setTextAlign(ColumnTextAlign.END)
-			.setSortProperty("value")
-			.setComparator(Comparator.comparing(PortfolioEntryHistory::getValueReserve))
-			.setWidth("110px")
-			.setFlexGrow(0);
-
-		
-
-		grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getAdjustReserve, ReserveFormat))
-			.setHeader("Adjust $")
-			.setTextAlign(ColumnTextAlign.END)
-			.setComparator(Comparator.comparing(PortfolioEntryHistory::getAdjustAbsolute))
-			.setWidth("125px")
-			.setFlexGrow(0);
-
-		//CoinFormat
-
-
-
-		//grid.addColumn(PortfolioEntry::getAdjust)
-		grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getAdjust, CoinFormat))
-			.setHeader("Adjust ©")
-			.setTextAlign(ColumnTextAlign.END)
-			.setComparator(Comparator.comparing(PortfolioEntryHistory::getAdjust))
-			//.setWidth("100px")
-			//.setFlexGrow(0)
-			.setWidth("110px")
-			.setFlexGrow(0);
-
-		
-
 	
+		
 
-		grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getToTriggerPercent, PercentFormat))
-			.setHeader("Alert %")
-			.setTextAlign(ColumnTextAlign.END)
-			.setComparator(Comparator.comparing(PortfolioEntryHistory::getToTriggerPercentOrZero))
-			.setWidth("110px")
-			.setFlexGrow(0)
-		;
+		
+
+		
+
+
+
+		
+		
 
 		grid.addColumn(e -> {
 			return "";
@@ -369,45 +418,50 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 		grid.setClassNameGenerator(pe -> {
 			List<String> names = new ArrayList<>();
-			/*if(pe.getToTriggerPercentOrZero().compareTo(BigDecimal.ONE) > 0) {
-				LOGGER.info("alert on: {}",pe);
-				names.add("alert");
-			}*/
-			/*else if(pe.getToTriggerPercentOrZero().compareTo(BigDecimal.ONE) > 0) {
-				LOGGER.info("alert on: {}",pe);
-				return "alert";
-			}*/
-
 			Integer warnLevel = getWarnLevel(pe.getToTriggerPercent());
 			names.add("warn-"+warnLevel);
-			
-			/*for (int i = 0; i < warn.length; i++) {
-				BigDecimal b = warn[i];
-				if (pe.getToTriggerPercentOrZero().compareTo(b) > 0) {
-					names.add("warn-" + i);
-					break;
-				}
-			}*/
-
 			return StringUtils.join(names, " ");
-			//return new StringJoiner(" ",)
 		});
 
 		footer = grid.appendFooterRow();
 		totalValueCell = footer.getCell(valueColumn);
 		
 
+		
+		HeaderRow hr = grid.prependHeaderRow();
+		
+		HeaderCell allocationHeader = hr.getCell(allocationColumn);
+		
+		Button resetAllocations = new Button("Detect",VaadinIcon.REFRESH.create(),click -> {
+			ConfirmDialogs.yesNoDialog("Detect and Reset Allocations?", () -> {
+				balanceServ.autoDetectAllocations(portfolio, summary);
+				this.view.refreshSummaryTab(true);
+				this.view.refreshAllocationTab();
+			})
+			.withModal(true)
+			.withMessage("This will reset all allocations to their automatically detected values.")
+			.open();
+			;
+		});
+		resetAllocations.setIconAfterText(true);
+		resetAllocations.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		HorizontalLayout hl = new HorizontalLayout(resetAllocations);
+		hl.setWidthFull();
+		hl.setAlignItems(Alignment.END);
+		hl.setJustifyContentMode(JustifyContentMode.END);
+		allocationHeader.setComponent(hl);
+		
 	}
 	
 	public static Integer getWarnLevel(BigDecimal bd) {
 		if(bd != null) {
-			for (int i = 0; i < warn.length; i++) {
-				if (bd.compareTo(warn[i]) > 0) {
+			for (int i = 0; i < WARN.length; i++) {
+				if (bd.compareTo(WARN[i]) >= 0) {
 					return i;
 				}
 			}
 		}
-		return null;
+		return WARN.length-1;
 	}
 
 	
@@ -440,7 +494,15 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 		.setFlexGrow(0);
 		coll.add(priceColumn);
 		
-		GridUtils.reorderColumns(grid, c,6,adjustColumn,8,priceColumn,4);
+		Column<PortfolioEntryHistory> alertColumn = grid.addColumn(new NumberRenderer<>(PortfolioEntryHistory::getToTriggerPercent, PercentFormat))
+		.setHeader("Alert %")
+		.setTextAlign(ColumnTextAlign.END)
+		.setComparator(Comparator.comparing(PortfolioEntryHistory::getToTriggerPercentOrZero))
+		.setWidth("110px")
+		.setFlexGrow(0);
+		coll.add(alertColumn);	
+		
+		GridUtils.reorderColumns(grid, c,6,adjustColumn,8,priceColumn,4,alertColumn,11);
 		
 		totalAdjustCell = footer.getCell(adjustColumn);
 		totalAdjustCell.setText(PercentFormat.format(summary.getTotalAdjustPercent()));

@@ -126,6 +126,10 @@ public class User extends IdedEntity {
 	public Boolean getConfirmed() {
 		return confirmed;
 	}
+	
+	public boolean isConfirmed() {
+		return Boolean.TRUE.equals(confirmed);
+	}
 
 	public void setConfirmed(Boolean confirmed) {
 		this.confirmed = confirmed;

@@ -66,22 +66,24 @@ public class MarketRateGrid extends AppEntityGrid<MarketRate> {
 	@Override
 	public void setupColumns(Grid<MarketRate> grid) {
 		
-		grid.addColumn(FunctionUtils.nestedValue(MarketRate::getCurrency, Currency::getName))
+		grid.addColumn(FunctionUtils.nestedValue(MarketRate::getCurrency, Currency::getDisplayName))
 		.setHeader("Currency")
 		.setWidth("250px")
 		.setFlexGrow(0)
+		.setSortProperty("name","key")
 		;
 		
-		grid.addColumn(FunctionUtils.nestedValue(MarketRate::getCurrency, Currency::getKey))
+		/*grid.addColumn(FunctionUtils.nestedValue(MarketRate::getCurrency, Currency::getKey))
 		.setHeader("Currency")
 		.setWidth("150px")
 		.setFlexGrow(0)
-		;
+		;*/
 		
 		grid.addColumn(new ZonedDateTimeRenderer<>(MarketRate::getTimestamp,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Timestamp")
 		.setWidth("150px")
 		.setFlexGrow(0)
+		.setSortProperty("timestamp")
 		;
 		
 		grid.addColumn(new NumberRenderer<>(MarketRate::getRate, PortfolioEntryGrid.ReserveFormatFull))
@@ -89,6 +91,7 @@ public class MarketRateGrid extends AppEntityGrid<MarketRate> {
 		.setTextAlign(ColumnTextAlign.END)
 		.setWidth("150px")
 		.setFlexGrow(0)
+		.setSortable(false)
 		;
 		
 	}

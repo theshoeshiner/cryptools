@@ -59,8 +59,8 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 	public PortfolioGrid() {
 		super(Portfolio.class, PortfolioDialog.class, FilterMode.String);
 		this.showButtonColumn=true;
-		this.showCount=false;
-		this.showFilter=false;
+		this.showCount=SecurityUtils.hasAccess(Feature.Portfolio, Access.Super);
+		this.showFilter=SecurityUtils.hasAccess(Feature.Portfolio, Access.Super);
 		this.showEditButton = SecurityUtils.hasAccess(Portfolio.class, Access.ReadWrite);
 		this.showDeleteButton = SecurityUtils.hasAccess(Portfolio.class, Access.ReadWriteDelete);
 	}
@@ -242,12 +242,14 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 
 	@Override
 	public void setFilter(String text) {
-
+		this.filterEntity.setName(text);
+		this.filterEntity.setUser(new User(text,text,text));
 	}
 
 	@Override
 	public void clearFilter() {
-
+		this.filterEntity.setName(null);
+		this.filterEntity.setUser(null);
 	}
 
 }

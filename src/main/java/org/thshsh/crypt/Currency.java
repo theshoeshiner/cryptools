@@ -21,13 +21,13 @@ import javax.persistence.UniqueConstraint;
  *
  */
 @Entity
-@Table(schema = CryptModel.SCHEMA, name = "currency",uniqueConstraints = @UniqueConstraint(columnNames = "symbol"))
+@Table(schema = CryptModel.SCHEMA, name = "currency",uniqueConstraints = @UniqueConstraint(columnNames = "remoteId"))
 public class Currency extends IdedEntity implements HasImage  {
 
 	@Column
 	String name;
 
-	@Column(name = "symbol",unique = true) 
+	@Column(name = "symbol") 
 	String key;
 	
 	@Column() 
@@ -36,7 +36,7 @@ public class Currency extends IdedEntity implements HasImage  {
 	@Column
 	String remoteName;
 
-	@Column
+	@Column(unique = true)
 	String remoteId;
 
 	@Column
@@ -67,6 +67,8 @@ public class Currency extends IdedEntity implements HasImage  {
 	joinColumns = @JoinColumn(name="currency_id"),inverseJoinColumns = @JoinColumn(name="exchange_id"))
 	Set<Exchange> exchanges;
 	
+	@Column()
+	Integer decimalPoints;
 	/*
 	 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - platformtypes: [null, blockchain, derivative, token]
 13:19:56.186 [main] INFO  org.cryptax.CryptoCompareTest - builton: [null, XLM,ETH, Mainnet,BNB, NAS, TRX,ETH, VET, RSK Network, SOL,ETH, ETH,BNB,FTM, mainnet,BNB, HT, WAVES, ETH/BNB, mainnet,ETH, ONT, XLM, ETH,BNB,mainnet, 2017-10-25, TRX, QTUM, Mainnet,NEO,ETH, LUNA, luniverse, ETH,WAN, KAVA, IOST, BNB,TRX,ETH, ETH,BNB,NEO,NULS, EOS, GO, WAVES,ETH, STRAX, ETH,BTC,EOS,TRX,ALGO,SLP,OMG, ETH,BNB, ETH,BNB,DOT,ALGO,ADA, BNB, ETH, NEO, ETH,ZIL, OMNI, XMR]
@@ -163,6 +165,14 @@ public class Currency extends IdedEntity implements HasImage  {
 
 	
 
+	public Integer getDecimalPoints() {
+		return decimalPoints;
+	}
+
+	public void setDecimalPoints(Integer decimalPoints) {
+		this.decimalPoints = decimalPoints;
+	}
+
 	public Set<Exchange> getExchanges() {
 		if(exchanges == null) exchanges = new HashSet<Exchange>();
 		return exchanges;
@@ -197,8 +207,31 @@ public class Currency extends IdedEntity implements HasImage  {
 
 	@Override
 	public String toString() {
-		return "[name=" + name + ", symbol=" + key + ", remoteName=" + remoteName + ", remoteId=" + remoteId
-				+ "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("[id=");
+		builder.append(id);
+		builder.append(", name=");
+		builder.append(name);
+		builder.append(", key=");
+		builder.append(key);
+		builder.append(", remoteName=");
+		builder.append(remoteName);
+		builder.append(", remoteId=");
+		builder.append(remoteId);
+		builder.append(", imageUrl=");
+		builder.append(imageUrl);
+		builder.append(", colorHex=");
+		builder.append(colorHex);
+		builder.append(", active=");
+		builder.append(active);
+		builder.append(", platformType=");
+		builder.append(platformType);
+		builder.append(", grade=");
+		builder.append(grade);
+		builder.append(", rank=");
+		builder.append(rank);
+		builder.append("]");
+		return builder.toString();
 	}
 
 

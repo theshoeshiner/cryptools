@@ -17,6 +17,8 @@ public class CryptoCompareConfiguration {
 	
 	//@Value("${app.cryptocompare.sync.grades}")
 	Boolean grades;
+	
+	Boolean colors;
 
 	public Boolean getExchanges() {
 		return exchanges;
@@ -48,6 +50,14 @@ public class CryptoCompareConfiguration {
 
 	public void setGrades(Boolean grades) {
 		this.grades = grades;
+	}
+
+	public Boolean getColors() {
+		return colors;
+	}
+
+	public void setColors(Boolean colors) {
+		this.colors = colors;
 	}
 	
 	

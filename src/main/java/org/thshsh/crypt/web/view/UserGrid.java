@@ -50,21 +50,32 @@ public class UserGrid extends AppEntityGrid<User> {
 		.setHeader("Id")
 		.setWidth("100px")
 		.setFlexGrow(0)
+		.setSortProperty("id")
 		;
 		
 		grid
 		.addColumn(User::getDisplayName)
-		.setHeader("Name");
+		.setHeader("Name")
+		.setWidth("200px")
+		.setFlexGrow(0)
+		.setSortProperty("displayName")
+		;
 		
 		grid
 		.addColumn(User::getUserName)
 		.setHeader("Username")
-		
+		.setWidth("150px")
+		.setFlexGrow(0)
+		.setSortProperty("userName")
 		;
 		
 		grid
 		.addColumn(User::getEmail)
-		.setHeader("Email");
+		.setHeader("Email")
+		.setWidth("250px")
+		.setFlexGrow(0)
+		.setSortProperty("email")
+		;
 		
 		/*grid
 		.addColumn(user -> {
@@ -91,6 +102,7 @@ public class UserGrid extends AppEntityGrid<User> {
 		.setHeader("Confirmed")
 		.setWidth("100px")
 		.setFlexGrow(0)
+		.setSortProperty("confirmed")
 		;
 		
 		

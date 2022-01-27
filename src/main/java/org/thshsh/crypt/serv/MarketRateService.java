@@ -10,11 +10,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
+import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.cryptocompare.CryptoCompareException;
 import org.thshsh.crypt.cryptocompare.CurrentPricesResponse;
@@ -108,13 +112,11 @@ public class MarketRateService {
 		return getMarketRates(apiKey, currencies, false,null);
 	}
 
-	//@Transactional(value = TxType.REQUIRES_NEW)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Map<Currency,MarketRate> getMarketRates(ZonedDateTime time,Currency... currencies){
 		return getMarketRates(null, Arrays.asList(currencies),false,time);
 	}
 	
-	//@Transactional(value = TxType.REQUIRES_NEW)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Map<Currency,MarketRate> getMarketRates(String apiKey,Collection<Currency> currencies, Boolean force, ZonedDateTime t){
 
@@ -128,10 +130,13 @@ public class MarketRateService {
 
 		Map<Currency,List<MarketRate>> ratesListMap = new HashMap<Currency, List<MarketRate>>();
 		Map<Currency,MarketRate> marketRateMap = new HashMap<>();
+		marketRateMap.put(usd, usdRate);
 		List<Currency> getRatesFor = new ArrayList<>();
 
 		if(!force) {
 		
+			//if we're not forcing all then first try and get rates from the database
+			
 			ZonedDateTime minAge = time.minus(ageRadius);
 			ZonedDateTime maxAage = time.plus(ageRadius);
 	
@@ -152,9 +157,9 @@ public class MarketRateService {
 			getRatesFor.addAll(currencies);
 		}
 
-		marketRateMap.put(usd, usdRate);
+		
 
-		LOGGER.info("Need to get rates for: {}",getRatesFor);
+		LOGGER.info("Need to request rates for: {}",getRatesFor);
 
 		if(getRatesFor.size() > 0) {
 
@@ -162,18 +167,49 @@ public class MarketRateService {
 			try {
 				if(apiKey != null) compare.getApiKeyThreadLocal().set(apiKey);
 				
-				Map<String,Currency> symMap = getRatesFor.stream().collect(Collectors.toMap(Currency::getKey, Function.identity()));
+				//create map of any currencies with symbol collisions
+				Map<String,Collection<Currency>> collMap = new HashMap<String, Collection<Currency>>();
+				getRatesFor.stream().collect(Collectors.toMap(
+						Currency::getKey, Function.identity(),(c0,c1) -> {
+							LOGGER.error("There was a collision for symbol: {}",c0.getKey());
+							if(!collMap.containsKey(c0.getKey())) collMap.put(c0.getKey(),new HashSet<>());
+							collMap.get(c0.getKey()).add(c0);
+							collMap.get(c0.getKey()).add(c1);
+							return c0;
+						}
+				));
+				
+				//figure out which collision currencies are official
+				Map<String,Currency> collOfficial = new HashMap<String, Currency>();
+				collMap.forEach((key,coll) -> {
+					//there is a symbol need to decide which is the official
+					Coin coin = compare.getCoin(key, true);
+					Currency match = collMap.get(key).stream().filter(c -> coin.getId().equals(c.getRemoteId())).findFirst().orElse(null);
+					collOfficial.put(key, match);
+				});
+				
+				//create set of all symbols
+				Set<String> symbols = getRatesFor.stream().map(c -> c.getKey()).collect(Collectors.toSet());
 				
 				if(current) {
 					
-					CurrentPricesResponse prices = compare.getCurrentPrice(usd.getKey(),symMap.keySet());
-					symMap.keySet().forEach(sym -> {
-						BigDecimal price = prices.getPrice(sym);
-						LOGGER.info("price: {}",price);
-						Currency c = symMap.get(sym);
-						MarketRate mr = new MarketRate(c,price,time);
-						rateRepo.save(mr);
-						marketRateMap.put(c, mr);
+					CurrentPricesResponse prices = compare.getCurrentPrice(usd.getKey(),symbols);
+					getRatesFor.forEach(curr -> {
+						String sym = curr.getKey();
+						
+						//if this symbol has a collision and is not the current official, then dont use price
+						if(collOfficial.containsKey(sym) && !curr.equals(collOfficial.get(sym))) {
+							//TODO should we set the non match as inactive, or change the symbol somehow?
+						}
+						else {
+							BigDecimal price = prices.getPrice(sym);
+							LOGGER.info("price: {}",price);
+							if(price != null) {
+								MarketRate mr = new MarketRate(curr,price,time);
+								rateRepo.save(mr);
+								marketRateMap.put(curr, mr);
+							}
+						}
 					});
 					
 				}
@@ -181,32 +217,36 @@ public class MarketRateService {
 					
 					//we are grabbing a historical rate - this doesnt happen for the hourly job
 					
-					symMap.keySet().forEach(sym -> {
-						Currency cur = symMap.get(sym);
+					getRatesFor.forEach(cur -> {
+						//Currency cur = symMap.get(sym);
+						String sym = cur.getKey();
 						MutableBoolean first = new MutableBoolean(true);
 						HistoricalPrices hps = compare.getHourlyHistoricalPrice(sym,usd.getKey(), time.withZoneSameInstant( ZoneId.of("Z")).toEpochSecond());
 						//each row will create at least 2 rates, which we will then check to see which is closest
-				
-						List<MarketRate> rates = new ArrayList<>();
-						hps.getHistoricalPrices().forEach(hp -> {
-							ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(hp.getTime().longValue()), ZoneId.of("Z"));
-							ZonedDateTime endTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(hp.getTime().longValue()+HOUR_SECONDS), ZoneId.of("Z"));
-							if(first.booleanValue()) {
-								//only generate the open rate on the first row
-								MarketRate openRate = new MarketRate(cur,hp.getOpen(),startTime);
-								//LOGGER.info("Open Rate: {}",openRate);
-								rates.add(openRate);
-								first.setFalse();
-							}
-							MarketRate rangeRate = new MarketRate(cur,hp.getHigh(),hp.getLow(),hp.getOpen(),hp.getClose(),startTime,endTime);
-							rates.add(rangeRate);
-							//LOGGER.info("Avg Rate: {}",rangeRate);
-							MarketRate closeRate = new MarketRate(cur,hp.getClose(),endTime);
-							rates.add(closeRate);
-							//LOGGER.info("Close Rate: {}",closeRate);
-							rateRepo.saveAll(rates);
-						});
-						ratesListMap.put(cur, rates);
+						
+						//if this symbol has a collision and is not the current official, then dont use any rates
+						if(collOfficial.containsKey(sym) && !cur.equals(collOfficial.get(sym))) {
+							//no-op
+						}
+						else {
+							List<MarketRate> rates = new ArrayList<>();
+							hps.getHistoricalPrices().forEach(hp -> {
+								ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(hp.getTime().longValue()), ZoneId.of("Z"));
+								ZonedDateTime endTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(hp.getTime().longValue()+HOUR_SECONDS), ZoneId.of("Z"));
+								if(first.booleanValue()) {
+									//only generate the open rate on the first row
+									MarketRate openRate = new MarketRate(cur,hp.getOpen(),startTime);
+									rates.add(openRate);
+									first.setFalse();
+								}
+								MarketRate rangeRate = new MarketRate(cur,hp.getHigh(),hp.getLow(),hp.getOpen(),hp.getClose(),startTime,endTime);
+								rates.add(rangeRate);
+								MarketRate closeRate = new MarketRate(cur,hp.getClose(),endTime);
+								rates.add(closeRate);
+								rateRepo.saveAll(rates);
+							});
+							ratesListMap.put(cur, rates);
+						}
 					});
 
 				}
@@ -220,7 +260,7 @@ public class MarketRateService {
 		}
 		
 		
-		//now go through rates
+		//now go through rate lists if this was historical or we found rates in the DB
 		
 		//now sort ratelists and find best
 		ratesListMap.forEach((cur,list) -> {
@@ -228,17 +268,6 @@ public class MarketRateService {
 			MarketRate closest;
 			
 			Collections.sort(list, (r0,r1) -> {
-				/*if(r0.isRange() && !r1.isRange()) {
-					//if r1 rate is closer than limit, then prefer it over r0
-					if(Duration.between(r1.getTimestamp(), time).abs().compareTo(rangePreferenceLimit)<0) return 1;
-					//else if r0 is closer than limit, then prefer it
-					else if(Duration.between(r0.getTimestamp(), time).abs().compareTo(rangePreferenceLimit)<0) return -1;
-				}
-				else if(!r0.isRange() && r1.isRange()) {
-					//just the reverse of the above
-					if(Duration.between(r0.getTimestamp(), time).abs().compareTo(rangePreferenceLimit)<0) return -1;
-					else if(Duration.between(r1.getTimestamp(), time).abs().compareTo(rangePreferenceLimit)<0) return 1;
-				}*/
 				//just prefer the rate that is closest
 				return Duration.between(r0.getTimestamp(), time).abs().compareTo(Duration.between(r1.getTimestamp(), time).abs());
 			});
@@ -247,18 +276,12 @@ public class MarketRateService {
 			
 			Optional<MarketRate> ranged = list.stream().filter(mr -> mr.isRange()).findFirst();
 			Optional<MarketRate> specific = list.stream().filter(mr -> !mr.isRange()).findFirst();
-			//LOGGER.info("specific: {}",specific);
-			//LOGGER.info("ranged: {}",ranged);
 			if(ranged.isPresent() && specific.isPresent()) {
 				//both are present, only use the ranged one if specific one is past threshold
 				MarketRate specificRate = specific.get();
 				MarketRate rangedRate = ranged.get();
-				//LOGGER.info("specific: {}",specificRate);
-				//LOGGER.info("ranged: {}",rangedRate);
 				Duration specificDuration = Duration.between(time,specificRate.getTimestamp()).abs();
 				Duration rangedDuration = Duration.between(time,rangedRate.getTimestamp()).abs();
-				//LOGGER.info("specificDuration: {}",specificDuration);
-				//LOGGER.info("rangedDuration: {}",rangedDuration);
 				if(specificDuration.compareTo(rangedDuration) < 0 || specificDuration.compareTo(rangePreferenceThreshold) < 0) {
 					closest = specificRate;
 				}
@@ -269,10 +292,7 @@ public class MarketRateService {
 			else {
 				closest = ranged.orElseGet(() -> specific.get());
 			}
-			
-			
-			
-			//MarketRate lastRate = list.get(0);
+
 			LOGGER.info("closest rate: {}",closest);
 			marketRateMap.put(cur, closest);
 			

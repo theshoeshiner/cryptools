@@ -144,8 +144,8 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 		
 		
 
-		undefinedCheckbox = new SingleCheckboxGroup("Undefined");
-		undefinedCheckbox.setHelperText("Recieves an equal share of any unallocated percentage.");
+		undefinedCheckbox = new SingleCheckboxGroup("Remainder");
+		undefinedCheckbox.setHelperText("Leftover unallocated percent will be assigned to this currency.");
 		formLayout.add(undefinedCheckbox);
 		undefinedCheckbox.addValueChangeListener(change -> {
 			if(change.isFromClient()) {
