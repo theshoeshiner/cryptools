@@ -220,6 +220,8 @@ public class Currency extends IdedEntity implements HasImage  {
 		builder.append(remoteId);
 		builder.append(", imageUrl=");
 		builder.append(imageUrl);
+		builder.append(", decimalPoints=");
+		builder.append(decimalPoints);
 		builder.append(", colorHex=");
 		builder.append(colorHex);
 		builder.append(", active=");

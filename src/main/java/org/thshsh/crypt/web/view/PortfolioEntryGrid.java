@@ -324,9 +324,11 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 		
 		grid.addColumn(entry -> {
-			Integer dp = entry.getCurrency().getDecimalPoints();
-			if(dp == null || dp > MAX_SCALE) dp = MAX_SCALE;
 			BigDecimal adjust = entry.getAdjust();
+			if(adjust == null) return null;
+			LOGGER.info("currency: {}",entry.getCurrency());
+			Integer dp = entry.getCurrency()!=null?entry.getCurrency().getDecimalPoints():(Integer)2;
+			if(dp == null || dp > MAX_SCALE) dp = MAX_SCALE;
 			if(dp != null && adjust.scale() > dp) {
 				adjust = adjust.setScale(dp, RoundingMode.HALF_EVEN);
 			}
