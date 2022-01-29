@@ -64,6 +64,13 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 		.setFlexGrow(0)
 		;
 		
+
+		grid.addColumn(PortfolioAlert::getMuted)
+		.setHeader("Muted")
+		.setWidth("75px")
+		.setFlexGrow(0)
+		;
+		
 	}
 
 }
