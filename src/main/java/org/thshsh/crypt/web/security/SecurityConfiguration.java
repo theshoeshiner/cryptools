@@ -1,6 +1,7 @@
 package org.thshsh.crypt.web.security;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.thshsh.crypt.Activity;
 import org.thshsh.crypt.ActivityType;
+import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.AppConfiguration;
@@ -132,8 +134,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 					    	CryptUserPrincipal userDetails = (CryptUserPrincipal) authentication.getPrincipal();
 					        //String username = userDetails.getUsername();
 					         //LOGGER_ACTIVITY.info("User: {} logged in",username);
-					        actRepo.save(new Activity(userDetails.getUser(),ActivityType.Login));
-					        
+					    	User user = userDetails.getUser();
+					    	user.setLastLogin(ZonedDateTime.now());
+					    	userRepo.save(user);
+					        actRepo.save(new Activity(userDetails.getUser(),ActivityType.Login,user.getLastLogin()));
 					        super.onAuthenticationSuccess(request, response, authentication);
 					    }                      
 					})
