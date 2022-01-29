@@ -22,6 +22,13 @@ public class Activity extends IdedEntity {
 
 	public Activity() {}
 	
+	public Activity(User user, ActivityType type, ZonedDateTime ts) {
+		super();
+		this.user = user;
+		this.type = type;
+		this.timestamp = ts;
+	}
+	
 	public Activity(User user, ActivityType type) {
 		super();
 		this.user = user;

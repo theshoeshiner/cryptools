@@ -3,6 +3,8 @@ package org.thshsh.crypt.web.view;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -40,6 +42,12 @@ public class UserGrid extends AppEntityGrid<User> {
 	@Override
 	public PagingAndSortingRepository<User, Long> getRepository() {
 		return userRepo;
+	}
+	
+	@PostConstruct
+	public void postConstruct() {
+		super.postConstruct();
+		if(this.buttonColumn!=null) this.buttonColumn.setFlexGrow(1);
 	}
 
 	@Override
@@ -86,15 +94,23 @@ public class UserGrid extends AppEntityGrid<User> {
 		.setFlexGrow(0)
 		;*/
 		
+		/*	grid
+			.addColumn(new ZonedDateTimeRenderer<>( user -> {
+				Activity a = actRepo.findTopByUserAndTypeOrderByTimestampDesc(user, ActivityType.Login);
+				return a!=null?a.getTimestamp():null;
+			}, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT) ))
+			.setHeader("Last Login")
+			.setSortable(false)
+			.setWidth("150px")
+			.setFlexGrow(0)
+			;*/
+		
 		grid
-		.addColumn(new ZonedDateTimeRenderer<>( user -> {
-			Activity a = actRepo.findTopByUserAndTypeOrderByTimestampDesc(user, ActivityType.Login);
-			return a!=null?a.getTimestamp():null;
-		}, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT) ))
+		.addColumn(new ZonedDateTimeRenderer<>(User::getLastLogin,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Last Login")
-		.setSortable(false)
 		.setWidth("150px")
 		.setFlexGrow(0)
+		.setSortProperty("lastLogin")
 		;
 		
 		grid
@@ -105,6 +121,7 @@ public class UserGrid extends AppEntityGrid<User> {
 		.setSortProperty("confirmed")
 		;
 		
+		//this.buttonColumn.setFlexGrow(1);
 		
 	}
 
@@ -112,6 +129,16 @@ public class UserGrid extends AppEntityGrid<User> {
 	public Dialog createDialog(User entity) {
 		UserDialog cd = appCtx.getBean(UserDialog.class,entity);
 		return cd;
+	}
+
+	@Override
+	public void setFilter(String text) {
+		super.setFilter(text);
+	}
+
+	@Override
+	public void clearFilter() {
+		super.clearFilter();
 	}
 
 	

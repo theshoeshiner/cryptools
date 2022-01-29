@@ -1,5 +1,6 @@
 package org.thshsh.crypt;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,6 +57,9 @@ public class User extends IdedEntity {
 	
 	@Transient
 	Map<Feature,Access> permissionsMap;
+	
+	@Column
+	ZonedDateTime lastLogin;
 
 	public User() {}
 	
@@ -112,8 +116,17 @@ public class User extends IdedEntity {
 		this.email = email;
 	}
 
+	
 
 
+
+	public ZonedDateTime getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(ZonedDateTime lastLogin) {
+		this.lastLogin = lastLogin;
+	}
 
 	public String getApiKey() {
 		return apiKey;
@@ -127,9 +140,12 @@ public class User extends IdedEntity {
 		return confirmed;
 	}
 	
+	/*@Transient
+	@java.beans.Transient
+	@org.springframework.data.annotation.Transient
 	public boolean isConfirmed() {
 		return Boolean.TRUE.equals(confirmed);
-	}
+	}*/
 
 	public void setConfirmed(Boolean confirmed) {
 		this.confirmed = confirmed;
