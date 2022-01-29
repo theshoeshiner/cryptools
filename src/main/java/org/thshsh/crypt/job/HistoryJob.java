@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -108,6 +109,9 @@ public class HistoryJob implements InterruptableJob {
 			
 			if(portId == null) {
 				ports = portRepo.findAll();
+				//shuffle portfolios so that we're not always hammering the same API key
+				ports = new ArrayList<Portfolio>(ports);
+				Collections.shuffle(ports);
 			}
 			else {
 				force.setTrue();
@@ -134,7 +138,7 @@ public class HistoryJob implements InterruptableJob {
 								runForPortfolio(p);
 							}
 							else {
-								LOGGER.info("Skipping Portfolio: {}",p);
+								LOGGER.info("Skipping Portfolio: {} Till Next Run: {}",p,nextRun);
 							}
 						}
 						else runForPortfolio(p);
@@ -217,32 +221,7 @@ public class HistoryJob implements InterruptableJob {
 				//no alert
 				port.setLatestAlert(null);
 			}
-			/*
-			if(!port.getSettings().isAlertsDisabled() 
-				&& history.getMaxToTriggerPercent().compareTo(alertThreshold) > 0
-				
-			) {
-				
-				PortfolioAlert latest = port.getLatestAlert();
-				Integer repeat = 0;
-				if(latest != null) {
-					//check repeat wait time
-				}
-				
-				PortfolioAlert alert = new PortfolioAlert();
-				alert.setPortfolio(port);
 			
-				
-				
-				//send alert
-				if(!muted) mailService.sendPortfolioAlert(port);
-			
-			
-			}
-			else {
-				port.setLatestAlert(null);
-			}
-			*/
 			
 		});
 
