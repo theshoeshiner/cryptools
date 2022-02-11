@@ -28,6 +28,7 @@ import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
 import org.thshsh.crypt.web.view.MarketRatesView;
 import org.thshsh.crypt.web.view.PortfolioAlertsView;
+import org.thshsh.crypt.web.view.PortfolioHistoriesView;
 import org.thshsh.crypt.web.view.PortfoliosView;
 import org.thshsh.crypt.web.view.SystemView;
 import org.thshsh.crypt.web.view.TaxReportView;
@@ -305,6 +306,10 @@ public class MainLayout extends AppLayout {
     	
     	if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
     		items.add(createMenuItem(VaadinIcon.BELL.create(),"Alerts", PortfolioAlertsView.class));
+    	}
+    	
+    	if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
+    		items.add(createMenuItem(VaadinIcon.TIME_BACKWARD.create(),"Histories", PortfolioHistoriesView.class));
     	}
     	
     	if(SecurityUtils.hasAccess(Feature.Exchange, Access.ReadWrite)) {
