@@ -15,6 +15,7 @@ import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioAlertRepository;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.vaadin.RouterLinkRenderer;
 import org.thshsh.vaadin.ZonedDateTimeRenderer;
 
 import com.vaadin.flow.component.grid.Grid;
@@ -42,10 +43,15 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 	@Override
 	public void setupColumns(Grid<PortfolioAlert> grid) {
 		
-		grid.addColumn(FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName))
+
+		
+		grid
+		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName), FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId)))
 		.setHeader("Portfolio")
-		.setWidth("200px")
-		.setFlexGrow(0);
+		.setAutoWidth(true)
+		.setFlexGrow(0)
+		.setSortProperty("portfolio.name")
+		;
 		
 		grid.addColumn(FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getUser, User::getEmail))
 		.setHeader("User")
