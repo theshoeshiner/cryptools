@@ -159,7 +159,7 @@
 		<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 			<file>/cryptools/logs/web.log</file>
 			<append>true</append>
-			<immediateFlush>false</immediateFlush>
+			<immediateFlush>true</immediateFlush>
 			<encoder>
 				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{48} - %msg%n</pattern>
 			</encoder>
