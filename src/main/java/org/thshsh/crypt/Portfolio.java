@@ -55,7 +55,11 @@ public class Portfolio extends IdedEntity implements HasName {
 	@Embedded
 	PortfolioSettings settings;
 
+	public Portfolio() {}
 	
+	public Portfolio(String n) {
+		this.name=n;
+	}
 
 	public Set<Allocation> getAllocations() {
 		if(allocations == null) allocations = new HashSet<>();

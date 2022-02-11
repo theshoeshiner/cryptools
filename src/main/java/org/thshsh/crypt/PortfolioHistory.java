@@ -49,28 +49,11 @@ public class PortfolioHistory extends IdedEntity {
     @Column(columnDefinition = "decimal")
     BigDecimal totalAdjustPercent;
     
-    @ManyToOne
-    User initiated;
     
-    
-    //List<PortfolioEntryHistory> entries;
-	//BigDecimal totalValue;
-	//BigDecimal maxToTriggerPercent;
-	//BigDecimal totalAdjustPercent;
 
     public PortfolioHistory() {}
     
     
-
-	/* public PortfolioHistory(Portfolio portfolio,PortfolioSummary summary) {
-	    this.portfolio = portfolio;
-	    this.timestamp = ZonedDateTime.now();
-	    this.maxToTriggerPercent = summary.maxToTriggerPercent;
-	    this.value = summary.getTotalValue();
-	    this.totalImbalance = BigDecimal.ZERO;
-	    this.totalAdjustPercent = summary.totalAdjustPercent;
-	}*/
-
 
     public PortfolioHistory(Portfolio portfolio) {
 		super();
