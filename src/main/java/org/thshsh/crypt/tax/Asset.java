@@ -162,7 +162,7 @@ public class Asset {
 		//List<GainSort> copy = new ArrayList<GainSort>(sortedBuyRecords);
 		
 		
-		//Collections.sort(sortedBuyRecords,Asset::taxGainSort2);
+		//Collections.sort(sortedBuyRecords,Asset::totalTaxSort);
 		Collections.sort(sortedBuyRecords,Asset::taxRateSort);
 		
 		/*Collections.sort(copy,Asset::taxRateSort);
@@ -271,9 +271,9 @@ public class Asset {
 	}
 	
 	/** 
-	 * This is a tax optimzied sort, in that we optimize the rate that we are saving at, but not the actual savings
-	 * This is not much differnet from MLMG in early years since there are fewer lots to choose from
-	 * But in later years you will see less short term gains and more long term
+	 * This is a tax optimized sort, in that we optimize the rate that we are saving at, but not the actual savings
+	 * This is not much different from MLMG in early years since there are fewer lots to choose from
+	 * But in later years this will result in higher taxes because it will ALWAYS choose long term over short term, regardless of total gain/tax
 	 * @param s1
 	 * @param s2
 	 * @return
@@ -300,7 +300,14 @@ public class Asset {
 		return comp;
 	}
 	
-	static int taxGainSort2(GainSort s1,GainSort s2) {
+	/**
+	 * This sorts based on the ACTUAL tax owed. Even if it results in a short term sell
+	 * As long as the sell produced less overall taxes
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	static int totalTaxSort(GainSort s1,GainSort s2) {
 		int comp = 0;
 		
 		//sort losses to front
@@ -326,48 +333,6 @@ public class Asset {
 		return comp;
 	}
 
-	static int taxGainSort(GainSort s1,GainSort s2) {
-
-		int comp = 0;
-		
-		if(s1.isLoss == s2.isLoss){
-			//both are the same (loss/gain)
-			
-			if(s1.isLoss) {
-
-				//both are a loss, find the greatest loss
-				comp = s2.taxPerAbs.compareTo(s1.taxPerAbs);
-				if(comp == 0) {
-					//losses are the same, there is no great way to continue to sort, so nearest first
-					comp = s2.timestamp.compareTo(s1.timestamp);
-				}
-				//else comp = pc;
-
-			}
-			else {
-				//both are a gain
-
-				//return the smallest taxes first
-				comp = s1.taxPerAbs.compareTo(s2.taxPerAbs);
-				if(comp == 0) {
-					//gains are the same, there is no great way to continue to sort, so return youngest first
-					comp = s2.timestamp.compareTo(s1.timestamp);
-				}
-				//else comp = pc;
-			}
-
-		}
-		else {
-			//one is a loss, one is a gain, losses always go to the front
-			if(s1.isLoss) comp = -1;
-			else comp = 1;
-		}
-
-		//self.LOGGER.info("Compare {} vs {} = {}",[s1,s2,comp]);
-
-		return comp;
-
-	}
 	
 	
 
