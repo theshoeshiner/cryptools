@@ -30,7 +30,8 @@ public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, Ex
 	public  Long countAllSecured();
 	
 	@Query("select distinct e from #{#entityName} e where "
-			+ "( lower(e.name) like %?1%  ) and "+OWNER_OR_SUPER_IN)
+			+ "( lower(e.user.email) like %?1% or lower(e.user.userName) like %?1% or lower(e.name) like %?1% )"
+			+ " and "+OWNER_OR_SUPER_IN)
 	Page<Portfolio> findByStringSecured(String s, Pageable p);
 	
 	@Query("select count(distinct e.id) from #{#entityName} e where "
