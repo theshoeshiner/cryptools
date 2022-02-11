@@ -3,26 +3,15 @@ package org.thshsh.crypt.serv;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
-import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileTypeMap;
-import javax.activation.URLDataSource;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Activity;
@@ -43,9 +32,6 @@ public class UserService {
 
 	@Autowired
 	UserRepository userRepo;
-
-	//@Autowired
-	//JavaMailSender mailSender;
 	
 	@Autowired
 	MailService mailService;
@@ -58,10 +44,6 @@ public class UserService {
 
 	@Value("${app.url}")
 	String baseUrl;
-
-	// public static final String CONFIRMATION_TEXT = "<html>Your Cryptools account
-	// has been created. Click here to confirm your email: <a
-	// href='%2$s'>%1$s<a/><html>";
 
 	public Boolean registerUser(User u) throws UserExistsException {
 
