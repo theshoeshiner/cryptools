@@ -54,6 +54,7 @@ public class MailService {
 	
 	public void sendAccountConfirmEmail(User user, String token) {
 		
+		LOGGER.info("sendAccountConfirmEmail: {} / {}",user,token);
 		Map<String,Object> context = createContext( MapUtils.createHashMap("token", token));
 		sendMailFromResource(user, "email-confirm.html", context,"Cryptools Account Confirmation");
 	}
@@ -126,6 +127,8 @@ public class MailService {
 	public void sendMailFromString(User user, String contentHtml,String subject) {
 		
 		try {	
+			
+			LOGGER.info("sendMailFromString: {}",user.getEmail());
 			
 			LOGGER.trace("contentHtml: {}",contentHtml);
 			
