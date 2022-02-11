@@ -10,16 +10,21 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
-import org.thshsh.crypt.Activity;
-import org.thshsh.crypt.ActivityType;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
+import org.thshsh.crypt.serv.MailService;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.vaadin.UIUtils;
 import org.thshsh.vaadin.ZonedDateTimeRenderer;
+import org.thshsh.vaadin.entity.ConfirmDialogs;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 @SuppressWarnings("serial")
 @Component
@@ -31,6 +36,9 @@ public class UserGrid extends AppEntityGrid<User> {
 
 	@Autowired
 	ActivityRepository actRepo;
+	
+	@Autowired
+	MailService mailService;
 	
 	public UserGrid() {
 		super(User.class, UserDialog.class, FilterMode.Example);
@@ -123,6 +131,27 @@ public class UserGrid extends AppEntityGrid<User> {
 		
 		//this.buttonColumn.setFlexGrow(1);
 		
+	}
+
+	
+	
+	@Override
+	public void addButtonColumn(HorizontalLayout buttons, User e) {
+	
+		super.addButtonColumn(buttons, e);
+		
+		{
+			Button confirmEmail = new Button(VaadinIcon.CHECK.create());
+			confirmEmail.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			buttons.add(confirmEmail);
+			UIUtils.setTitle(confirmEmail, "Confirm");
+			confirmEmail.addClickListener(click -> {
+				ConfirmDialogs.yesNoDialog("Send Confirmation Email?", () -> {
+					LOGGER.info("clicked yes to send confirm email");
+					mailService.sendAccountConfirmEmail(e, e.getConfirmToken());
+				}).open();
+			});
+		}
 	}
 
 	@Override
