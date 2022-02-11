@@ -1,27 +1,17 @@
 package org.thshsh.crypt.serv;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.cryptocompare.Coin;
 import org.thshsh.crypt.cryptocompare.CryptoCompare;
 import org.thshsh.crypt.repo.CurrencyRepository;
 
