@@ -15,7 +15,7 @@ public interface UserRepository extends BaseRepository<User, Long >, ExampleFilt
 	Optional<User> findByEmail(String email);
 	Optional<User> findByEmailEqualsOrUserNameEquals(String email,String username);
 	
-	@Query("select u from User u join u.roles r join r.permissions p where ( u.email = ?1 or u.userName =?1) and u.confirmed = true")
+	@Query("select u from User u join u.roles r join r.permissions p where ( lower(u.email) = ?1 or lower(u.userName) =?1 ) and u.confirmed = true")
 	Optional<User> findByLogin(String login);
 
 
