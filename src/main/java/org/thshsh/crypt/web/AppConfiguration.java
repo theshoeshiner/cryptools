@@ -1,5 +1,7 @@
 package org.thshsh.crypt.web;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ public class AppConfiguration {
 
 	//@Value("${app.login.username:}")
 	String username;
+	
+	List<Integer> alertWaitDays;
 	
 	//@Value("${app.historyjob.enabled:true}")
 	//Boolean historyJobEnabled;
@@ -95,6 +99,14 @@ public class AppConfiguration {
 
 	public Boolean getRequireApiKey() {
 		return requireApiKey;
+	}
+
+	public List<Integer> getAlertWaitDays() {
+		return alertWaitDays;
+	}
+
+	public void setAlertWaitDays(List<Integer> alertWaitDays) {
+		this.alertWaitDays = alertWaitDays;
 	}
 	
 	
