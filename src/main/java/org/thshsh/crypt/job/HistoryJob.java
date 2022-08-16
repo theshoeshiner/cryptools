@@ -48,7 +48,7 @@ public class HistoryJob implements InterruptableJob {
 	
 	//public static final Integer[] ALERT_WAIT_HOURS = new Integer[] {1,2,3,5,8,13,21};
 	
-	public static final Integer[] ALERT_WAIT = new Integer[] {1,2,3};
+	//public static final Integer[] ALERT_WAIT = new Integer[] {1,2,3,5,8};
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -85,6 +85,7 @@ public class HistoryJob implements InterruptableJob {
 	String entryFormat = "%s Imbalance: %d%%";
 
 	Duration onlyRunEvery;
+	MutableBoolean force;
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -97,8 +98,7 @@ public class HistoryJob implements InterruptableJob {
 		
 		
 		JobDataMap map = context.getMergedJobDataMap();
-		//Boolean force = ;
-		MutableBoolean force = new MutableBoolean(map.containsKey(FORCE_PROP));
+		force = new MutableBoolean(map.containsKey(FORCE_PROP));
 		if(appConfig.getJob().getHistory() || force.booleanValue() ) {
 			
 			LOGGER.info("Running Job");
@@ -186,15 +186,22 @@ public class HistoryJob implements InterruptableJob {
 				Boolean skip = false;
 				Integer repeat = 0;
 				
+				if(!force.booleanValue()) {
+				
 				//if we already have an alert then check the repeat interval
-				if(port.getLatestAlert() != null) {
-					//check repeat wait time
-					PortfolioAlert latest = port.getLatestAlert();
-					repeat = latest.getRepeat();
-					Integer wait = (repeat<ALERT_WAIT.length)?ALERT_WAIT[repeat]:ALERT_WAIT[ALERT_WAIT.length-1];
-					ZonedDateTime waitTill = latest.getTimestamp().plusDays(wait);
-					skip = waitTill.isAfter(now);
-					repeat = latest.getRepeat()+1;
+					if(port.getLatestAlert() != null) {
+						//check repeat wait time
+						PortfolioAlert latest = port.getLatestAlert();
+						repeat = latest.getRepeat();
+						List<Integer> wait = appConfig.getAlertWaitDays();
+	
+						Integer waitDays = wait.get(repeat < wait.size() ? repeat : wait.size()-1);
+						
+						ZonedDateTime waitTill = latest.getTimestamp().plusDays(waitDays);
+						skip = waitTill.isAfter(now);
+						repeat = latest.getRepeat()+1;
+					}
+					
 				}
 				
 				LOGGER.info("Skip: {}",skip);
