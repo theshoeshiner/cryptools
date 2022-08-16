@@ -172,10 +172,12 @@ public class MailService {
 			mimeMessage.setContent(multipart);
 			
 			mimeMessage.saveChanges();
-			String id = "cryptools-alert+"+System.currentTimeMillis()+"@thshsh.org";
+			
+			//FIXME
+			/*String id = "cryptools-alert+"+System.currentTimeMillis()+"@thshsh.org";
 			mimeMessage.setHeader("Message-ID", id);
 			mimeMessage.setHeader("References", id);
-			mimeMessage.setHeader("X-Entity-Ref-ID", id);
+			mimeMessage.setHeader("X-Entity-Ref-ID", id);*/
 			
 			
 			//mimeMessage.setReplyTo(new Addressre);
@@ -196,10 +198,13 @@ public class MailService {
 			}*/
 			helper.setSubject(subject);
 			helper.setFrom("cryptools@thshsh.org");
-			helper.setReplyTo(id);
+			//helper.setReplyTo(id);
+			
 			
 			
 			mailSender.send(mimeMessage);
+			
+			LOGGER.info("Done sending mail");
 		} 
 		catch (Exception e) {
 			LOGGER.warn("error",e);
