@@ -119,7 +119,7 @@ public class MarketRateService {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Map<Currency,MarketRate> getMarketRates(String apiKey,Collection<Currency> currencies, Boolean force, ZonedDateTime t){
 
-		LOGGER.info("getUpToDateMarketRates time: {} currencies: {}",t,currencies);
+		LOGGER.debug("getUpToDateMarketRates time: {} currencies: {}",t,currencies);
 		
 		currencies = new ArrayList<>(currencies);
 		currencies.remove(usd);
@@ -143,7 +143,7 @@ public class MarketRateService {
 				//if we have rates within the radius then we use those
 				List<MarketRate> rates = new ArrayList<>(rateRepo.findByCurrencyAndTimestampGreaterThanAndTimestampLessThanOrderByTimestampDesc(cur, minAge, maxAage));
 				if(rates.size() > 0) {
-					LOGGER.info("Found rates in database: {}",rates);
+					LOGGER.debug("Found rates in database: {}",rates);
 					ratesListMap.put(cur, rates);
 				}
 				else {
@@ -158,7 +158,7 @@ public class MarketRateService {
 
 		
 
-		LOGGER.info("Need to request rates for: {}",getRatesFor);
+		LOGGER.debug("Need to request rates for: {}",getRatesFor);
 
 		if(getRatesFor.size() > 0) {
 
@@ -202,7 +202,7 @@ public class MarketRateService {
 						}
 						else {
 							BigDecimal price = prices.getPrice(sym);
-							LOGGER.info("price: {}",price);
+							LOGGER.debug("price: {}",price);
 							if(price != null) {
 								MarketRate mr = new MarketRate(curr,price,time);
 								rateRepo.save(mr);
@@ -271,7 +271,7 @@ public class MarketRateService {
 				return Duration.between(r0.getTimestamp(), time).abs().compareTo(Duration.between(r1.getTimestamp(), time).abs());
 			});
 			//sort rates based on distance from timestamp
-			LOGGER.info("sorted market rates: {}",list);
+			LOGGER.debug("sorted market rates: {}",list);
 			
 			Optional<MarketRate> ranged = list.stream().filter(mr -> mr.isRange()).findFirst();
 			Optional<MarketRate> specific = list.stream().filter(mr -> !mr.isRange()).findFirst();
@@ -292,7 +292,7 @@ public class MarketRateService {
 				closest = ranged.orElseGet(() -> specific.get());
 			}
 
-			LOGGER.info("closest rate: {}",closest);
+			LOGGER.debug("closest rate: {}",closest);
 			marketRateMap.put(cur, closest);
 			
 		});
