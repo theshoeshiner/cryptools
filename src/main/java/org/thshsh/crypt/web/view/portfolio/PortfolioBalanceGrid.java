@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.util.Collection;
 
@@ -8,7 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Currency;
@@ -18,8 +19,12 @@ import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.UiComponents;
-import org.thshsh.vaadin.ChunkRequest;
-import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.balance.BalanceDialog;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.data.ChunkRequest;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.ClickEvent;
@@ -55,12 +60,12 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 	ManagePortfolioView manageView;
 	
 	public PortfolioBalanceGrid(ManagePortfolioView v) {
-		super(Balance.class, BalanceDialog.class,FilterMode.None);
+		super(BalanceDialog.class,FilterMode.None);
 
-		this.portfolio = v.entity;
+		this.portfolio = v.getEntity();
 		LOGGER.info("PortfolioBalancesList: {}",this.portfolio);
 		this.showDeleteButton = true;
-		this.showButtonColumn = true;
+		this.appendButtonColumn = true;
 		this.manageView = v;
 		this.showCount = false;
 		this.showFilter=false;
@@ -110,33 +115,36 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 
 
 
+
 	@Override
 	public void clickNew(ClickEvent<Button> click) {
 		super.clickNew(click);
 	}
 
 	@Override
-	public void delete(Balance e) {
+	public void delete(Collection<Balance> entities) {
 		
-		
-		Collection<Balance> balances = balanceRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency());
-		if(balances.size() == 1) {
-			//TODO if this is the last balance then we need to delete the allocation as well
-			alloRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency()).ifPresent(a -> {
-				LOGGER.info("deleting allocation: {}",a);
-				alloRepo.delete(a);
-				//if we're deleting an allocation then we need to make sure we're not leaving a remainder?
-				//no we dont want to change other allocations without explicitly telling the user
-			});
+		for(Balance e : entities) {
 
+			Collection<Balance> balances = balanceRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency());
+			if(balances.size() == 1) {
+				//TODO if this is the last balance then we should delete the allocation as well
+				alloRepo.findByPortfolioAndCurrency(portfolio, e.getCurrency()).ifPresent(a -> {
+					LOGGER.info("deleting allocation: {}",a);
+					alloRepo.delete(a);
+					//if we're deleting an allocation then we need to make sure we're not leaving a remainder?
+					//no we dont want to change other allocations without explicitly telling the user
+				});
+				((BalanceRepository)repository).delete(e);
+	
+			}
+		
 		}
-		super.delete(e);
+		//super.delete(entities);
 	}
 
-	@Override
-	public PagingAndSortingRepository<Balance, Long> getRepository() {
-		return balanceRepo;
-	}
+	
+
 
 	@Override
 	public void setupColumns(Grid<Balance> grid) {
@@ -154,7 +162,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 		});
 		UiComponents.iconColumn(col);
 
-		Column<?> eName = grid.addColumn(FunctionUtils.nestedValue(Balance::getExchange, Exchange::getName))
+		Column<?> eName = grid.addColumn(BinderUtils.nestedValue(Balance::getExchange, Exchange::getName))
 		.setHeader("Exchange")
 		.setSortProperty("exchange.name")
 		.setSortable(true)
@@ -177,7 +185,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 		;
 		UiComponents.iconColumn(curIcon);
 
-		Column<?> label = grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getKey))
+		Column<?> label = grid.addColumn(BinderUtils.nestedValue(Balance::getCurrency, Currency::getKey))
 		.setHeader("Currency")
 		.setSortProperty("currency.key")
 		.setSortable(true)
@@ -194,15 +202,6 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 
 	}
 
-	@Override
-	public String getEntityName(Balance t) {
-		return t.getBalance().toString() +" "+t.getCurrency().getKey();
-	}
-
-	@Override
-	public Long getEntityId(Balance entity) {
-		return entity.getId();
-	}
 
 	@Override
 	public void setFilter(String text) {
@@ -215,6 +214,20 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 		// TODO Auto-generated method stub
 
 	}
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Balance, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+	@Override
+	@Autowired
+	public void setRepository(Repository<Balance, Long> repository) {
+		super.setRepository(repository);
+	}
+	
+	
 
 	/*
 	public static class PortfolioBalancesListProvider extends DelegateEntitiesListProvider<Balance,Long> {
@@ -244,7 +257,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 			});
 			UiComponents.iconColumn(col);
 
-			Column<?> eName = grid.addColumn(FunctionUtils.nestedValue(Balance::getExchange, Exchange::getName))
+			Column<?> eName = grid.addColumn(BinderUtils.nestedValue(Balance::getExchange, Exchange::getName))
 			.setHeader("Exchange")
 			.setSortProperty("exchange.name")
 			.setSortable(true)
@@ -267,7 +280,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 			;
 			UiComponents.iconColumn(curIcon);
 
-			Column<?> label = grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getKey))
+			Column<?> label = grid.addColumn(BinderUtils.nestedValue(Balance::getCurrency, Currency::getKey))
 			.setHeader("Currency")
 			.setSortProperty("currency.key")
 			.setSortable(true)
@@ -295,7 +308,7 @@ public class PortfolioBalanceGrid extends AppEntityGrid<Balance> {
 		}
 
 		@Override
-		public ExampleFilterRepository<Balance, Long> getRepository() {
+		public QueryByExampleRepository<Balance, Long> getRepository() {
 			return balanceRepo;
 		}
 

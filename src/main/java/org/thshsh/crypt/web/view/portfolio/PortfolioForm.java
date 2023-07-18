@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.math.BigDecimal;
 
@@ -6,7 +6,7 @@ import org.apache.commons.collections4.map.SingletonMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
@@ -15,12 +15,14 @@ import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioSettings;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.CurrencyRepository;
-import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.PortfolioHistoryService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UsernameEmailDataProvider;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.crypt.web.view.currency.CurrencyDataProvider;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -43,8 +45,6 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 	@Autowired
 	ApplicationContext appContext;
 
-	@Autowired
-	PortfolioRepository portRepo;
 
 	@Autowired
 	CurrencyRepository assetRepo;
@@ -53,16 +53,22 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 	AppSession session;
 
 	public PortfolioForm(Portfolio entity) {
-		super(Portfolio.class, entity);
+		super(entity);
 		this.createText = "New";
-		this.saveText = "Save and Open";
-		this.confirm = false;
 	}
 
+	
+	
+
 	@Override
-	protected JpaRepository<Portfolio, Long> getRepository() {
-		return portRepo;
+	public void postConstruct() {
+		super.postConstruct();
+		this.getButtons().setConfirm(false);
+		this.getButtons().getSave().setText("Save and Open");
 	}
+
+
+
 
 	@Override
 	protected void setupForm() {
@@ -85,8 +91,8 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 		reserveField.setItems(appContext.getBean(CurrencyDataProvider.class));
 		reserveField.setWidth("250px");
 		binder.forField(reserveField).asRequired().bind(
-				FunctionUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
-				FunctionUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
+				BinderUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
+				BinderUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
 				);
 		formLayout.add(reserveField);
 		
@@ -106,11 +112,25 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 
 		}
 
-		formLayout.endLayout();
+		formLayout.endComponent();
 
 	}
 	
 	
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Portfolio, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<Portfolio, Long> repository) {
+		super.setRepository(repository);
+	}
+
 
 	@Override
 	protected void save() throws ValidationException {
@@ -118,16 +138,14 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 	}
 	
 	@Override
-	protected void persist()  {
-		super.persist();
+	protected Portfolio persist()  {
+		Portfolio p = super.persist();
 		historyService.runHistoryJob(entity);
 		UI.getCurrent().navigate("portfolio", QueryParameters.simple(new SingletonMap<>("id",entity.getId().toString())));
+		return p;
 	}	
 
-	@Override
-	protected Long getEntityId(Portfolio e) {
-		return e.getId();
-	}
+
 
 	@Override
 	protected Portfolio createEntity() {
@@ -137,6 +155,7 @@ public class PortfolioForm extends AppEntityForm<Portfolio, Long> {
 		p.getSettings().setIndividualThreshold(DEFAULT_IND_THRESH);
 		p.getSettings().setPortfolioThreshold(DEFAULT_PORT_THRESH);
 		return p;
+
 	}
 
 

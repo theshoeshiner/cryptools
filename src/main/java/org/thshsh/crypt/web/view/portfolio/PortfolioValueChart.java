@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -7,9 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -21,9 +19,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
-import org.thshsh.crypt.PortfolioEntryHistory;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 

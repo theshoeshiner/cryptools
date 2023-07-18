@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,12 +36,17 @@ import org.thshsh.crypt.serv.BalanceService;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.UiComponents;
-import org.thshsh.vaadin.FunctionUtils;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.allocation.AllocationDialog;
+import org.thshsh.vaadin.BinderUtils;
 import org.thshsh.vaadin.GridUtils;
-import org.thshsh.vaadin.ImageRenderer;
 import org.thshsh.vaadin.UIUtils;
 import org.thshsh.vaadin.entity.ConfirmDialogs;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 import org.thshsh.vaadin.entity.EntityGrid;
+import org.vaadin.addons.thshsh.easyrender.ImageRenderer;
+import org.vaadin.addons.thshsh.hovercolumn.HoverColumn;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -51,8 +56,8 @@ import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.FooterRow.FooterCell;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
-import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -128,13 +133,13 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 	}
 	
 	public PortfolioEntryGrid(ManagePortfolioView v, Boolean f) {
-		super(PortfolioEntryHistory.class, null, FilterMode.None);
+		super(null, FilterMode.None);
 		//this.listOperationProvider = new PortfolioEntriesListProvider();
-		this.portfolio = v.entity;
+		this.portfolio = v.getEntity();
 		LOGGER.info("PortfolioBalancesList: {}", this.portfolio);
 		this.showDeleteButton = false;
 		this.showEditButton=false;
-		this.showButtonColumn = false;
+		this.appendButtonColumn = false;
 		this.view = v;
 		//this.entries = new HashSet<PortfolioEntryHistory>();
 		this.showHeader = true;
@@ -157,7 +162,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 			}
 			entries = summary.getEntries();
 			BigDecimal tot = summary.getValue();
-			dataProvider = new ListDataProvider<>(entries);
+			dataProvider = new ListDataProvider<>(getEntries());
 			super.postConstruct();
 	
 			totalValueCell.setText(ReserveFormat.format(tot));
@@ -196,11 +201,11 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 	public void refresh() {
 		super.refresh();
 	}
-
-	@Override
-	public Long getCountAll() {
-		return (long) dataProvider.size(new Query<>());
-	}
+	/*
+		@Override
+		public Long getCountAll() {
+			return (long) dataProvider.size(new Query<>());
+		}*/
 
 	
 	
@@ -214,21 +219,21 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 	};*/
 
 
-	@Override
+	/*@Override
 	public PagingAndSortingRepository<PortfolioEntryHistory, Long> getRepository() {
 		return null;
-	}
+	}*/
 
-	@Override
-	public Long getEntityId(PortfolioEntryHistory entity) {
-		if(entity.getCurrency()==null) return -1l;
-		return entity.getCurrency().getId();
-	}
-
-	@Override
-	public String getEntityName(PortfolioEntryHistory t) {
-		return "";
-	}
+	/*	@Override
+		public Long getEntityId(PortfolioEntryHistory entity) {
+			if(entity.getCurrency()==null) return -1l;
+			return entity.getCurrency().getId();
+		}
+	
+		@Override
+		public String getEntityName(PortfolioEntryHistory t) {
+			return "";
+		}*/
 
 
 	protected void adjustAllocation(PortfolioEntryHistory pe) {
@@ -272,7 +277,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 
 		UiComponents.iconColumn(curCol);
 
-		Column<?> sym = grid.addColumn(FunctionUtils.nestedValueDefault(PortfolioEntryHistory::getCurrency, Currency::getKey,"Unallocated"))
+		Column<?> sym = grid.addColumn(BinderUtils.nestedValueDefault(PortfolioEntryHistory::getCurrency, Currency::getKey,"Unallocated"))
 				.setHeader("Currency")
 				.setWidth("90px")
 				.setFlexGrow(0)
@@ -395,7 +400,7 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 		})
 		.setFlexGrow(0)
 		.setClassNameGenerator(val -> {
-			return EntityGrid.SHOW_ON_HOVER_COLUMN_CLASS;
+			return HoverColumn.HOVER_COLUMN_CLASS;
 		})
 		.setWidth("40px");
 		
@@ -488,10 +493,10 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 		
 		coll.add(adjustColumn);
 		
-		Column<PortfolioEntryHistory> priceColumn = grid.addColumn(new NumberRenderer<>(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate),ReserveFormat))
+		Column<PortfolioEntryHistory> priceColumn = grid.addColumn(new NumberRenderer<>(BinderUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate),ReserveFormat))
 		.setHeader("Price")
 		.setTextAlign(ColumnTextAlign.END)
-		.setComparator(Comparator.comparing(FunctionUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate)))
+		.setComparator(Comparator.comparing(BinderUtils.nestedValue(PortfolioEntryHistory::getRate, MarketRate::getRate)))
 		.setWidth("100px")
 		.setFlexGrow(0);
 		coll.add(priceColumn);
@@ -521,11 +526,22 @@ public class PortfolioEntryGrid extends AppEntityGrid<PortfolioEntryHistory> {
 	}
 
 	@Override
-	public DataProvider<PortfolioEntryHistory, ?> createDataProvider() {
-		ListDataProvider<PortfolioEntryHistory> ldp = new ListDataProvider<>(entries);
+	public DataProvider<PortfolioEntryHistory, ?> createBaseDataProvider() {
+		ListDataProvider<PortfolioEntryHistory> ldp = new ListDataProvider<>(getEntries());
 		ldp.setSortOrder(PortfolioEntryHistory::getToTriggerPercentOrZero, SortDirection.DESCENDING);
 		return ldp;
 
 	}
 
+	public Set<PortfolioEntryHistory> getEntries() {
+		return entries;
+	}
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<PortfolioEntryHistory, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+	
 }

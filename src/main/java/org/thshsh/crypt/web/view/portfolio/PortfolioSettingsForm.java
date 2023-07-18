@@ -1,43 +1,38 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
-import org.ocpsoft.prettytime.PrettyTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
-import org.thshsh.crypt.BigDecimalConverter;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioSettings;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.PercentConverter;
+import org.thshsh.crypt.web.view.currency.CurrencyDataProvider;
 import org.thshsh.vaadin.DurationField;
-import org.thshsh.vaadin.entity.EntityForm;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.textfield.BigDecimalField;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.binder.ValidationException;
 
 @SuppressWarnings("serial")
 @Component
 @Scope("prototype")
-public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Serializable> {
+public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Integer> {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PortfolioSettingsForm.class);
 
@@ -58,27 +53,25 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 	Portfolio portfolio;
 
 	public PortfolioSettingsForm(ManagePortfolioView v, Portfolio entity) {
-		super(PortfolioSettings.class, entity.getSettings());
+		super(entity.getSettings());
 		this.portfolio = entity;
 		this.manageView = v;
 	}
 	
 	@PostConstruct
 	public void postConstruct() {
-		this.disableSaveUntilChange=true;
+		
 		super.postConstruct();
 		this.setPadding(false);
 		this.setSpacing(false);
 		this.setMargin(false);
 		this.formLayout.setPadding(false);
 		this.formLayout.setMargin(false);
-		this.cancel.setVisible(false);
+		this.getButtons().setDisableSaveUntilChange(true);
+		this.getButtons().getCancel().setVisible(false);
+		
 	}
 
-	@Override
-	protected JpaRepository<PortfolioSettings, Serializable> getRepository() {
-		return null;
-	}
 
 	@Override
 	protected void setupForm() {
@@ -97,8 +90,8 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 			.asRequired()
 			.bind(
 				PortfolioSettings::getReserve,PortfolioSettings::setReserve
-				//FunctionUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
-				//FunctionUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
+				//BinderUtils.nestedValue(Portfolio::getSettings,PortfolioSettings::getReserve),
+				//BinderUtils.nestedSetter(Portfolio::getSettings, PortfolioSettings::setReserve)
 				);
 
 
@@ -149,10 +142,10 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 		formLayout.add(minimumAdjustField);
 		formLayout.add(portThreshField);
 		formLayout.add(indThreshField);
-		formLayout.endLayout();
+		formLayout.endComponent();
 		formLayout.add(silentField);
 		formLayout.add(alerts);
-		formLayout.endLayout();
+		formLayout.endComponent();
 		
 		
 		
@@ -160,14 +153,9 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 
 	}
 
-	@Override
-	protected Serializable getEntityId(PortfolioSettings e) {
-		return null;
-	}
-
 
 	@Override
-	protected void persist() {
+	protected PortfolioSettings persist() {
 		LOGGER.info("save");
 		Portfolio p = portRepo.findById(portfolio.getId()).get();
 		p.setSettings(entity);
@@ -177,8 +165,15 @@ public class PortfolioSettingsForm extends AppEntityForm<PortfolioSettings, Seri
 		//Notification n = new Notification("Saved", 500, Position.MIDDLE);
 		
 		//Notification.show("", 500, Position.MIDDLE);
+		return entity;
+	}
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<PortfolioSettings, Integer> descriptor) {
+		super.setDescriptor(descriptor);
 	}
 
 
-
+	
 }

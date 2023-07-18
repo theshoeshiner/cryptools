@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import javax.annotation.PostConstruct;
 
@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.PortfolioRepository;
+import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.EntityGridView;
 
@@ -33,7 +34,7 @@ public class PortfoliosView extends EntityGridView<Portfolio, Long> {
 	}
 
 	/*@Override
-	public ExampleFilterRepository<Portfolio, Long> getRepository() {
+	public QueryByExampleRepository<Portfolio, Long> getRepository() {
 		return portRepo;
 	}
 

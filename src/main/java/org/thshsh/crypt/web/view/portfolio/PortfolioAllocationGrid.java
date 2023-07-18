@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.math.BigDecimal;
 
@@ -7,21 +7,21 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Allocation;
-import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.repo.AllocationRepository;
 import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.web.UiComponents;
-import org.thshsh.vaadin.ChunkRequest;
-import org.thshsh.vaadin.ExampleFilterRepository;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.entity.EntityGrid;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.allocation.AllocationDescriptor;
+import org.thshsh.crypt.web.view.allocation.AllocationDialog;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.data.ChunkRequest;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -55,12 +55,12 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 	Span remainder;
 
 	public PortfolioAllocationGrid(ManagePortfolioView v) {
-		super(Allocation.class, AllocationDialog.class,FilterMode.String);
+		super(AllocationDialog.class,FilterMode.String);
 		//this.listOperationProvider = new PortfolioAllocationsListProvider();
-		this.portfolio = v.entity;
+		this.portfolio = v.getEntity();
 		LOGGER.info("PortfolioBalancesList: {}", this.portfolio);
 		this.showDeleteButton = true;
-		this.showButtonColumn = true;
+		this.appendButtonColumn = true;
 		this.view = v;
 		this.showCount=false;
 		this.showFilter=false;
@@ -70,6 +70,14 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 
 	@PostConstruct
 	public void postConstruct() {
+		
+		super.setDescriptor(new AllocationDescriptor() {
+			@Override
+			public String getEntityName(Allocation t) {
+				return PortfolioEntryGrid.PercentFormat.format(t.getPercent()) +" "+t.getCurrency().getKey();
+			}
+		});
+		
 		super.postConstruct();
 		HorizontalLayout remainderLayout = new HorizontalLayout();
 		remainderLayout.setPadding(false);
@@ -132,7 +140,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 			;
 			UiComponents.iconColumn(curIcon);
 
-			Column<?> lab = grid.addColumn(FunctionUtils.nestedValue(Allocation::getCurrency, Currency::getName))
+			Column<?> lab = grid.addColumn(BinderUtils.nestedValue(Allocation::getCurrency, Currency::getName))
 			.setHeader("Currency");
 
 			UiComponents.iconLabelColumn(lab);
@@ -140,7 +148,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 			grid.addColumn(new NumberRenderer<>(Allocation::getPercent,PortfolioEntriesList.PercentFormat))
 			.setHeader("Percent");
 
-			grid.addColumn(FunctionUtils.nestedValue(Balance::getCurrency, Currency::getSymbol))
+			grid.addColumn(BinderUtils.nestedValue(Balance::getCurrency, Currency::getSymbol))
 			.setHeader("Currency");
 
 			grid.addColumn(Balance::getBalance)
@@ -159,7 +167,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 		}
 
 		@Override
-		public ExampleFilterRepository<Allocation, Long> getRepository() {
+		public QueryByExampleRepository<Allocation, Long> getRepository() {
 			return alloRepo;
 		}
 
@@ -197,7 +205,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 		;
 		UiComponents.iconColumn(curIcon);
 
-		Column<?> lab = grid.addColumn(FunctionUtils.nestedValue(Allocation::getCurrency, Currency::getName))
+		Column<?> lab = grid.addColumn(BinderUtils.nestedValue(Allocation::getCurrency, Currency::getName))
 		.setHeader("Currency");
 
 		UiComponents.iconLabelColumn(lab);
@@ -217,7 +225,7 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 	}
 
 	@Override
-	public DataProvider<Allocation, ?> createDataProvider() {
+	public DataProvider<Allocation, ?> createBaseDataProvider() {
 		CallbackDataProvider<Allocation, Void> dataProvider = DataProvider.fromCallbacks(
 				q -> alloRepo.findByPortfolio(portfolio,ChunkRequest.of(q, getDefaultSortOrder())).getContent().stream(),
 				q -> Ints.checkedCast(alloRepo.countByPortfolio(portfolio)));
@@ -225,17 +233,13 @@ public class PortfolioAllocationGrid extends AppEntityGrid<Allocation> {
 		return dataProvider;
 	}
 
-	@Override
-	public String getEntityName(Allocation t) {
-		return PortfolioEntryGrid.PercentFormat.format(t.getPercent()) +" "+t.getCurrency().getKey();
-		//return t.getExchange().getName() +" / "+t.getBalance().toString();
-	}
+	
 
-	@Override
+	/*@Override
 	public Long getEntityId(Allocation entity) {
 		return entity.getId();
 	}
-
+	*/
 	@Override
 	public void setFilter(String text) {
 

@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -6,6 +6,7 @@ import java.time.format.FormatStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
@@ -14,9 +15,12 @@ import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioAlertRepository;
 import org.thshsh.crypt.web.security.SecurityUtils;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.RouterLinkRenderer;
-import org.thshsh.vaadin.ZonedDateTimeRenderer;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.entity.EntityDescriptor;
+import org.vaadin.addons.thshsh.easyrender.RouterLinkRenderer;
+import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.grid.Grid;
 
@@ -24,21 +28,16 @@ import com.vaadin.flow.component.grid.Grid;
 @Component
 @Scope("prototype")
 public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
-	
-	@Autowired
-	PortfolioAlertRepository alertRepo;
+
 
 	public PortfolioAlertGrid() {
-		super(PortfolioAlert.class, null, FilterMode.Example);
-		this.showButtonColumn = SecurityUtils.hasAccess(Feature.Portfolio, Access.Super);
+		super(null, FilterMode.Example);
+		this.appendButtonColumn = SecurityUtils.hasAccess(Feature.Portfolio, Access.Super);
 		this.defaultSortOrderProperty="timestamp";
 		this.defaultSortAsc=false;
 	}
 
-	@Override
-	public PagingAndSortingRepository<PortfolioAlert, Long> getRepository() {
-		return alertRepo;
-	}
+
 
 	@Override
 	public void setupColumns(Grid<PortfolioAlert> grid) {
@@ -46,19 +45,19 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 
 		
 		grid
-		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName), FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId)))
+		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName), BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId)))
 		.setHeader("Portfolio")
 		.setAutoWidth(true)
 		.setFlexGrow(0)
 		.setSortProperty("portfolio.name")
 		;
 		
-		grid.addColumn(FunctionUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getUser, User::getEmail))
+		grid.addColumn(BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getUser, User::getEmail))
 		.setHeader("User")
 		.setWidth("250px")
 		.setFlexGrow(0);
 		
-		grid.addColumn(new ZonedDateTimeRenderer<>(PortfolioAlert::getTimestamp,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
+		grid.addColumn(new TemporalRenderer<>(PortfolioAlert::getTimestamp,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Timestamp")
 		.setWidth("150px")
 		.setFlexGrow(0)
@@ -78,5 +77,23 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 		;
 		
 	}
+
+
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<PortfolioAlert, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+
+
+	@Override
+	@Autowired
+	public void setRepository(Repository<PortfolioAlert, Long> repository) {
+		super.setRepository(repository);
+	}
+	
+	
 
 }

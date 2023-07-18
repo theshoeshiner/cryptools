@@ -1,11 +1,10 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.portfolio;
 
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.vaadin.entity.EntityGrid;
 import org.thshsh.vaadin.entity.EntityGridView;
 
 import com.vaadin.flow.router.PageTitle;
