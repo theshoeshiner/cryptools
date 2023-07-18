@@ -1,9 +1,10 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.currency;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thshsh.crypt.Currency;
+import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.EntityGridView;
 

@@ -1,22 +1,25 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.currency;
 
 import java.util.Arrays;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Grade;
-import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.MarketRateService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.crypt.web.view.ManagePortfolioView;
 import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.entity.EntityDescriptor;
+import org.thshsh.vaadin.entity.EntityOperation;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -36,9 +39,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 public class CurrenciesGrid extends AppEntityGrid<Currency> {
 
 
-	@Autowired
-	CurrencyRepository repo;
-	
+
 	@Autowired
 	MarketRateService rateService;
 	
@@ -46,17 +47,13 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 	ImageService imageService;
 
 	public CurrenciesGrid() {
-		super(Currency.class, null, FilterMode.Example);
-		this.showButtonColumn=true;
+		super(null, FilterMode.Example);
+		//this.showButtonColumn=true;
 		this.showEditButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWrite);
 		this.showDeleteButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete);
 		this.defaultSortOrderProperty="rank";
 		this.defaultSortAsc=false;
-	}
-
-	@Override
-	public PagingAndSortingRepository<Currency, Long> getRepository() {
-		return repo;
+		this.appendButtonColumn=true;
 	}
 
 	@Override
@@ -140,26 +137,36 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 		
 	
 		
-		//grid.addColumn(FunctionUtils.nestedValue(Currency::getBuiltOn, Currency::getName)).setHeader("Built On");
+		//grid.addColumn(BinderUtils.nestedValue(Currency::getBuiltOn, Currency::getName)).setHeader("Built On");
 		
 		/*grid.addColumn((e) -> {
 			return "";
 		})
 		;*/
 	}
+	
+	
 
 	@Override
-	public void addButtonColumn(HorizontalLayout buttons, Currency e) {
-		super.addButtonColumn(buttons, e);
-
+	protected void createOperations() {
+		super.createOperations();
+		
 		if(SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete)) {
-			Button refresh = new Button(VaadinIcon.REFRESH.create());
-			refresh.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-			buttons.add(refresh);
-			UIUtils.setTitle(refresh, "Refresh");
-			refresh.addClickListener(click -> refreshRate(e));
+			operations.add(
+			EntityOperation.<Currency>create()
+			.withIcon(VaadinIcon.REFRESH)
+			.withName("Refresh")
+			//.withDisplay(!showDeleteButton)
+			//.withCollectiveOperation(this::delete)
+			.withConfirm(true)
+			.withSingularOperation(e->{
+				refreshRate(e);
+			})
+			);
 		}
+		
 	}
+
 
 	protected void refreshRate(Currency c) {
 		rateService.getMarketRates(AppSession.getCurrentUser().getApiKey(), Arrays.asList(c),true,null);
@@ -171,10 +178,6 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 		UI.getCurrent().navigate(route, queryParameters);
 	}*/
 
-	@Override
-	public String getEntityName(Currency t) {
-		return t.getName();
-	}
 
 	
 
@@ -191,6 +194,18 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 		this.filterEntity.setKey(null);
 		filterEntity.setGrade(null);
 		
+	}
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Currency, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+	@Override
+	@Autowired
+	public void setRepository(Repository<Currency, Long> repository) {
+		super.setRepository(repository);
 	}
 	
 	
