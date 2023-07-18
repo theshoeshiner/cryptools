@@ -1,10 +1,11 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.contact;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Contact;
+import org.thshsh.crypt.web.view.AppEntityDialog;
 
 @SuppressWarnings("serial")
 @Component

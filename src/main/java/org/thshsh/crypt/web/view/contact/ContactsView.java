@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.contact;
 
 import javax.annotation.PostConstruct;
 
@@ -7,6 +7,7 @@ import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
+import org.thshsh.crypt.web.view.Breadcrumbs;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.EntityGridView;
 

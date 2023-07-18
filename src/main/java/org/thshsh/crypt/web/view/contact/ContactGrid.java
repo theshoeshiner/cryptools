@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.contact;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -7,14 +7,15 @@ import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.ContactType;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.repo.ContactRepository;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.ZonedDateTimeRenderer;
+import org.thshsh.crypt.web.view.AppEntityGrid;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.entity.EntityDescriptor;
+import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.grid.Grid;
 
@@ -23,21 +24,14 @@ import com.vaadin.flow.component.grid.Grid;
 @Scope("prototype")
 public class ContactGrid extends AppEntityGrid<Contact> {
 
-	@Autowired
-	ContactRepository contactRepo;
-	
+
 	public ContactGrid() {
-		super(Contact.class, ContactDialog.class, FilterMode.Example);
+		super(ContactDialog.class, FilterMode.Example);
 	}
 
 	@Override
-	public PagingAndSortingRepository<Contact, Long> getRepository() {
-		return contactRepo;
-	}
-	
-	@Override
 	public void postConstruct() {
-		this.showButtonColumn = true;
+		this.appendButtonColumn = true;
 		this.showCreateButton = false;
 		super.postConstruct();
 	}
@@ -45,21 +39,21 @@ public class ContactGrid extends AppEntityGrid<Contact> {
 	@Override
 	public void setupColumns(Grid<Contact> grid) {
 		
-		grid.addColumn(FunctionUtils.nestedValue(Contact::getUser, User::getId))
+		grid.addColumn(BinderUtils.nestedValue(Contact::getUser, User::getId))
 		.setHeader("User Id")
 		.setFlexGrow(0)
 		.setWidth("100px")
 		.setSortProperty("user.id")
 		;
 		
-		grid.addColumn(FunctionUtils.nestedValue(Contact::getUser, User::getUserName))
+		grid.addColumn(BinderUtils.nestedValue(Contact::getUser, User::getUserName))
 		.setHeader("Username")
 		.setWidth("150px")
 		.setFlexGrow(0)
 		.setSortProperty("user.userName")
 		;
 		
-		grid.addColumn(FunctionUtils.nestedValue(Contact::getUser, User::getEmail))
+		grid.addColumn(BinderUtils.nestedValue(Contact::getUser, User::getEmail))
 		.setHeader("User Email")
 		.setWidth("250px")
 		.setFlexGrow(0)
@@ -68,7 +62,7 @@ public class ContactGrid extends AppEntityGrid<Contact> {
 		
 		
 		
-		grid.addColumn(new ZonedDateTimeRenderer<>(Contact::getCreated, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
+		grid.addColumn(new TemporalRenderer<>(Contact::getCreated, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Time")
 		.setFlexGrow(0)
 		.setWidth("150px")
@@ -110,6 +104,18 @@ public class ContactGrid extends AppEntityGrid<Contact> {
 		filterEntity.setUser(null);
 		filterEntity.setType(null);
 		filterEntity.setId(null);
+	}
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Contact, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+	@Override
+	@Autowired
+	public void setRepository(Repository<Contact, Long> repository) {
+		super.setRepository(repository);
 	}
 	
 	

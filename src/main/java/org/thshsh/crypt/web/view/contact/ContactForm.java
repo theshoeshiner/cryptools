@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.contact;
 
 import java.util.Arrays;
 
@@ -6,11 +6,13 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.ContactType;
-import org.thshsh.crypt.repo.ContactRepository;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -20,31 +22,29 @@ import com.vaadin.flow.component.textfield.TextArea;
 @Scope("prototype")
 public class ContactForm extends AppEntityForm<Contact,Long>{
 
-	@Autowired
-	ContactRepository repo;
 	
 	public ContactForm() {
-		super(Contact.class, null);
+		super(null);
 	}
 	
 	public ContactForm(Contact entity) {
-		super(Contact.class, entity);
+		super(entity);
 	}
 
-	@Override
-	protected JpaRepository<Contact, Long> getRepository() {
-		return repo;
-	}
 
 	
 	@PostConstruct
 	@Override
 	public void postConstruct() {
 		this.loadFromId=false;
-		this.confirm = false;
-		this.saveText = "Submit";
+		//this.confirm = false;
 		super.postConstruct();
-		this.cancel.setVisible(false);
+		//this.cancel.setVisible(false);
+		
+		this.getButtons().getSave().setText("Submit");
+		this.getButtons().setConfirm(false);
+		this.getButtons().getCancel().setVisible(false);
+		
 	}
 	
 	@Override
@@ -70,8 +70,16 @@ public class ContactForm extends AppEntityForm<Contact,Long>{
 	}
 
 	@Override
-	protected Long getEntityId(Contact e) {
-		return e.getId();
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Contact, Long> descriptor) {
+		super.setDescriptor(descriptor);
 	}
 
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<Contact, Long> repository) {
+		super.setRepository(repository);
+	}
+
+	
 }
