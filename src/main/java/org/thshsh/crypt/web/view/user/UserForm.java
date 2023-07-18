@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.user;
 
 import java.util.List;
 
@@ -8,35 +8,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.thshsh.crypt.Access;
-import org.thshsh.crypt.Feature;
+import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Role;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.RoleRepository;
-import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.crypt.web.AppSession;
-import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.view.ApiKeyValidator;
+import org.thshsh.crypt.web.view.AppEntityForm;
 import org.thshsh.crypt.web.views.main.UserMenu;
-import org.thshsh.vaadin.entity.EntityDialog;
-import org.vaadin.gatanaso.MultiselectComboBox;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.validator.EmailValidator;
 
@@ -50,9 +44,7 @@ public class UserForm extends AppEntityForm<User,Long> {
 		Admin,Register,Profile;
 	}
 	
-	@Autowired
-	UserRepository userRepo;
-	
+
 	@Autowired
 	RoleRepository roleRepo;
 	
@@ -74,20 +66,16 @@ public class UserForm extends AppEntityForm<User,Long> {
 	
 
 	public UserForm(User entity) {
-		super(User.class, entity);
+		super(entity);
 		this.type = Type.Admin;
 	}
 	
 	public UserForm(User entity, Type t) {
-		super(User.class, entity);
+		super(entity);
 		this.type = t;
 	}
 
-	@Override
-	protected JpaRepository<User, Long> getRepository() {
-		return userRepo;
-	}
-	
+
 	@Override
 	@PostConstruct
 	public void postConstruct() {
@@ -216,13 +204,13 @@ public class UserForm extends AppEntityForm<User,Long> {
 		if(type == Type.Admin) {
 			
 			 //end the vertical
-			formLayout.endLayout();
+			formLayout.endComponent();
 			formLayout.startVerticalLayout();
 			
 			
 			List<Role> all = roleRepo.findAll();
 			
-			MultiselectComboBox<Role> multiselectComboBox = new MultiselectComboBox<>("Roles");
+			MultiSelectComboBox<Role> multiselectComboBox = new MultiSelectComboBox<>("Roles");
 			multiselectComboBox.setWidthFull();
 			multiselectComboBox.setItems(all);
 			multiselectComboBox.setItemLabelGenerator(r -> {
@@ -241,9 +229,9 @@ public class UserForm extends AppEntityForm<User,Long> {
 			
 			formLayout.add(tb);
 			
-			formLayout.endLayout();
+			formLayout.endComponent();
 			
-			formLayout.endLayout();
+			formLayout.endComponent();
 			
 		}
 		
@@ -251,61 +239,18 @@ public class UserForm extends AppEntityForm<User,Long> {
 
 	}
 
-	@Override
-	protected Long getEntityId(User e) {
-		return e.getId();
-	}
-	
-	
 	
 	@Override
-	protected void persist() {
-		super.persist();
+	protected User persist() {
+		User p =super.persist();
 		session.refresh();
 		userMenu.refresh();
+		return p;
 	}
 
 
 
-	public static class ChangePasswordEntity {
-		
-		User user;
-		String currentPassword;
-		String newPassword;
-		String confirmPassword;
-
-		public ChangePasswordEntity() {}
-		
-		public ChangePasswordEntity(User user) {
-			this.user = user;
-		}
-		public String getCurrentPassword() {
-			return currentPassword;
-		}
-		public void setCurrentPassword(String currentPassword) {
-			this.currentPassword = currentPassword;
-		}
-		public String getNewPassword() {
-			return newPassword;
-		}
-		public void setNewPassword(String newPassword) {
-			this.newPassword = newPassword;
-		}
-		public String getConfirmPassword() {
-			return confirmPassword;
-		}
-		public void setConfirmPassword(String confirmPassword) {
-			this.confirmPassword = confirmPassword;
-		}
-		public User getUser() {
-			return user;
-		}
-		public void setUser(User user) {
-			this.user = user;
-		}
-		
-		
-	}
+	
 	
 	/*@Component
 	@Scope("prototype")
@@ -364,124 +309,21 @@ public class UserForm extends AppEntityForm<User,Long> {
 	
 	
 	
-	@Component
-	@Scope("prototype")
-	public static class ChangePasswordFormDialog extends EntityDialog<ChangePasswordEntity,Long> {
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<User, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
 
-		public ChangePasswordFormDialog(User user) {
-			super(ChangePasswordForm.class, new ChangePasswordEntity(user));
-			this.setWidth("400px");
-		}
-		
-		@PostConstruct
-		public void postConstruct() {
-			super.postConstruct();
-			this.setCloseOnOutsideClick(true);
-		}
-		
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<User, Long> repository) {
+		super.setRepository(repository);
 	}
 	
-	@Component
-	@Scope("prototype")
-	public static class ChangePasswordForm extends AppEntityForm<ChangePasswordEntity,Long> {
-		
-		@Autowired
-		UserRepository userRepo;
-		
-		@Autowired
-		PasswordEncoder encoder;
-		
-		@Autowired
-		PlatformTransactionManager transactionManager;
-		
-		String newPassword;
-		User user;
-		
-		public ChangePasswordForm(ChangePasswordEntity e) {
-			super(ChangePasswordEntity.class,null);
-			this.user = e.getUser();
-			this.setPadding(false);
-			this.confirm = false;
-			
-		}
-
-		@PostConstruct
-		public void postConstruct() {
-			super.postConstruct();
-			this.titleLayout.setVisible(false);
-		}
-
-		@Override
-		protected JpaRepository<ChangePasswordEntity, Long> getRepository() {
-			return null;
-		}
-
-		@Override
-		protected void setupForm() {
-			
-			if(!SecurityUtils.hasAccess(Feature.User, Access.ReadWriteDelete)) {
-				PasswordField oldPass = new PasswordField("Current Password");
-				oldPass.setWidthFull();
-				formLayout.add(oldPass);
-				
-				binder.forField(oldPass)
-				.asRequired()
-				.withValidator((s,c) -> {
-					if(encoder.matches(s, user.getPassword())) return ValidationResult.ok();
-					else return ValidationResult.error("Current Password Incorrect");
-				})
-				.bind(ChangePasswordEntity::getCurrentPassword,ChangePasswordEntity::setCurrentPassword);
-			}
-			
-			PasswordField newPass = new PasswordField("New Password");
-			newPass.setWidthFull();
-			formLayout.add(newPass);
-			
-			PasswordField confirmPass = new PasswordField("Confirm New Password");
-			confirmPass.setWidthFull();
-			formLayout.add(confirmPass);
-
-			binder.forField(newPass)
-			.asRequired()
-			.bind(ChangePasswordEntity::getNewPassword,ChangePasswordEntity::setNewPassword);
-			
-
-			binder.forField(confirmPass)
-			.asRequired()
-			.withValidator((u, s) -> {
-				if (u.equals(newPass.getValue()))
-					return ValidationResult.ok();
-				else
-					return ValidationResult.error("Passwords do not match");
-			})
-			.bind(ChangePasswordEntity::getConfirmPassword,ChangePasswordEntity::setConfirmPassword);
-			
-			
-		}
-
-		@Override
-		protected Long getEntityId(ChangePasswordEntity e) {
-			return null;
-		}
-
-		@Override
-		protected void persist() {
-
-			TransactionTemplate template = new TransactionTemplate(transactionManager);
-			template.executeWithoutResult(ts -> {
-				newPassword = encoder.encode(entity.getNewPassword());
-				User u = userRepo.findById(user.getId()).get();
-				u.setPassword(newPassword);
-				LOGGER.info("new password: {}",newPassword);
-				
-			});
-			this.saved = true;
-			
-		}
-		
-		
-		
-	}
+	
+	
+	
 
 
 }

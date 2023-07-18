@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.user;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.user;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.User;
@@ -15,9 +16,12 @@ import org.thshsh.crypt.repo.ActivityRepository;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.serv.MailService;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.view.AppEntityGrid;
 import org.thshsh.vaadin.UIUtils;
-import org.thshsh.vaadin.ZonedDateTimeRenderer;
 import org.thshsh.vaadin.entity.ConfirmDialogs;
+import org.thshsh.vaadin.entity.EntityDescriptor;
+import org.thshsh.vaadin.entity.EntityOperation;
+import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -41,8 +45,8 @@ public class UserGrid extends AppEntityGrid<User> {
 	MailService mailService;
 	
 	public UserGrid() {
-		super(User.class, UserDialog.class, FilterMode.Example);
-		this.showButtonColumn = true;
+		super(UserDialog.class, FilterMode.Example);
+		this.appendButtonColumn = true;
 		this.showEditButton = SecurityUtils.hasAccess(User.class, Access.ReadWrite);
 		this.showDeleteButton = SecurityUtils.hasAccess(User.class, Access.ReadWriteDelete);
 	}
@@ -103,7 +107,7 @@ public class UserGrid extends AppEntityGrid<User> {
 		;*/
 		
 		/*	grid
-			.addColumn(new ZonedDateTimeRenderer<>( user -> {
+			.addColumn(new TemporalRenderer<>( user -> {
 				Activity a = actRepo.findTopByUserAndTypeOrderByTimestampDesc(user, ActivityType.Login);
 				return a!=null?a.getTimestamp():null;
 			}, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT) ))
@@ -114,7 +118,7 @@ public class UserGrid extends AppEntityGrid<User> {
 			;*/
 		
 		grid
-		.addColumn(new ZonedDateTimeRenderer<>(User::getLastLogin,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
+		.addColumn(new TemporalRenderer<>(User::getLastLogin,DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Last Login")
 		.setWidth("150px")
 		.setFlexGrow(0)
@@ -135,7 +139,25 @@ public class UserGrid extends AppEntityGrid<User> {
 
 	
 	
+	
+	
 	@Override
+	protected void createOperations() {
+		super.createOperations();
+		
+		operations.add(EntityOperation.<User>create()
+				.withIcon(VaadinIcon.CHECK)
+				.withName("Send Confirmation Email")
+				//.withDisplay(!showEditButton)
+				.withConfirm(true)
+				.withSingularOperation((e) -> {
+					mailService.sendAccountConfirmEmail(e, e.getConfirmToken());
+				}))
+				;
+		
+	}
+
+	/*@Override
 	public void addButtonColumn(HorizontalLayout buttons, User e) {
 	
 		super.addButtonColumn(buttons, e);
@@ -152,7 +174,7 @@ public class UserGrid extends AppEntityGrid<User> {
 				}).open();
 			});
 		}
-	}
+	}*/
 
 	@Override
 	public Dialog createDialog(User entity) {
@@ -160,14 +182,17 @@ public class UserGrid extends AppEntityGrid<User> {
 		return cd;
 	}
 
+
 	@Override
-	public void setFilter(String text) {
-		super.setFilter(text);
+	@Autowired
+	public void setDescriptor(EntityDescriptor<User, Long> descriptor) {
+		super.setDescriptor(descriptor);
 	}
 
 	@Override
-	public void clearFilter() {
-		super.clearFilter();
+	@Autowired
+	public void setRepository(Repository<User, Long> repository) {
+		super.setRepository(repository);
 	}
 
 	

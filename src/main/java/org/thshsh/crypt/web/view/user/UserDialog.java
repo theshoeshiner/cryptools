@@ -1,6 +1,4 @@
-package org.thshsh.crypt.web.view;
-
-import java.io.Serializable;
+package org.thshsh.crypt.web.view.user;
 
 import javax.annotation.PostConstruct;
 
@@ -9,7 +7,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.web.view.UserForm.Type;
+import org.thshsh.crypt.web.view.AppEntityDialog;
+import org.thshsh.crypt.web.view.user.UserForm.Type;
 import org.thshsh.vaadin.entity.EntityForm;
 
 @SuppressWarnings("serial")
