@@ -153,6 +153,8 @@ public class DataGenerator {
 		//if(appConfig.getCryptoCompareSync()) {
 			
 		updateFiats();
+		
+		updateOverrideActive();
 			
 
 		
@@ -161,6 +163,8 @@ public class DataGenerator {
 			LOGGER.error("",re);
 			throw re;
 		}
+		
+		
 
 	}
 	
@@ -334,6 +338,23 @@ public class DataGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+	}
+	
+	protected void updateOverrideActive() {
+		LOGGER.info("updateOverrideActive");
+				
+		template.executeWithoutResult((action) -> {
+			for(String symbol : dataConfig.getActive()) {
+				LOGGER.info("symbol: {}",symbol);
+				Currency c = currencyRepo.findByKey(symbol);
+				if(c!=null) {
+					LOGGER.info("currency: {}",c);
+					c.setActive(true);
+				}
+			}
+		});
+		
 		
 	}
 
