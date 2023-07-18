@@ -9,22 +9,22 @@ import org.thshsh.vaadin.entity.EntityForm;
 @SuppressWarnings("serial")
 public abstract class AppEntityForm<T,ID extends Serializable> extends EntityForm<T,ID> {
 
-	public AppEntityForm(Class<T> eClass, ID id, Boolean loadFromId) {
-		super(eClass, id, loadFromId);
+	public AppEntityForm(ID id, Boolean loadFromId) {
+		super(id, loadFromId);
 	}
 
-	public AppEntityForm(Class<T> eClass, T entity, Boolean load) {
-		super(eClass, entity, load);
+	public AppEntityForm(T entity, Boolean load) {
+		super(entity, load);
 	}
 
-	public AppEntityForm(Class<T> eClass, T entity) {
-		super(eClass, entity);
+	public AppEntityForm(T entity) {
+		super(entity);
 	}
 	
 	@PostConstruct
 	public void postConstruct() {
-		this.cancelText = "Back";
 		super.postConstruct();
+		this.getButtons().getCancel().setText("Back");
 	}
 	
 }

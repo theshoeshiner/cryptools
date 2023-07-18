@@ -8,16 +8,8 @@ import com.vaadin.flow.component.Component;
 @SuppressWarnings("serial")
 public abstract class AppEntityGrid<T extends IdedEntity> extends EntityGrid<T,Long> {
 
-	public AppEntityGrid(Class<T> c, Class<? extends Component> ev, FilterMode fm) {
-		super(c, ev, fm, "id");
+	public AppEntityGrid(Class<? extends Component> ev, FilterMode fm) {
+		super(ev, fm, "id");
 	}
 
-
-
-	@Override
-	public Long getEntityId(T entity) {
-		return entity.getId();
-	}
-
-	
 }

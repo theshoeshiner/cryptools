@@ -1,8 +1,5 @@
 package org.thshsh.crypt.web.view;
 
-import java.io.Serializable;
-
-import org.thshsh.crypt.User;
 import org.thshsh.vaadin.entity.EntityDialog;
 import org.thshsh.vaadin.entity.EntityForm;
 
