@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
-import org.thshsh.crypt.web.view.HasSymbolRepository;
 import org.thshsh.vaadin.data.QueryByExampleRepository;
 
 public interface CurrencyRepository extends BaseRepository<Currency, Long>, QueryByExampleRepository<Currency, Long>, HasSymbolRepository<Currency>  {

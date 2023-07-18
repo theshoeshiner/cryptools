@@ -1,9 +1,7 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.repo;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
-import org.thshsh.crypt.repo.HasNameAndKeyRepository;
 
 public interface HasSymbolRepository<T> extends HasNameAndKeyRepository<T> {
 
