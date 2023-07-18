@@ -1,11 +1,10 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.exchange;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Exchange;
-import org.vaadin.googleanalytics.tracking.GoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
 @Component
@@ -30,7 +29,7 @@ public class ExchangeDialog extends org.thshsh.vaadin.entity.EntityDialog<Exchan
 })
 		 */
 		
-		GoogleAnalyticsTracker.getCurrent().sendPageView("Exchange","/exchange",null);
+		//GoogleAnalyticsTracker.getCurrent().sendPageView("Exchange","/exchange",null);
 		
 		
 	}

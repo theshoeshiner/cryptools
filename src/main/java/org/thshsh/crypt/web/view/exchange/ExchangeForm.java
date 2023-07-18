@@ -1,13 +1,14 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.exchange;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
+import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.Grade;
-import org.thshsh.crypt.repo.ExchangeRepository;
-import org.thshsh.vaadin.entity.EntityForm;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,17 +18,11 @@ import com.vaadin.flow.component.textfield.TextField;
 @Scope("prototype")
 public class ExchangeForm extends AppEntityForm<Exchange,Long> {
 
-	@Autowired
-	ExchangeRepository repo;
-	
+
 	public ExchangeForm(Exchange entity) {
-		super(Exchange.class, entity);
+		super(entity);
 	}
 
-	@Override
-	protected JpaRepository<Exchange, Long> getRepository() {
-		return repo;
-	}
 
 	@Override
 	protected void setupForm() {
@@ -69,27 +64,38 @@ public class ExchangeForm extends AppEntityForm<Exchange,Long> {
 		formLayout.startHorizontalLayout();
 		formLayout.add(name);
 		formLayout.add(key);
-		formLayout.endLayout();
+		formLayout.endComponent();
 		
 		formLayout.startHorizontalLayout();
 		formLayout.add(grade);
-		formLayout.endLayout();
+		formLayout.endComponent();
 
 		formLayout.startHorizontalLayout();
 		formLayout.add(remname);
 		formLayout.add(remid);
-		formLayout.endLayout();
+		formLayout.endComponent();
 
 		formLayout.startHorizontalLayout();
 		formLayout.add(image);
-		formLayout.endLayout();
+		formLayout.endComponent();
 
 		
 	}
 
+
 	@Override
-	protected Long getEntityId(Exchange e) {
-		return e.getId();
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Exchange, Long> descriptor) {
+		super.setDescriptor(descriptor);
 	}
+
+
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<Exchange, Long> repository) {
+		super.setRepository(repository);
+	}
+
+
 
 }
