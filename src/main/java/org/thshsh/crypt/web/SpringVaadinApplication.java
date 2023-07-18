@@ -10,10 +10,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.thshsh.crypt.CryptModel;
 import org.thshsh.crypt.CryptmanModel;
+import org.thshsh.crypt.web.view.portfolio.PortfolioSettingsDescriptor;
 import org.thshsh.vaadin.entity.EntityGrid;
-import org.vaadin.artur.helpers.LaunchUtil;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.AppShellSettings;
@@ -28,10 +27,10 @@ import com.vaadin.flow.theme.material.Material;
 		CryptDataSourceConfiguration.class,
 		CryptmanModel.class,
 		CryptModel.class,
-		EntityGrid.class
+		EntityGrid.class,
 },
 exclude = ErrorMvcAutoConfiguration.class)
-@Theme(value = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)
+@Theme(themeClass = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)
 @PWA(name = "Cryptools", shortName = "Cryptools",iconPath = "icons/cryptools-icon.png")
 @Push(transport = Transport.LONG_POLLING)
 public class SpringVaadinApplication extends SpringBootServletInitializer implements AppShellConfigurator {
@@ -48,10 +47,9 @@ public class SpringVaadinApplication extends SpringBootServletInitializer implem
 	}*/
 
 	 public static void main(String[] args) {
-	        LaunchUtil.launchBrowserInDevelopmentMode(SpringApplication.run(SpringVaadinApplication.class, args));
-
-
-	    }
+		 SpringApplication application = new SpringApplication(SpringVaadinApplication.class);
+		 application.run(args);
+	   }
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
