@@ -1,5 +1,6 @@
 package org.thshsh.crypt.tax;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,7 +15,7 @@ import org.thshsh.crypt.tax.ExchangeFile.Column;
 @Scope("prototype")
 public class CryptoReport {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		CryptoReport r = new CryptoReport();
 		r.run();
 	}
@@ -24,7 +25,7 @@ public class CryptoReport {
 	
 	TransactionManager manager;
 	
-	public void run() {
+	public void run() throws IOException {
 
 		manager = new TransactionManager();
 

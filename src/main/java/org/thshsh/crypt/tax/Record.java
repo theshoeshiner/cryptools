@@ -21,7 +21,7 @@ public abstract class Record {
 	protected Asset asset;
 	
 	//These are in fiat USD
-	BigDecimal price;
+	BigDecimal price; //proceeds
 	BigDecimal pricePer;
 	
 	//this is used to track the running balance for this lot

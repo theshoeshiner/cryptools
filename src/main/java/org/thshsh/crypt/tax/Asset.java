@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.ComparatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,7 @@ public class Asset {
 
 	BigDecimal fiatExternal = new BigDecimal(0);
 	
-	Asset(String name) {
+	public Asset(String name) {
 		this.name = name;
 		this.buyRecords = new ArrayList<>();
 		this.sellRecords = new ArrayList<>();
@@ -36,7 +35,7 @@ public class Asset {
 	
 	//Deposit and Withdraw do not affect buy/sell records, but they do affect the total asset balance
 
-	void deposit(BigDecimal quantity, Transaction transaction){
+	public void deposit(BigDecimal quantity, Transaction transaction){
 
 		BigDecimal newBalance = this.balance.add(quantity);
 		LOGGER.info("{} Deposit: {}  Current: {} New: {}",new Object[] {this.name,quantity,this.balance,newBalance});
@@ -52,7 +51,7 @@ public class Asset {
 
 	}
 
-	void withdraw(BigDecimal quantity, Transaction transaction){
+	public void withdraw(BigDecimal quantity, Transaction transaction){
 
 		BigDecimal newBalance = this.balance.subtract(quantity);
 		LOGGER.info("{} Withdraw: {}  Current: {} New: {}",new Object[] {this.name,quantity,this.balance,newBalance});
@@ -61,7 +60,7 @@ public class Asset {
 
 	}
 
-	IncomeRecord income(BigDecimal quantity, Transaction transaction){
+	public IncomeRecord income(BigDecimal quantity, Transaction transaction){
 
 		this.balance = this.balance.add(quantity);
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).add(quantity));
@@ -79,7 +78,7 @@ public class Asset {
 
 	}
 
-	BuyRecord buy(BigDecimal quantity, BigDecimal price, Transaction transaction) {
+	public BuyRecord buy(BigDecimal quantity, BigDecimal price, Transaction transaction) {
 
 
 		this.balance = this.balance.add(quantity);
@@ -108,7 +107,7 @@ public class Asset {
 
 	
 
-	SellRecord sell(BigDecimal quantity, BigDecimal price, Transaction transaction) {
+	public SellRecord sell(BigDecimal quantity, BigDecimal price, Transaction transaction) {
 
 		this.balance = this.balance.subtract(quantity);
 		if(this.balance.compareTo(BigDecimal.ZERO)<0) throw new IllegalStateException("Asset Balance is < 0");
@@ -134,7 +133,7 @@ public class Asset {
 		}
 	}
 
-	Gains processSell(SellRecord sell) {
+	protected Gains processSell(SellRecord sell) {
 
 		//need to see if this sell record is going to end up being a wash
 
@@ -150,44 +149,20 @@ public class Asset {
 			if(record.balance.compareTo(BigDecimal.ZERO) > 0) {
 				Boolean isShort = Accounts.isShortTerm(record.timestamp, sell.timestamp);
 				//gain per asset share
-				BigDecimal gainPer = sell.pricePer.subtract(record.pricePer);
-				GainSort gs = new GainSort(sell,record,isShort,gainPer);
+				//BigDecimal gainPer = sell.pricePer.subtract(record.pricePer);
+				GainSort gs = new GainSort(sell,record,isShort);
 				sortMap.put(record,gs);
 				sortedBuyRecords.add(gs);
 			}
 		}
 
-		//sorted.sort(this.taxCategorySort);
-		//sorted.sort(this.taxAmountSort);
-		//List<GainSort> copy = new ArrayList<GainSort>(sortedBuyRecords);
 		
-		
-		//Collections.sort(sortedBuyRecords,Asset::totalTaxSort);
-		Collections.sort(sortedBuyRecords,Asset::taxRateSort);
-		
-		/*Collections.sort(copy,Asset::taxRateSort);
-		if(!sortedBuyRecords.equals(copy)) {
-			LOGGER.info("Lists were not equal");
-			
-			LOGGER.info("taxAmountSort");
-			for(int i=0;i<20 && i<sortedBuyRecords.size();i++) {
-				LOGGER.info("Record: {}",sortedBuyRecords.get(i).record);
-				LOGGER.info("Sort: {}",sortedBuyRecords.get(i));
-			}
-			
-			LOGGER.info("taxRateSort");
-			for(int i=0;i<20 && i<copy.size();i++) {
-				LOGGER.info("Record: {}",copy.get(i).record);
-				LOGGER.info("Sort: {}",copy.get(i));
-			}
-		}*/
-		
-	
-		
-		
+		//Collections.sort(sortedBuyRecords,Asset::fifoSort);
+		Collections.sort(sortedBuyRecords,Asset::totalTaxSort);
+		//Collections.sort(sortedBuyRecords,Asset::taxRateSort);
+
 
 		LOGGER.debug("Sorted buy records");
-		
 		
 
 		Gains gains = new Gains();
@@ -198,6 +173,7 @@ public class Asset {
 		
 		//Go through sorted buy records and sell portions of each until we are done
 		for (int i = 0; i < sortedBuyRecords.size() && sell.balance.compareTo(BigDecimal.ZERO) > 0; i++) {
+			
 			GainSort gainSort = sortedBuyRecords.get(i);
 			Record buy = gainSort.record;
 			LOGGER.debug("checking gainSort: {}",gainSort);
@@ -205,6 +181,7 @@ public class Asset {
 
 			Sale sale = this.sellFromBuyRecord(buy,sell);
 			if(sale != null){
+				sale.sortRecord = gainSort;
 				sale.id = sell.id+"-"+buy.id;
 				sell.saleRecords.add(sale);
 				if (Accounts.isShortTerm(buy.timestamp, sell.timestamp)) {
@@ -240,7 +217,7 @@ public class Asset {
 
 	}
 
-	Sale sellFromBuyRecord(Record buy,SellRecord sell) {
+	protected Sale sellFromBuyRecord(Record buy,SellRecord sell) {
 
 		if (buy.balance.compareTo(BigDecimal.ZERO) > 0) {
 			//console.debug("buy has: " + buy.balance);
@@ -270,15 +247,22 @@ public class Asset {
 		return null;
 	}
 	
+	protected static int fifoSort(GainSort s1,GainSort s2) {
+		//sort by oldest timestamps
+		return s1.record.timestamp.compareTo(s2.record.timestamp);
+	}
+	
+	
 	/** 
 	 * This is a tax optimized sort, in that we optimize the rate that we are saving at, but not the actual savings
 	 * This is not much different from MLMG in early years since there are fewer lots to choose from
-	 * But in later years this will result in higher taxes because it will ALWAYS choose long term over short term, regardless of total gain/tax
+	 * But in later years this will result in higher taxes because it will ALWAYS choose long term over short term, 
+	 * regardless of total gain/tax
 	 * @param s1
 	 * @param s2
 	 * @return
 	 */
-	static int taxRateSort(GainSort s1,GainSort s2) {
+	protected static int taxRateSort(GainSort s1,GainSort s2) {
 		int comp = 0;
 		
 		//sort losses to front
@@ -296,7 +280,6 @@ public class Asset {
 			}
 		}
 		
-		
 		return comp;
 	}
 	
@@ -307,7 +290,7 @@ public class Asset {
 	 * @param s2
 	 * @return
 	 */
-	static int totalTaxSort(GainSort s1,GainSort s2) {
+	protected static int totalTaxSort(GainSort s1,GainSort s2) {
 		int comp = 0;
 		
 		//sort losses to front

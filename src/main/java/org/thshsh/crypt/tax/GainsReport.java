@@ -1,6 +1,10 @@
 package org.thshsh.crypt.tax;
 
+import java.math.RoundingMode;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +18,10 @@ public class GainsReport {
 
 	Map<Integer,List<GainRecord>> yearMap;
 
-	GainsReport() {
-
+	Integer[] years;
+	
+	GainsReport(Integer[] y) {
+		this.years = y;
 		this.yearMap = new HashMap<>();
 
 	}
@@ -43,7 +49,7 @@ public class GainsReport {
 		var g20 = this.processYear(2020);
 		var g21 = this.processYear(2021);
 		*/
-		Integer[] years = new Integer[] {2017,2018,2019,2020,2021};
+		//
 
 		List<YearGainSummary> summaries = new ArrayList<YearGainSummary>();
 		
@@ -54,7 +60,19 @@ public class GainsReport {
 		
 		
 		summaries.forEach(sum -> {
-			LOGGER.warn("{} Gains - long: {} short: {} income: {}",new Object[] {sum.year,sum.gains.longTermGain,sum.gains.shortTermGain,sum.gains.incomeGain});
+			
+			//LOGGER.warn("{} Gains - long: {} short: {} income: {}",new Object[] {sum.year,sum.gains.longTermGain,sum.gains.shortTermGain,sum.gains.incomeGain});
+			LOGGER.warn("{} Gains",sum.year);
+			LOGGER.warn("Long:  basis: {} proceeds: {} gain: {}",
+					sum.gains.longTermBasis.setScale(2, RoundingMode.HALF_EVEN),
+					sum.gains.longTermProceeds.setScale(2, RoundingMode.HALF_EVEN),
+					sum.gains.longTermGain.setScale(2, RoundingMode.HALF_EVEN));
+			LOGGER.warn("Short: basis: {} proceeds: {} gain: {}",
+					sum.gains.shortTermBasis.setScale(2, RoundingMode.HALF_EVEN),
+					sum.gains.shortTermProceeds.setScale(2, RoundingMode.HALF_EVEN),
+					sum.gains.shortTermGain.setScale(2, RoundingMode.HALF_EVEN));
+			LOGGER.warn("Income: {}",sum.gains.incomeGain.setScale(2, RoundingMode.HALF_EVEN));
+			
 		});
 		
 		/*
@@ -70,7 +88,8 @@ public class GainsReport {
 
 		LOGGER.info("processYear: {}",year);
 		
-
+		List<Sale> sales = new ArrayList<Sale>();
+		
 		YearGainSummary summary = new YearGainSummary(year);
 
 		for(GainRecord record : this.yearMap.get(year)){
@@ -86,13 +105,30 @@ public class GainsReport {
 					if(sell.saleRecords != null) {
 						for(Sale sr : sell.saleRecords){
 							summary.aggregate(sr);
+							sales.add(sr);
 						}
 					}
 				}
 			}
 		}
 
+		Collections.sort(sales, (s0,s1) -> {
+			return s1.sortRecord.taxPer.multiply(s1.quantity).compareTo(s0.sortRecord.taxPer.multiply(s0.quantity));
+		});
 
+		LOGGER.info("worst sales:");
+		
+		DateTimeFormatter dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT);
+		
+		for(Sale sale : sales) {
+			LOGGER.info("{} Tax: {} on {} {}",
+					dtf.format(sale.sellRecord.timestamp),
+					sale.sortRecord.taxPer.multiply(sale.quantity).setScale(2, RoundingMode.HALF_EVEN),
+					sale.quantity,
+					sale.sellRecord.asset
+					);
+		}
+		
 		LOGGER.info("Yearly Summary: {}",summary);
 
 		return summary;

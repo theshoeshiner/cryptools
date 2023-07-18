@@ -2,22 +2,23 @@ package org.thshsh.crypt.tax;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.ComparatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.util.comparator.Comparators;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.serv.MarketRateService;
+
+import com.helger.commons.mutable.MutableBigDecimal;
 
 @Component
 @Scope("prototype")
@@ -35,6 +36,8 @@ public class CryptoProcessor {
 	Integer loading;
 	//CryptoCompare cryptoCompare;
 	Accounts accounts;
+	
+	Integer[] years = new Integer[] {2017,2018,2019,2020,2021,2022};
 
 	CryptoProcessor (){
 		this.loading = 0;
@@ -54,13 +57,19 @@ public class CryptoProcessor {
 
 	public void gainsReport() {
 
-		GainsReport gainsReport = new GainsReport();
+		GainsReport gainsReport = new GainsReport(years);
 		gainsReport.addRecords(this.accounts.records);
 
 
 	}
 
 	public void balanceReport() {
+		balanceReport(ZonedDateTime.now());
+	}
+	
+	BigDecimal MIN = new BigDecimal(".0001");
+	
+	public void balanceReport(ZonedDateTime timestamp) {
 		
 		List<Asset> assets = new ArrayList<>(accounts.assetMap.values());
 		
@@ -68,11 +77,22 @@ public class CryptoProcessor {
 			return a1.getBalance().compareTo(a0.getBalance());
 		});
 
+		//BigDecimal totalValue = BigDecimal.ZERO;
+		MutableBigDecimal totalValue = new MutableBigDecimal(BigDecimal.ZERO);
 		
 		assets.forEach(asset -> {
-			LOGGER.info("Asset: {} Balance: {}",asset.getName(),asset.getBalance());
+			BigDecimal value = BigDecimal.ZERO;
+			if(asset.getBalance().compareTo(MIN)>0) {
+				Currency c = currRepo.findByKeyIgnoreCase(asset.name);
+				MarketRate rate = rateService.getMarketRates(timestamp, c).get(c);
+				value = asset.getBalance().multiply(rate.getRate());
+				//totalValue = totalValue.add(value);
+				totalValue.inc(value);
+			}
+			LOGGER.info("Asset: {} Balance: {} Value: {}",asset.getName(),asset.getBalance(),value);
 		});
 		
+		LOGGER.info("Total Value: {}",totalValue);
 	}
 	
 
@@ -80,36 +100,29 @@ public class CryptoProcessor {
 
         LOGGER.info("processTransactions");
 		List<Transaction> transactions = this.transactions;
-		CryptoProcessor self = this;
 		try {
 
-
 			LOGGER.info("processing...");
-			//var acc = new Accounts();
 
-			/*transactions.forEach(function (t) {
-				self.accounts.processTransaction(t);
-			});*/
-
+			//Transaction last = null;
 			for(Transaction t : transactions) {
+				
+				//NOTE this was to calculate what my curruent value would be if I had left my holdings static at this point in time
+				/*if(last!=null && last.timestamp.getYear() != t.timestamp.getYear()) {
+					LOGGER.info("New Year: {}",t.timestamp);
+					balanceReport();
+				}*/
 				accounts.processTransaction(t);
+				//last = t;
 			}
 
 			LOGGER.info("accounts: {}",this.accounts);
-
-			/*this.accounts.assetMap.forEach( (value,key) => {
-					if(value.balance.gt(0)) this.LOGGER.log("{} : {}",[key,value.balance])
-				}
-			);*/
 
 			accounts.assetMap.forEach((key,value) -> {
 				if(value.balance.compareTo(BigDecimal.ZERO) > 0 )
 				LOGGER.info("{} : {}",new Object[] {key,value.balance});
 			});
 
-			//this.LOGGER.log("GAINS");
-
-			//this.LOGGER.log("TIME,TERM,FROM,TO,QUANTITY,BASIS,PROCEEDS_SHORT,PROCEEDS_LONG");
 
 
 		}
@@ -135,7 +148,7 @@ public class CryptoProcessor {
 
 		for (Transaction t : ts) {
 
-			LOGGER.info("initTransaction: {}",t);
+			LOGGER.debug("initTransaction: {}",t);
 
 			if(t.feeTo == null) t.feeTo = BigDecimal.ZERO;
 			if(t.feeFrom == null) t.feeFrom = BigDecimal.ZERO;

@@ -1,12 +1,9 @@
 package org.thshsh.crypt.tax;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thshsh.crypt.tax.Transaction.Type;
 
 public class BuyRecord extends Record {
 

@@ -3,7 +3,6 @@ package org.thshsh.crypt.tax;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,9 @@ public class Accounts {
 			if(buyRecord!=null) this.records.add(buyRecord);
 
 			//Create a sell record that removes the quantity from the "FROM" asset
-			SellRecord sellRecord = from.sell(t.quantityFrom.add(t.feeFrom), t.fiatTo, t);
+			//We combine the total and the fee so that we remove the correct amount
+			//We also subtract the fee from the fiatTo value, so we show correct proceeds
+			SellRecord sellRecord = from.sell(t.quantityFrom.add(t.feeFrom), t.fiatTo.subtract(t.fiatFeeTo), t);
 	
 			if (sellRecord != null) {
 				this.records.add(sellRecord);

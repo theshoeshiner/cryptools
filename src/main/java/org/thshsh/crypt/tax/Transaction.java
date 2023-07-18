@@ -36,10 +36,15 @@ public class Transaction {
 	String externalId;
 	ZonedDateTime timestamp;
 
+	//raw quantity regardless of buy/sell
 	BigDecimal quantity;
+	//fee from the QUOTE asset (for a BUY this is the FROM asset)
 	BigDecimal fee;
+	//fee from the BASE asset, only used for coin metro
 	BigDecimal feeInverse;
+	//amount of order that was NOT exchanged
 	BigDecimal remaining;
+	
 	String asset;
 	String exchange;
 	BigDecimal price;
@@ -59,7 +64,7 @@ public class Transaction {
 	Boolean loaded = false;
 	//Boolean delist = false;
 	Boolean external = false;
-	Boolean internal = false;
+	//Boolean internal = false;
 	Boolean phantom;
 	ExchangeFile file;
 
@@ -81,13 +86,9 @@ public class Transaction {
 
 	public Transaction(String id) {
 		this.externalId = id;
-		//this.id = ((Integer)this.externalId.hashCode()).toString();
 		this.id = Integer.toUnsignedString(this.externalId.hashCode());
 	}
 
-	/*public Long getEpochSecond() {
-		return timestamp.toEpochSecond();
-	}*/
 
 	public void setTimestamp(ZonedDateTime ts) {
 		this.timestamp = ts;
@@ -159,13 +160,23 @@ public class Transaction {
 				+ ", market=" +  Arrays.toString(market)
 				+ ", quantity=" + quantity
 				+ ", price=" + price
-				+ ", assetFrom=" + assetFrom 
-				+ ", quantityFrom=" + quantityFrom
-				+ ", feeFrom=" + feeFrom
+				
+				+ ", assetFrom=" + assetFrom
 				+  ", assetTo=" + assetTo
+				
+				+ ", quantityFrom=" + quantityFrom
 				+ ", quantityTo=" + quantityTo
+				
+				
+				+ ", feeFrom=" + feeFrom
 				+ ", feeTo=" + feeTo
-				+ ", exchange=" + exchange + "]";
+				
+				+ ", fiatFrom=" + fiatFrom
+				+ ", fiatTo=" + fiatTo
+				
+				+ ", fiatFeeTo=" + fiatFeeTo
+				+ ", exchange=" + exchange
+				+ "]";
 	}
 
 	public String toStringPreInit() {

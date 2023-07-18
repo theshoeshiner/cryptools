@@ -18,6 +18,8 @@ public class Sale {
 	Record buyRecord;
 	SellRecord sellRecord;
 	Boolean shortTerm;
+	
+	GainSort sortRecord;
 
 	Sale(BigDecimal basis, BigDecimal proceeds, BigDecimal quantity,Record buyRecord,SellRecord sellRecord) {
 		this.basis = basis;

@@ -12,13 +12,24 @@ import java.util.Map;
  */
 public class GainSort {
 
+	
 	static Map<Integer,BigDecimal> TAX_BRACKETS = new HashMap<>();
 	static {
+		//FIXME These are individual tax brackets, not married - might have changed previous years?
+		
+		/*	TAX_BRACKETS.put(2017,new BigDecimal(".28"));
+			TAX_BRACKETS.put(2018,new BigDecimal(".32"));
+			TAX_BRACKETS.put(2019,new BigDecimal(".24"));
+			TAX_BRACKETS.put(2020,new BigDecimal(".32"));
+			TAX_BRACKETS.put(2021,new BigDecimal(".32"));*/
+		
 		TAX_BRACKETS.put(2017,new BigDecimal(".28"));
-		TAX_BRACKETS.put(2018,new BigDecimal(".32"));
+		TAX_BRACKETS.put(2018,new BigDecimal(".24"));
 		TAX_BRACKETS.put(2019,new BigDecimal(".24"));
-		TAX_BRACKETS.put(2020,new BigDecimal(".32"));
-		TAX_BRACKETS.put(2021,new BigDecimal(".32"));
+		TAX_BRACKETS.put(2020,new BigDecimal(".24"));
+		TAX_BRACKETS.put(2021,new BigDecimal(".22"));
+		//this is correct
+		TAX_BRACKETS.put(2022,new BigDecimal(".22"));
 	}
 
 	static BigDecimal LONG_TERM_TAX = new BigDecimal(".15");
@@ -36,14 +47,15 @@ public class GainSort {
 	BigDecimal taxPer;
 	ZonedDateTime timestamp;
 	BigDecimal taxRate;
+	
+	//BigDecimal taxGainRatio;
 
-
-	GainSort(SellRecord sell,Record record,Boolean isShort,BigDecimal gainPer) {
+	GainSort(SellRecord sell,Record record,Boolean isShort) {
 		this.sellRecord = sell;
 		this.record = record;
 		this.id = record.id;
 		this.isShort = isShort;
-		this.gainPer = gainPer;
+		this.gainPer = sell.pricePer.subtract(record.pricePer);
 		this.gainPerAbs = gainPer.abs();
 		this.isLoss = gainPer.compareTo(BigDecimal.ZERO) < 0;
 		this.pricePer = record.pricePer;
@@ -56,6 +68,8 @@ public class GainSort {
 		this.taxPer = this.gainPer.multiply(taxRate);
 		
 		this.taxPerAbs = taxPer.abs();
+		
+		//this.taxGainRatio = this.taxPer.divide(this.gainPer);
 	}
 
 	public String toString(){
@@ -65,7 +79,9 @@ public class GainSort {
 				+", Price: "+this.pricePer
 				+", GainPer: "+this.gainPer
 				+", TaxRate: "+this.taxRate
-				+", TaxPer: "+this.taxPerAbs;
+				+", TaxPer: "+this.taxPerAbs
+				//+", TaxGainRatio: "+this.taxGainRatio
+				;
 	}
 
 }

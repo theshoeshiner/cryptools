@@ -52,15 +52,32 @@ public class TransactionManager {
 	public static final String FIAT_ASSET = "USD";
 
 	List<ExchangeFile> files;
-	Map<String,Transaction> transactions;
-	Map<String,String> missingTransfers;
+	Map<String,Transaction> externalIdTransactionMap;
 	List<Transaction> transactionsList;
+	
+	/**
+	 * Missing transfers are transactions where only one side of the transfer is present 
+	 * and we need to create a phantom transaction for the missing side
+	 * So far these are just the migrations from coinbase to coinbase pro, where coinbase does not list them as withdrawals
+	 */
+	Map<String,String> missingTransfers;
+	/**
+	 * List of ids for "external" transactions, which are untracked deposit/withdrawals to outside accounts
+	 */
 	List<String> externalIds;
-	List<String> internalIds;
+
+	/**
+	 * Force match Ids are transfers that we are unable to auto match but we want to force a match
+	 * This is helpful when a transfer is broken into multiple pieces by an exchange or when
+	 * for some reason the transfer amounts do not match because fees were not reported on the send side
+	 */
 	List<String> forceMatchIds;
 	List<List<String>> forceMatchArrays;
 
-	Long maxTimestamp = Long.MAX_VALUE;
+	/**
+	 * Orphaned transfers are transfers which, after processing, still dont have a match.
+	 * For deposits we must consider them income.
+	 */
 	List<Transaction> orphanTransactions;
 
 	List<DateTimeFormatter> formats = new ArrayList<>();
@@ -70,11 +87,11 @@ public class TransactionManager {
 	public TransactionManager(){
 		//LOGGER = LoggerFactory.getLogger("TransactionManager");
 		this.files = new ArrayList<>();
-		this.transactions = new HashMap<>();
+		this.externalIdTransactionMap = new HashMap<>();
 		this.transactionsList = new ArrayList<>();
 		this.externalIds = new ArrayList<>();
 		//this.forceIncomeType = new Array();
-		this.internalIds = new ArrayList<>();
+		//this.internalIds = new ArrayList<>();
 		this.missingTransfers = new HashMap<>();
 		this.forceMatchIds = new ArrayList<>();
 		this.forceMatchArrays = new ArrayList<>();
@@ -122,11 +139,11 @@ public class TransactionManager {
 	}
 
 	public Transaction getTransactionByExternalId(String id){
-		if(this.transactions.get(id) == null){
+		if(this.externalIdTransactionMap.get(id) == null){
 			Transaction r = new Transaction(id);
-			this.transactions.put(id,r);
+			this.externalIdTransactionMap.put(id,r);
 		}
-		return this.transactions.get(id);
+		return this.externalIdTransactionMap.get(id);
 	}
 
 
@@ -154,7 +171,7 @@ public class TransactionManager {
 				}
 			}
 			transaction.external = this.externalIds.indexOf(transaction.externalId) > -1;
-			transaction.internal = this.internalIds.indexOf(transaction.externalId) > -1;
+			//transaction.internal = this.internalIds.indexOf(transaction.externalId) > -1;
 			transaction.exchange = file.exchange;
 			transaction.file = file;
 
@@ -226,8 +243,8 @@ public class TransactionManager {
 			LOGGER.debug("transaction: {}",transaction);
 
 		}
-		catch(Exception e){
-			LOGGER.error("failed to load transaction failed: {} - {}",transaction.toStringPreInit(),e);
+		catch(MappingException e){
+			LOGGER.warn("mapping exception on transaction: {} - {}",transaction.toStringPreInit(),e);
 			this.removeTransaction(id);
 		}
 
@@ -235,10 +252,10 @@ public class TransactionManager {
 	}
 
 	public void removeTransaction(String id){
-		this.transactions.remove(id);
+		this.externalIdTransactionMap.remove(id);
 	}
 
-	public void mapType(CSVRecord row, Map<Column,Integer> mapping, Transaction transaction){
+	public void mapType(CSVRecord row, Map<Column,Integer> mapping, Transaction transaction) throws MappingException{
 		if(mapping.containsKey(Column.Type)) {
 			String typeString = row.get(mapping.get(Column.Type)).toLowerCase();
 			Transaction.Type type;
@@ -253,7 +270,7 @@ public class TransactionManager {
 			else if(typeString.indexOf("order") >-1) type = null; //we dont know the type, and it must come from some other method
 			else {
 				//we dont know transaction type
-				throw new RuntimeException( "Did not understand transaction type '"+typeString+"'");
+				throw new MappingException( "Did not understand transaction type '"+typeString+"'");
 			}
 			if(type!=null) transaction.type = type;
 		}
@@ -295,7 +312,7 @@ public class TransactionManager {
 
 	
 
-	public void mapTrade(ExchangeFile file,CSVRecord row,Map<Column,Integer> mapping,Transaction transaction){
+	public void mapTrade(ExchangeFile file,CSVRecord row,Map<Column,Integer> mapping,Transaction transaction) throws MappingException{
 
 
 		if(mapping.containsKey(Column.Market) || mapping.containsKey(Column.MarketInverse)) {
@@ -327,7 +344,7 @@ public class TransactionManager {
 			transaction.market = new String[] {asset,FIAT_ASSET};
 		}
 		else {
-			LOGGER.error("Transaction did not have proper markets: {}",row);
+			//LOGGER.error("Transaction did not have proper markets: {}",row);
 			throw new RuntimeException("Transaction did not have proper markets: "+row);
 		}
 
@@ -338,7 +355,10 @@ public class TransactionManager {
 					//use quantity to swap type
 					transaction.type = transaction.type.opposite();
 				}
-				else throw new RuntimeException("Transaction had negative quantity: "+quantity);
+				else {
+					//some exports report both sides of a trade, one with a negative quantity, but we can ignore that side
+					throw new MappingException("Transaction had negative quantity: "+quantity);
+				}
 			}
 			quantity = quantity.abs();
 			transaction.quantity = quantity;
@@ -468,7 +488,7 @@ public class TransactionManager {
 	}
 
 	public void addTransaction(Transaction transaction){
-		this.transactions.put(transaction.externalId,transaction);
+		this.externalIdTransactionMap.put(transaction.externalId,transaction);
 	}
 
 	public void addMissingTransfer(String externalId,String exchange){
@@ -476,11 +496,11 @@ public class TransactionManager {
 		this.missingTransfers.put(externalId,exchange);
 	}
 
-	public void loadAndInit(){
+	public void loadAndInit() throws IOException{
 		//await
 		this.loadFiles();
 
-		LOGGER.info("loaded transactions: {}",this.transactions.size());
+		LOGGER.info("loaded transactions: {}",this.externalIdTransactionMap.size());
 
 		//await
 		this.initTransactions();
@@ -488,16 +508,16 @@ public class TransactionManager {
 		LOGGER.info("inited transactions: {}",this.transactionsList.size());
 	}
 
-	public void loadFiles(){
+	public void loadFiles() throws IOException{
 		for(int i=0;i<this.files.size();i++){
 			ExchangeFile f = this.files.get(i);
 			//await
-			try {
+			//try {
 				this.loadFile(f);
-			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			//}
+			//catch (IOException e) {
+				//throw new RuntimeException(e);
+			//}
 		}
 	}
 
@@ -530,7 +550,7 @@ public class TransactionManager {
 
 	protected void processTransactions() {
 
-		this.transactions.forEach( (key,transaction) -> {
+		this.externalIdTransactionMap.forEach( (key,transaction) -> {
 			initAndAddTransaction(transaction);
 		});
 
@@ -539,12 +559,12 @@ public class TransactionManager {
 
 	public void initAndAddTransaction(Transaction transaction) {
 		this.initTransaction(transaction);
-		if(transaction.timestamp.toInstant().toEpochMilli()  < this.maxTimestamp) {
-			this.transactionsList.add(transaction);
-		}
-		else {
-			LOGGER.debug("Transaction past time: {}",transaction);
-		}
+		//if(transaction.timestamp.toInstant().toEpochMilli()  < this.maxTimestamp) {
+		this.transactionsList.add(transaction);
+			/*}
+			else {
+				LOGGER.debug("Transaction past time: {}",transaction);
+			}*/
 	}
 
 	protected void initTransactions(){
@@ -773,6 +793,7 @@ public class TransactionManager {
 		for(int i=0;i<this.transactionsList.size();i++){
 
 			Transaction t = this.transactionsList.get(i);
+			
 			if(this.missingTransfers.get(t.externalId) != null && t.isTransferType()) {
 
 				//LocalDateTime.ofEpochSecond(i, i, null)
