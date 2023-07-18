@@ -10,9 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.data.QueryByExampleRepository;
 
-public interface AllocationRepository extends BaseRepository<Allocation, Long>, ExampleFilterRepository<Allocation, Long>  {
+public interface AllocationRepository extends BaseRepository<Allocation, Long>, QueryByExampleRepository<Allocation, Long>  {
 
 	public Optional<Allocation> findByPortfolioAndCurrency(Portfolio p, Currency c);
 

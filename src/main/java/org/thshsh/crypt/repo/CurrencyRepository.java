@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.web.view.HasSymbolRepository;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.data.QueryByExampleRepository;
 
-public interface CurrencyRepository extends BaseRepository<Currency, Long>, ExampleFilterRepository<Currency, Long>, HasSymbolRepository<Currency>  {
+public interface CurrencyRepository extends BaseRepository<Currency, Long>, QueryByExampleRepository<Currency, Long>, HasSymbolRepository<Currency>  {
 
 	@Query("select t from #{#entityName} t where ( lower(t.key) like %?1% or lower(t.name) like %?1% ) and ( t.platformType <> ?#{T(org.thshsh.crypt.PlatformType).derivative} or t.platformType is null)")
 	public Page<Currency> findByString(String name,Pageable p);

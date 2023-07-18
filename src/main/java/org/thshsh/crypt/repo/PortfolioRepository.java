@@ -8,9 +8,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.data.QueryByExampleRepository;
+import org.thshsh.vaadin.data.SecuredStringSearchRepository;
 
-public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, ExampleFilterRepository<Portfolio, Long>, HasNameRepository<Portfolio>  {
+public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, 
+QueryByExampleRepository<Portfolio, Long>,
+HasNameRepository<Portfolio> ,
+SecuredStringSearchRepository<Portfolio, Long>
+{
 
 	public static final String OWNER_OR_SUPER_IN = "e.id in ( select e.id from Portfolio e join e.user owners where ( owners = ?#{session.user} or ?#{session.hasAccess(T(org.thshsh.crypt.Feature).Portfolio,T(org.thshsh.crypt.Access).Super)} = true ) )";
 	
@@ -27,7 +32,7 @@ public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, Ex
 	public Page<Portfolio> findAllSecured(Pageable p);
 	
 	@Query("select count(distinct e.id) from #{#entityName} e where "+OWNER_OR_SUPER_IN)
-	public  Long countAllSecured();
+	public  Long countSecured();
 	
 	@Query("select distinct e from #{#entityName} e where "
 			+ "( lower(e.user.email) like %?1% or lower(e.user.userName) like %?1% or lower(e.name) like %?1% )"
