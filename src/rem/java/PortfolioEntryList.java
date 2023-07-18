@@ -11,7 +11,7 @@ import org.thshsh.crypt.Exchange;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.vaadin.ExampleFilterDataProvider;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.QueryByExampleRepository;
 import org.thshsh.vaadin.FunctionUtils;
 
 import com.vaadin.flow.component.Component;
@@ -89,7 +89,7 @@ public class PortfolioEntryList extends EntitiesList<PortfolioEntry, Long> {
 		}
 
 		@Override
-		public ExampleFilterRepository<PortfolioEntry, Long> getRepository() {
+		public QueryByExampleRepository<PortfolioEntry, Long> getRepository() {
 			return null;
 		}
 

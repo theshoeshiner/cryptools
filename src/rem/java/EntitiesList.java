@@ -17,7 +17,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.thshsh.vaadin.ChunkRequest;
 import org.thshsh.vaadin.ExampleFilterDataProvider;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.QueryByExampleRepository;
 import org.thshsh.vaadin.StringSearchDataProvider;
 import org.thshsh.vaadin.UIUtils;
 
@@ -284,7 +284,7 @@ public abstract class EntitiesList<T, ID extends Serializable> extends VerticalL
 
 		switch (filterMode) {
 		case Example: {
-			ExampleFilterRepository<T, ID> r = (ExampleFilterRepository<T, ID>) repository;
+			QueryByExampleRepository<T, ID> r = (QueryByExampleRepository<T, ID>) repository;
 			ExampleFilterDataProvider<T, ID> dataProvider = new ExampleFilterDataProvider<T, ID>(r,
 					ExampleMatcher.matchingAny().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
 							.withIgnoreCase().withIgnoreNullValues(),
@@ -430,7 +430,7 @@ public abstract class EntitiesList<T, ID extends Serializable> extends VerticalL
 		}
 
 		@Override
-		public ExampleFilterRepository<T, ID> getRepository() {
+		public QueryByExampleRepository<T, ID> getRepository() {
 			throw new NotImplementedException();
 		}
 

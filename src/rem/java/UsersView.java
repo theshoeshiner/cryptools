@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.web.repo.AppUserRepository;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.QueryByExampleRepository;
 import org.thshsh.vaadin.UIUtils;
 
 import com.vaadin.flow.component.button.Button;
@@ -46,7 +46,7 @@ public class UsersView extends EntitiesView<User, Long>{
 	}
 
 	@Override
-	public ExampleFilterRepository<User, Long> getRepository() {
+	public QueryByExampleRepository<User, Long> getRepository() {
 		return userRepo;
 	}
 

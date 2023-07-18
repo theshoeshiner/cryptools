@@ -12,7 +12,7 @@ import org.thshsh.cryptman.Account;
 import org.thshsh.cryptman.Balance;
 import org.thshsh.cryptman.BalanceRepository;
 import org.thshsh.vaadin.ExampleFilterDataProvider;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.QueryByExampleRepository;
 import org.thshsh.vaadin.FunctionUtils;
 
 import com.vaadin.flow.component.ClickEvent;
@@ -46,7 +46,7 @@ public class PortfolioBalancesView extends VerticalLayout {
 			public void setFilter(String text) {}
 
 			@Override
-			public ExampleFilterRepository<Balance, Long> getRepository() {
+			public QueryByExampleRepository<Balance, Long> getRepository() {
 				return balRepo;
 			}
 

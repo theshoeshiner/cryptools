@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.thshsh.crypt.IdedEntity;
 import org.thshsh.crypt.web.view.EntitiesList.FilterMode;
-import org.thshsh.vaadin.ExampleFilterRepository;
+import org.thshsh.vaadin.QueryByExampleRepository;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
@@ -117,7 +117,7 @@ public abstract class EntitiesDialog<T,ID extends Serializable> extends Dialog  
 
 	public abstract void clearFilter();
 
-	public abstract ExampleFilterRepository<T,ID> getRepository();
+	public abstract QueryByExampleRepository<T,ID> getRepository();
 
 
 	@Override
