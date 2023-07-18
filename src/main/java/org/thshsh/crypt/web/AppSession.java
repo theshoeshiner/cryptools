@@ -16,7 +16,6 @@ import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.UserRepository;
 import org.thshsh.crypt.web.security.CryptUserPrincipal;
-import org.vaadin.googleanalytics.tracking.GoogleAnalyticsTracker;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -34,9 +33,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 
 import ch.carnet.kasparscherrer.VerticalScrollLayout;
-import elemental.json.JsonObject;
-import elemental.json.impl.JreJsonFactory;
-import elemental.json.impl.JreJsonObject;
 
 @Component
 @VaadinSessionScope
@@ -71,14 +67,14 @@ public class AppSession {
 		}
 
 		LOGGER.info("ui: {}",UI.getCurrent());
-		LOGGER.info("tracker: {}",GoogleAnalyticsTracker.getCurrent());
+		/*LOGGER.info("tracker: {}",GoogleAnalyticsTracker.getCurrent());
 		GoogleAnalyticsTracker tracker = GoogleAnalyticsTracker.getCurrent();
 		
 		//tracker.ga("set",null, "userId", user.getId().toString());
 		
 		//gtag('set', {'user_id': 'USER_ID'}); // Set the user ID using signed-in user_id.
 		
-		LOGGER.info("config: {}",GoogleAnalyticsTracker.getCurrent().getConfiguration());
+		LOGGER.info("config: {}",GoogleAnalyticsTracker.getCurrent().getConfiguration());*/
 		/* tracker.addInitListener(t -> {
 			//have to use an init listener because we need the tag id from the config
 			JsonObject jo = new JreJsonFactory().createObject();
@@ -89,7 +85,7 @@ public class AppSession {
 		//JsonObject jo = new JreJsonFactory().createObject();
 		//jo.put("ct_user_id", user.getId().toString());
 		//tracker.sendEvent("set", "user_properties", jo);
-		tracker.set("user_id",user.getId().toString());
+		//tracker.set("user_id",user.getId().toString());
 		
 		
 		
