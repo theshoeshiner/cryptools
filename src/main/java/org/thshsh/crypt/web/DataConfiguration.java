@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 public class DataConfiguration {
 
 	List<List<String>> fiatcurrencies;
+	
+	List<String> active;
 
 	public List<List<String>> getFiatcurrencies() {
 		return fiatcurrencies;
@@ -17,6 +19,14 @@ public class DataConfiguration {
 
 	public void setFiatcurrencies(List<List<String>> currencies) {
 		this.fiatcurrencies = currencies;
+	}
+
+	public List<String> getActive() {
+		return active;
+	}
+
+	public void setActive(List<String> active) {
+		this.active = active;
 	}
 
 
