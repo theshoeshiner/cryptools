@@ -20,9 +20,9 @@ import org.thshsh.crypt.tax.SellRecord;
 import org.thshsh.crypt.tax.Transaction;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.vaadin.BasicTabSheet;
-import org.thshsh.vaadin.FunctionUtils;
-import org.thshsh.vaadin.ZonedDateTimeRenderer;
+import org.thshsh.vaadin.BinderUtils;
+import org.thshsh.vaadin.tabsheet.BasicTabSheet;
+import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 import org.vaadin.haijian.Exporter;
 
 import com.vaadin.flow.component.UI;
@@ -114,7 +114,7 @@ public class TaxReportView extends VerticalLayout {
 		;
 		
 		recordGrid
-		.addColumn(FunctionUtils.nestedValue(Record::getTransaction, Transaction::getExternalId))
+		.addColumn(BinderUtils.nestedValue(Record::getTransaction, Transaction::getExternalId))
 		.setHeader("Ext Id")
 		.setFlexGrow(0)
 		.setWidth("200px")
@@ -122,7 +122,7 @@ public class TaxReportView extends VerticalLayout {
 		;
 		
 		recordGrid
-		.addColumn(FunctionUtils.nestedValue(Record::getTransaction, Transaction::getExchange))
+		.addColumn(BinderUtils.nestedValue(Record::getTransaction, Transaction::getExchange))
 		.setHeader("Exchange")
 		.setFlexGrow(0)
 		.setWidth("125px")
@@ -130,7 +130,7 @@ public class TaxReportView extends VerticalLayout {
 		;
 		
 		recordGrid
-		.addColumn(new ZonedDateTimeRenderer<>(Record::getTimestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+		.addColumn(new TemporalRenderer<>(Record::getTimestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 		.setHeader("Timestamp")
 		.setFlexGrow(0)
 		.setWidth("200px")
@@ -138,7 +138,7 @@ public class TaxReportView extends VerticalLayout {
 		;
 		
 		recordGrid
-		.addColumn(FunctionUtils.nestedValue(Record::getAsset, Asset::getName))
+		.addColumn(BinderUtils.nestedValue(Record::getAsset, Asset::getName))
 		.setHeader("Asset")
 		.setFlexGrow(0)
 		.setWidth("100px")
@@ -227,7 +227,7 @@ public class TaxReportView extends VerticalLayout {
 		
 
 		taxGrid
-		.addColumn(new ZonedDateTimeRenderer<>(FunctionUtils.nestedValue(SaleAggregate::getSellRecord,Record::getTimestamp), DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+		.addColumn(new TemporalRenderer<>(BinderUtils.nestedValue(SaleAggregate::getSellRecord,Record::getTimestamp), DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 		.setHeader("Timestamp")
 		.setFlexGrow(0)
 		.setWidth("200px")
@@ -235,7 +235,7 @@ public class TaxReportView extends VerticalLayout {
 		;
 		
 		taxGrid
-		.addColumn(FunctionUtils.nestedValue(SaleAggregate::getSellRecord,Record::getAsset, Asset::getName))
+		.addColumn(BinderUtils.nestedValue(SaleAggregate::getSellRecord,Record::getAsset, Asset::getName))
 		.setHeader("Asset")
 		.setFlexGrow(0)
 		.setWidth("100px")
