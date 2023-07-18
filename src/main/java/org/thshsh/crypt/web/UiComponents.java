@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -71,7 +69,7 @@ public class UiComponents {
 		return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
 	}
 
-	@Bean
+	/*@Bean
 	public PeriodFormatter getPeriodFormatter() {
 		PeriodFormatter formatter = new PeriodFormatterBuilder()
 			     .appendHours()
@@ -80,7 +78,7 @@ public class UiComponents {
 			     .appendSuffix("m")
 			     .toFormatter();
 		return formatter;
-	}
+	}*/
 
 	public static void iconColumn(Column<?> col) {
 		col.setWidth("38px")
