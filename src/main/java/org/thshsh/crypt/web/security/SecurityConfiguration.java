@@ -200,7 +200,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				// web application manifest
 				"/manifest.webmanifest",
 				"/sw.js",
+				"/sw-runtime-resources-precache.js",
 				"/offline-page.html",
+				"/offline-stub.html",
 				"/offline.html",
 
 				// icons and images
@@ -217,7 +219,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				"/h2-console/**",
 
 				// (production mode) static resources
-				"/frontend-es5/**", "/frontend-es6/**");
+				"/frontend-es5/**", 
+				"/frontend-es6/**"
+				);
 
 		if(!appConfig.getLogin()) {
 			web.ignoring().antMatchers("/**");
