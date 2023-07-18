@@ -6,11 +6,9 @@ import org.thshsh.crypt.web.security.UnauthorizedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.QueryParameters;
 
 @SuppressWarnings("serial")
 @Tag(Tag.DIV)

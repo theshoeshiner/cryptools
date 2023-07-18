@@ -7,11 +7,10 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 
 @SuppressWarnings("serial")
-@CssImport("press-button.css")
+//@CssImport("press-button.css")
 public class PressButton extends Button {
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(PressButton.class);
