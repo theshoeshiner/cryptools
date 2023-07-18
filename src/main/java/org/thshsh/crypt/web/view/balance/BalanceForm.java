@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.balance;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.BigDecimalConverter;
@@ -14,17 +14,18 @@ import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Exchange;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.crypt.repo.BalanceRepository;
 import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.repo.ExchangeRepository;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.serv.BalanceService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.serv.MarketRateService;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.crypt.web.view.HasNameDataProvider;
+import org.thshsh.crypt.web.view.currency.CurrencyDataProvider;
 import org.thshsh.vaadin.SingleCheckboxGroup;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
-import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -42,9 +43,7 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 	@Autowired
 	BalanceService balService;
 	
-	@Autowired
-	BalanceRepository balRepo;
-	
+
 	@Autowired
 	PortfolioHistoryRepository histRepo;
 
@@ -66,15 +65,11 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 
 
 	public BalanceForm(Balance entity,Portfolio p) {
-		super(Balance.class, entity);
+		super(entity);
 		this.portfolio = p;
 		this.createText = "Add";
 	}
 
-	@Override
-	protected JpaRepository<Balance, Long> getRepository() {
-		return balRepo;
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -88,7 +83,7 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 		exchangeField.setWidth("250px");
 		formLayout.add(exchangeField);
 
-		formLayout.endLayout();
+		formLayout.endComponent();
 		formLayout.startHorizontalLayout();
 
 		ComboBox<Currency> ass = new ComboBox<>("Currency");
@@ -102,7 +97,7 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 		TextField balance = new TextField("Balance");
 		formLayout.add(balance);
 		
-		formLayout.endLayout();
+		formLayout.endComponent();
 		
 		detectAllocationField = new SingleCheckboxGroup("Detect & Adjust Allocation");
 		//detectAllocation.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
@@ -137,13 +132,8 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 		return b;
 	}
 
-	@Override
-	protected Long getEntityId(Balance e) {
-		return e.getId();
-	}
 
-	
-	
+
 	@Override
 	protected void bind() throws ValidationException {
 		super.bind();
@@ -151,12 +141,27 @@ public class BalanceForm extends AppEntityForm<Balance, Long> {
 	}
 
 	@Override
-	protected void persist() {
-		super.persist();
+	protected Balance persist() {
+		Balance b = super.persist();
 		if(detectAllocationField.isTrue()) {
 			PortfolioHistory h = manageService.createHistory(portfolio, false);
 			balService.autoDetectAllocation(entity.getCurrency(), portfolio, h);
 		}
+		return b;
+	}
+
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Balance, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<Balance, Long> repository) {
+		super.setRepository(repository);
 	}
 	
 	
