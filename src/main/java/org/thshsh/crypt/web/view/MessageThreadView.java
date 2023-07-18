@@ -1,7 +1,6 @@
 package org.thshsh.crypt.web.view;
 
 import org.thshsh.crypt.MessageThread;
-import org.thshsh.vaadin.entity.EntityGrid;
 import org.thshsh.vaadin.entity.EntityGridView;
 
 

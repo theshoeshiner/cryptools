@@ -9,7 +9,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.MessageThread;
 import org.thshsh.crypt.repo.MessageThreadRepository;
-import org.thshsh.vaadin.ZonedDateTimeRenderer;
+import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.grid.Grid;
 
@@ -22,7 +22,7 @@ public class MessageThreadGrid extends AppEntityGrid<MessageThread> {
 	MessageThreadRepository threadRepo;
 	
 	public MessageThreadGrid() {
-		super(MessageThread.class, null, null);
+		super(null, null);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class MessageThreadGrid extends AppEntityGrid<MessageThread> {
 		
 		
 		grid
-		.addColumn(new ZonedDateTimeRenderer<>(MessageThread::getLastTimestamp, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
+		.addColumn(new TemporalRenderer<>(MessageThread::getLastTimestamp, DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)))
 		.setHeader("Last Message");
 	}
 	
