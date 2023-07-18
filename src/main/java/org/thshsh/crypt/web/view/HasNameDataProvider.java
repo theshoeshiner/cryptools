@@ -17,7 +17,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 @SuppressWarnings("serial")
 @Component()
 @Scope("prototype")
-final class HasNameDataProvider<T> extends PageableDataProvider<T, String> {
+public class HasNameDataProvider<T> extends PageableDataProvider<T, String> {
 
 	protected HasNameRepository<T> repo;
 
