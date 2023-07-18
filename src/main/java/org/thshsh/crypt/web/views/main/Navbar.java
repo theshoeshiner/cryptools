@@ -3,7 +3,6 @@ package org.thshsh.crypt.web.views.main;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;

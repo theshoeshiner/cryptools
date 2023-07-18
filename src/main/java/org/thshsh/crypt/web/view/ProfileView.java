@@ -4,8 +4,6 @@ import org.thshsh.crypt.User;
 import org.thshsh.vaadin.entity.EntityForm;
 import org.thshsh.vaadin.entity.EntityView;
 
-import com.vaadin.flow.component.Component;
-
 public class ProfileView extends EntityView<User,Long> {
 
 	public ProfileView(Class<? extends EntityForm<User, Long>> formClass) {

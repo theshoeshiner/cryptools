@@ -1,7 +1,5 @@
 package org.thshsh.crypt.web.views.main;
 
-import java.time.ZonedDateTime;
-
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -10,11 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
-import org.thshsh.crypt.Contact;
 import org.thshsh.crypt.web.AppSession;
-import org.thshsh.crypt.web.view.ContactDialog;
-import org.thshsh.crypt.web.view.UserDialog;
-import org.thshsh.crypt.web.view.UserForm;
+import org.thshsh.crypt.web.view.user.UserDialog;
+import org.thshsh.crypt.web.view.user.UserForm;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;

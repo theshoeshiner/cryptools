@@ -1,7 +1,5 @@
 package org.thshsh.crypt.web;
 
-import org.springframework.beans.factory.annotation.Value;
-
 public class CryptoCompareConfiguration {
 
 

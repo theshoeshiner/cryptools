@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.repo.HasNameAndGradeRepository;
-import org.thshsh.crypt.repo.HasNameAndKeyRepository;
 import org.vaadin.artur.spring.dataprovider.PageableDataProvider;
 
 import com.vaadin.flow.data.provider.Query;

@@ -19,26 +19,23 @@ import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.SpringVaadinApplication;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AboutView;
-import org.thshsh.crypt.web.view.ActivityView;
-import org.thshsh.crypt.web.view.ContactDialog;
-import org.thshsh.crypt.web.view.ContactsView;
-import org.thshsh.crypt.web.view.CurrenciesView;
 import org.thshsh.crypt.web.view.DarkModeButton;
-import org.thshsh.crypt.web.view.ExchangesView;
 import org.thshsh.crypt.web.view.HomeView;
-import org.thshsh.crypt.web.view.MarketRatesView;
-import org.thshsh.crypt.web.view.PortfolioAlertsView;
-import org.thshsh.crypt.web.view.PortfolioHistoriesView;
-import org.thshsh.crypt.web.view.PortfoliosView;
 import org.thshsh.crypt.web.view.SystemView;
 import org.thshsh.crypt.web.view.TaxReportView;
 import org.thshsh.crypt.web.view.TestingView;
 import org.thshsh.crypt.web.view.TitleSpan;
-import org.thshsh.crypt.web.view.UsersView;
+import org.thshsh.crypt.web.view.activity.ActivityView;
+import org.thshsh.crypt.web.view.contact.ContactDialog;
+import org.thshsh.crypt.web.view.contact.ContactsView;
+import org.thshsh.crypt.web.view.currency.CurrenciesView;
+import org.thshsh.crypt.web.view.exchange.ExchangesView;
+import org.thshsh.crypt.web.view.history.PortfolioHistoriesView;
+import org.thshsh.crypt.web.view.portfolio.PortfolioAlertsView;
+import org.thshsh.crypt.web.view.portfolio.PortfoliosView;
+import org.thshsh.crypt.web.view.rate.MarketRatesView;
+import org.thshsh.crypt.web.view.user.UsersView;
 import org.thshsh.vaadin.ClickableAnchor;
-import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics;
-import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics.LogLevel;
-import org.vaadin.googleanalytics.tracking.EnableGoogleAnalytics.SendMode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -81,7 +78,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport(value = "./styles/components/vcf-popup.css",themeFor = "vcf-popup-overlay")
 @CssImport(value = "./styles/components/vcf-toggle-button.css", themeFor = "vcf-toggle-button")
 @UIScope
-@EnableGoogleAnalytics(value = "UA-114384488-4",debugMode = false,sendMode = SendMode.ALWAYS,devLogging = LogLevel.TRACE,productionLogging = LogLevel.TRACE)
+//@EnableGoogleAnalytics(value = "UA-114384488-4",debugMode = false,sendMode = SendMode.ALWAYS,devLogging = LogLevel.TRACE,productionLogging = LogLevel.TRACE)
 public class MainLayout extends AppLayout {
 
 	protected static final Logger LOGGER = LoggerFactory.getLogger(MainLayout.class);
@@ -382,7 +379,7 @@ public class MainLayout extends AppLayout {
 
     private static RouterLink createMenuItem(Icon icon,String text, Class<? extends Component> navigationTarget) {
         //final Tab tab = new Tab();
-    	RouterLink link = new RouterLink(null, navigationTarget);
+    	RouterLink link = new RouterLink(navigationTarget);
     	link.addClassName("h3");
     	if(icon != null) {
     		icon.setSize("20px");

@@ -20,6 +20,7 @@ import org.thshsh.crypt.serv.UserService;
 import org.thshsh.crypt.serv.UserService.UserExistsException;
 import org.thshsh.crypt.web.AppConfiguration;
 import org.thshsh.crypt.web.security.SecurityConfiguration;
+import org.thshsh.crypt.web.view.user.UserNameValidator;
 
 import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.Html;

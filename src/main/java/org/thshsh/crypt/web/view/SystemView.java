@@ -13,7 +13,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.thshsh.crypt.Access;
 import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.serv.PortfolioHistoryService;
-import org.thshsh.crypt.tax.CryptoReport;
 import org.thshsh.crypt.web.security.SecuredByFeatureAccess;
 import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.entity.ConfirmDialogs;

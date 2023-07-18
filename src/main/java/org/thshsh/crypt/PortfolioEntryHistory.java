@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thshsh.crypt.web.view.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
 
 @Entity()
 @Table(schema = CryptmanModel.SCHEMA, name = "entry_history",indexes = {
