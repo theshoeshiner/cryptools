@@ -32,9 +32,15 @@ import org.thshsh.crypt.serv.PortfolioHistoryService;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.security.UnauthorizedException;
+import org.thshsh.crypt.web.view.portfolio.PortfolioAllocationGrid;
+import org.thshsh.crypt.web.view.portfolio.PortfolioBalanceGrid;
+import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.portfolio.PortfolioSettingsForm;
+import org.thshsh.crypt.web.view.portfolio.PortfolioValueChart;
 import org.thshsh.crypt.web.views.main.MainLayout;
-import org.thshsh.vaadin.BasicTabSheet;
 import org.thshsh.vaadin.UIUtils;
+import org.thshsh.vaadin.tabsheet.BasicTab;
+import org.thshsh.vaadin.tabsheet.BasicTabSheet;
 
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.github.appreciated.apexcharts.ApexChartsBuilder;
@@ -117,11 +123,11 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	BalanceChart balChart;
 	
 	BasicTabSheet tabSheet;
-	Tab mainTab;
-	Tab distributionTab;
-	Tab chartTab;
-	Tab balanceChartTab;
-	Tab allocationTab;
+	BasicTab mainTab;
+	BasicTab distributionTab;
+	BasicTab chartTab;
+	BasicTab balanceChartTab;
+	BasicTab allocationTab;
 	PortfolioEntryGrid entriesList;
 	
 
@@ -143,8 +149,8 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    		
 	    		entityId = Long.valueOf(parametersMap.get(ID_PARAM).get(0));
 		    	entity = portRepo.findByIdSecured(entityId);
-		    	if(entity == null) throw new UnauthorizedException();
-		    	LOGGER.info("Got entity with id: {} = {}",entityId,entity);
+		    	if(getEntity() == null) throw new UnauthorizedException();
+		    	LOGGER.info("Got entity with id: {} = {}",entityId,getEntity());
 		    	
 		    	
 		    	if(parametersMap.containsKey(SILENCE_PARAM)) {
@@ -157,7 +163,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 				    	ZonedDateTime now = ZonedDateTime.now();
 				    	ZonedDateTime then = now.plus(duration);
 				    	//PrettyTime prettyTime = new PrettyTime(LocalDateTime.now());
-				    	entity.getSettings().setSilentTill(then);
+				    	getEntity().getSettings().setSilentTill(then);
 				    	
 				    	String thenString = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(then);
 				    	
@@ -185,13 +191,16 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    
 	    
 
-	    LOGGER_ACTIVITY.info("User: {} Opened Portfolio: {}",AppSession.getCurrentUser().getUserName(),entity.getName());
+	    LOGGER_ACTIVITY.info("User: {} Opened Portfolio: {}",
+	    		AppSession.getCurrentUser().getUserName(),
+	    		getEntity().getName());
 	    
 	    tabSheet = new BasicTabSheet();
 	    tabSheet.getContentLayout().setMargin(false);
 	    tabSheet.getContentLayout().setPadding(false);
 
 	    tabSheet.setHeightFull();
+	    tabSheet.setWidthFull();
 	    tabSheet.getContentLayout().setHeight("100%");
 
 	    //AreaChartExample ex = new AreaChartExample();
@@ -240,10 +249,10 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    //VerticalLayout chartsLayout = createChartsTab();
 	    //tabSheet.addTab(new Tab("Charts"), chartsLayout);
 
-	    valueChart = appContext.getBean(PortfolioValueChart.class,entity);
+	    valueChart = appContext.getBean(PortfolioValueChart.class,getEntity());
 	    chartTab = tabSheet.addTab(new Tab("Value"), valueChart);
 	    
-	    balChart = appContext.getBean(BalanceChart.class,entity);
+	    balChart = appContext.getBean(BalanceChart.class,getEntity());
 	    if(SecurityUtils.hasAccess(Feature.System, Access.Read)) {
 	    	balanceChartTab = tabSheet.addTab(new Tab("Balance"), balChart);
 	    }
@@ -283,7 +292,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    breadcrumbs
 	    //.resetBreadcrumbs()
 	    //.addBreadcrumb(PortfoliosView.TITLE, PortfoliosView.class)
-	    .addBreadcrumb(entity.getName(), null)
+	    .addBreadcrumb(getEntity().getName(), null)
 	    ;
 	    
 	    
@@ -294,14 +303,14 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		template = new TransactionTemplate(transactionManager);
 	}
 
-	protected void refreshValueChart() {
-		 PortfolioValueChart newChartTab = appContext.getBean(PortfolioValueChart.class,entity);
+	public void refreshValueChart() {
+		 PortfolioValueChart newChartTab = appContext.getBean(PortfolioValueChart.class,getEntity());
 		 tabSheet.replaceTab(chartTab, newChartTab);
 		 newChartTab.setVisible(true);
 		 this.valueChart = newChartTab;
 	}
 
-	protected void refreshAllocationTab() {
+	public void refreshAllocationTab() {
 		
 		if(SecurityUtils.hasAccess(Feature.Portfolio, Access.Super)) {
 			VerticalLayout alLlayout = createAllocationsTab();
@@ -312,7 +321,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		
 	}
 	
-	protected void refreshValueRelatedTabs() {
+	public void refreshValueRelatedTabs() {
 		
 		refreshSummaryTab(true);
 		
@@ -330,7 +339,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		this.distroChart = newDistroChart;
 	}
 	
-	protected void refreshSummaryTab(boolean force) {
+	public void refreshSummaryTab(boolean force) {
 		
 		LOGGER.info("refreshMainTab visible: {}",mainTab.isVisible());
 		VerticalLayout newMainTab = createMainTab(force);
@@ -350,7 +359,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		layout.setPadding(false);
 		layout.setMargin(false);
 
-		if(balanceRepo.countByPortfolio(entity)==0) {
+		if(balanceRepo.countByPortfolio(getEntity())==0) {
 			Span addBalances = new Span("Summary will be populated after adding balances on the Balances tab");
 			addBalances.addClassNames("helper-text","highlighted");
 			layout.add(addBalances);
@@ -398,7 +407,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	}
 	
 	protected void runHistoryJob() {
-		historyService.runHistoryJob(entity);
+		historyService.runHistoryJob(getEntity());
 	}
 
 	protected VerticalLayout createFunctionsTab() {
@@ -416,7 +425,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 
 		Button clearHistory = new Button("Clear History",click -> {
 			this.template.executeWithoutResult(action -> {
-				histRepo.deleteAllByPortfolio(entity);
+				histRepo.deleteAllByPortfolio(getEntity());
 				refreshValueChart();
 			});
 
@@ -434,7 +443,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		layout.setVisible(false);
 
 
-		PortfolioSettingsForm sf = appContext.getBean(PortfolioSettingsForm.class,this,this.entity);
+		PortfolioSettingsForm sf = appContext.getBean(PortfolioSettingsForm.class,this,this.getEntity());
 		layout.add(sf);
 
 		return layout;
@@ -513,7 +522,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 		    	
 		    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(
 		    			entriesList!=null?
-		    			entriesList.entries:
+		    			entriesList.getEntries():
 		    			Collections.emptyList()
 		    			);
 		    	Collections.sort(sorted, (pe0,pe1) -> {
@@ -694,7 +703,7 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	    	
 	    	List<PortfolioEntryHistory> sorted = new ArrayList<PortfolioEntryHistory>(
 	    			entriesList!=null?
-	    			entriesList.entries:
+	    			entriesList.getEntries():
 	    			Collections.emptyList()
 	    			);
 	    	Collections.sort(sorted, (pe0,pe1) -> {
@@ -862,7 +871,11 @@ public class ManagePortfolioView  extends VerticalLayout implements HasUrlParame
 	@Override
 	public String getPageTitle() {
 		// UI.getCurrent().getPage().setTitle("Manage Portfolio: "+entity.getName());
-		return "Portfolio: "+entity.getName(); 
+		return "Portfolio: "+getEntity().getName(); 
+	}
+
+	public Portfolio getEntity() {
+		return entity;
 	}
 
 	/*public class AreaChartExample2 extends Div {
