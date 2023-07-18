@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.allocation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,11 +10,6 @@ import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.vaadin.entity.EntityForm;
-
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 
 

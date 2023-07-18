@@ -1,4 +1,4 @@
-package org.thshsh.crypt.web.view;
+package org.thshsh.crypt.web.view.allocation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Allocation;
 import org.thshsh.crypt.Currency;
@@ -18,19 +18,19 @@ import org.thshsh.crypt.repo.CurrencyRepository;
 import org.thshsh.crypt.serv.BalanceService;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
+import org.thshsh.crypt.web.view.AppEntityForm;
+import org.thshsh.crypt.web.view.PercentConverter;
+import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
 import org.thshsh.vaadin.SingleCheckboxGroup;
+import org.thshsh.vaadin.entity.EntityDescriptor;
 
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Result;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
@@ -75,19 +75,43 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 
 
 	public AllocationForm(Allocation entity,Portfolio p,Currency c) {
-		super(Allocation.class, entity);
+		super(entity);
 		this.portfolio=p;
 		this.currency = c;
-		this.confirm = false;
-		
 	}
+
+
+
 
 
 	@Override
-	protected JpaRepository<Allocation, Long> getRepository() {
-		return alloRepo;
+	public void postConstruct() {
+		super.postConstruct();
+		this.getButtons().setConfirm(false);
 	}
-	
+
+
+
+
+
+	@Override
+	@Autowired
+	public void setDescriptor(EntityDescriptor<Allocation, Long> descriptor) {
+		super.setDescriptor(descriptor);
+	}
+
+
+
+	@Override
+	@Autowired
+	public void setRepository(CrudRepository<Allocation, Long> repository) {
+		super.setRepository(repository);
+	}
+
+
+
+
+
 	protected String getColor() {
 		LOGGER.info("get color c: {} e: {}",this.currency,this.entity);
 		if(this.currency != null) return this.currency.getColorHex();
@@ -232,12 +256,13 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 
 
 	@Override
-	protected void persist() {
-		super.persist();
+	protected Allocation persist() {
+		Allocation a = super.persist();
 		if(detectField.isTrue()) {
 			PortfolioHistory h = manageServ.createHistory(portfolio, false);
 			balServ.autoDetectAllocation(currency, portfolio, h);
 		}
+		return a;
 	}
 
 	protected Allocation createEntity() {
@@ -247,9 +272,6 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 		return b;
 	}
 
-	@Override
-	protected Long getEntityId(Allocation e) {
-		return e.getId();
-	}
+
 
 }
