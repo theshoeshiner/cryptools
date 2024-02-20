@@ -1,1 +1,4 @@
 /application-local.properties
+/application-dev.properties
+/application-flounder.properties
+/application-test.properties
