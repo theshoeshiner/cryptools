@@ -1,7 +1,0 @@
-vaadin-button[theme~=press] {
-	font-weight:600;
-}
-
-vaadin-button.pressed[theme~="primary"][theme~="press"] {
-	min-width:calc(var(--lumo-button-size) * 2);
-}

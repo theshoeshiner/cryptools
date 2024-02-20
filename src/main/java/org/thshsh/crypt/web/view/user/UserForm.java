@@ -74,7 +74,15 @@ public class UserForm extends AppEntityForm<User,Long> {
 		super(entity);
 		this.type = t;
 	}
+	
+	
 
+
+	@Override
+	protected User loadEntity() {
+		LOGGER.info("loadEntity");
+		return super.loadEntity();
+	}
 
 	@Override
 	@PostConstruct

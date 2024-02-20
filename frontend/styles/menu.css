@@ -19,6 +19,10 @@ vaadin-vertical-layout[slot="drawer"]{
 	padding-left:10px;
 }
 
+.menu a[router-link] vaadin-icon {
+	margin-right: var(--lumo-space-m);
+}
+
 .menu a[router-link] {
 	text-decoration-line:unset;
 	

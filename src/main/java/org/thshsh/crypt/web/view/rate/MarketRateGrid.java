@@ -48,8 +48,8 @@ public class MarketRateGrid extends AppEntityGrid<MarketRate> {
 
 	
 	
-	@Override
-	public DataProvider<MarketRate, ?> createDataProvider() {
+	/*@Override
+	public DataProvider<MarketRate, ?> createBaseDataProvider() {
 		QueryByExampleDataProvider<MarketRate> dataProvider = new QueryByExampleDataProvider<>((MarketRateRepository)getRepository(),MarketRate.class);
 		dataProvider.setMatcher(
 				ExampleMatcher
@@ -59,7 +59,7 @@ public class MarketRateGrid extends AppEntityGrid<MarketRate> {
 				.withIgnoreNullValues()
 				);
 		return dataProvider;
-	}
+	}*/
 
 
 

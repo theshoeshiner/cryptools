@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.activation.DataHandler;
@@ -14,6 +15,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,6 @@ import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.serv.UserService.ClasspathDataSource;
 import org.thshsh.crypt.web.AppConfiguration;
-import org.thshsh.util.MapUtils;
 
 @Service
 public class MailService {
@@ -55,7 +56,8 @@ public class MailService {
 	public void sendAccountConfirmEmail(User user, String token) {
 		
 		LOGGER.info("sendAccountConfirmEmail: {} / {}",user,token);
-		Map<String,Object> context = createContext( MapUtils.createHashMap("token", token));
+		
+		Map<String,Object> context = createContext(MapUtils.putAll(new HashMap<>(), new String[] {"token",token}));
 		sendMailFromResource(user, "email-confirm.html", context,"Cryptools Account Confirmation");
 	}
 	
@@ -73,15 +75,16 @@ public class MailService {
 		StringBuilder assets = new StringBuilder();
 		p.getLatest().getEntries().forEach(entry -> {
 			if(entry.getCurrency()!=null) {
-				Map<String,Object> c = createContext(MapUtils.createHashMap("entry", entry));
+				Map<String,Object> c = createContext(MapUtils.putAll(new HashMap<>(), new Object[] {"entry",entry}));
 				String content = createEmailContent("email-alert-entry.html", c);
 				assets.append(content);
 			}
 		});
 		
-		//Map<String,Object> context = MapUtils.createHashMap("portfolio", p,"summary",assets.toString());
+		//Map<String,Object> context = MapUtils.createHashMap("p", p,"summary",assets.toString());
 		
-		Map<String,Object> context = createContext(MapUtils.createHashMap("portfolio", p,"summary",assets.toString()));
+		
+		Map<String,Object> context = createContext(MapUtils.putAll(new HashMap<>(), new Object[] {"portfolio",p,"summary",assets.toString()}));
 
 		sendMailFromResource(p.getUser(), "email-alert.html", context, subject); 
 		
@@ -107,9 +110,10 @@ public class MailService {
 		
 	}
 	
+	//TODO have this accept and object array to use in MapUtils.putAll
 	public Map<String,Object> createContext(Map<String,Object> add){
 		String timestamp = DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now());
-		Map<String,Object> context = MapUtils.createHashMap("app",appConfig,"timestamp",timestamp);
+		Map<String,Object> context = MapUtils.putAll(new HashMap<>(), new Object[] {"app",appConfig,"timestamp",timestamp});
 		context.putAll(add);
 		LOGGER.info("created context: {}",context.keySet());
 		return context;

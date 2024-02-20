@@ -9,7 +9,7 @@ import com.vaadin.flow.data.converter.Converter;
 @SuppressWarnings("serial")
 public class PercentConverter implements  Converter<BigDecimal, BigDecimal> {
 	
-	public static final BigDecimal HUNDRED = new BigDecimal(100l); 
+	public static final BigDecimal HUNDRED = new BigDecimal(100L); 
 
 	@Override
 	public Result<BigDecimal> convertToModel(BigDecimal v, ValueContext context) {

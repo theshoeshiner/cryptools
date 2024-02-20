@@ -229,7 +229,7 @@ public class BalanceChart extends Div {
 			        chart = ApexChartsBuilder.get()
 			
 			                .withChart(ChartBuilder.get()
-			                        .withType(Type.line)
+			                        .withType(Type.LINE)
 			                        .withZoom(ZoomBuilder.get()
 			                                .withEnabled(false)
 			                                .build())
@@ -238,7 +238,7 @@ public class BalanceChart extends Div {
 			                        .withEnabled(false)
 			                        .build())
 			                .withStroke(StrokeBuilder.get()
-			                		.withCurve(Curve.smooth)
+			                		.withCurve(Curve.SMOOTH)
 			                		.withColors(colors.toArray(new String[0]))
 			                		.withWidth(3d)
 			                		.build()
@@ -257,7 +257,7 @@ public class BalanceChart extends Div {
 			               .withLabels(dates.toArray(new String[dates.size()]))
 			
 			                .withXaxis(XAxisBuilder.get()
-			                        .withType(XAxisType.datetime)
+			                        .withType(XAxisType.DATETIME)
 			                        .withLabels(LabelsBuilder
 			                        		.get()
 			                        		.withFormat("MMM dd")
@@ -277,7 +277,7 @@ public class BalanceChart extends Div {
 							 	.build()*/
 			                        )
 			                .withLegend(
-			                		LegendBuilder.get().withHorizontalAlign(HorizontalAlign.left)
+			                		LegendBuilder.get().withHorizontalAlign(HorizontalAlign.LEFT)
 			                		
 			                		.build()
 			                		)

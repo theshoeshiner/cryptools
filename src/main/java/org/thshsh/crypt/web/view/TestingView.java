@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriBuilderFactory;
+import org.thshsh.coinbase.adv.AdvancedTradeApi;
 import org.thshsh.color.AbstractColor;
 import org.thshsh.color.ColorSpaceConverter;
 import org.thshsh.color.ColorUtils;
@@ -37,10 +38,24 @@ import org.thshsh.crypt.web.views.main.MainLayout;
 import org.thshsh.vaadin.ClickableAnchor;
 import org.thshsh.vaadin.UIUtils;
 
+import com.github.appreciated.apexcharts.ApexCharts;
+import com.github.appreciated.apexcharts.ApexChartsBuilder;
+import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
+import com.github.appreciated.apexcharts.config.builder.DataLabelsBuilder;
+import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
+import com.github.appreciated.apexcharts.config.builder.StrokeBuilder;
+import com.github.appreciated.apexcharts.config.builder.XAxisBuilder;
+import com.github.appreciated.apexcharts.config.chart.Type;
+import com.github.appreciated.apexcharts.config.chart.builder.ZoomBuilder;
+import com.github.appreciated.apexcharts.config.legend.HorizontalAlign;
+import com.github.appreciated.apexcharts.config.stroke.Curve;
+import com.github.appreciated.apexcharts.config.xaxis.XAxisType;
+import com.github.appreciated.apexcharts.helper.Series;
 import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
@@ -52,7 +67,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "testing", layout = MainLayout.class)
 @PageTitle("Testing")
-@SecuredByFeatureAccess(feature=Feature.System,access=Access.Read)
+@SecuredByFeatureAccess(feature = Feature.System, access = Access.Read)
 public class TestingView extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(TestingView.class);
@@ -68,87 +83,149 @@ public class TestingView extends VerticalLayout {
 
 	@Autowired
 	Breadcrumbs breadcrumbs;
-	
+
 	@Autowired
 	ImageService imageService;
-	
+
 	@Autowired
 	TaskExecutor executor;
-	
+
 	@Autowired
 	CurrencyRepository currRepo;
-	
+
 	@Autowired
 	ApplicationContext context;
-	
+
 	@Autowired
 	PortfolioRepository portRepo;
-	
+
 	@Autowired
 	ManagePortfolioService portService;
-
-	//coinbase oauth
-	//clientid: 4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25
-	//secret: d905f7b250a654762288560e694e246ebfc4546d5abc54d09c11275118c2030d
-
-	//https://www.coinbase.com/oauth/authorize?client_id=4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25&redirect_uri=https%3A%2F%2Fcryptools.thshsh.org%2Foauthcallback&response_type=code&scope=wallet%3Aaccounts%3Aread
-	//respose code 861655c572acef09c8a91064ee31afb3988f49e9c3b743940718806e1ddc7319
-	//curl https://api.coinbase.com/v2/accounts \
 	
+	@Autowired
+	AdvancedTradeApi atApi;
+	
+
+	// coinbase oauth
+	// clientid: 4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25
+	// secret: d905f7b250a654762288560e694e246ebfc4546d5abc54d09c11275118c2030d
+
+	// https://www.coinbase.com/oauth/authorize?client_id=4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25&redirect_uri=https%3A%2F%2Fcryptools.thshsh.org%2Foauthcallback&response_type=code&scope=wallet%3Aaccounts%3Aread
+	// respose code 861655c572acef09c8a91064ee31afb3988f49e9c3b743940718806e1ddc7319
+	// curl https://api.coinbase.com/v2/accounts \
+
 	// @Value("${ldap.user.base}")
 	// String ldapUserBase;
 
 	public TestingView() {
 
-		
+	}
+
+	
+
+	public void coinbase() {
+		Anchor l = new Anchor(atApi.getAuthUrl().toString(),"Authorize Coinbase");
+		add(l);
 	}
 	
+	public void chart() {
+		ApexCharts chart = ApexChartsBuilder.get()
+
+				.withChart(ChartBuilder
+						.get().withType(Type.LINE).withZoom(ZoomBuilder.get().withEnabled(false).build()).build())
+				.withDataLabels(DataLabelsBuilder.get().withEnabled(false).build())
+				.withStroke(StrokeBuilder.get().withCurve(Curve.SMOOTH)
+						// .withColors(colors.toArray(new String[0]))
+						.withWidth(3d).build())
+				// .withFill(FillBuilder.get().withOpacity(0d).build())
+				.withSeries(new Series<>(1, 2, 3, 5, 7, 2, 1)
+				// series.toArray(new Series[] {})
+				// new Series<>("USD Value", valuePerHour.toArray())
+				// ,new Series<>(curr.getKey(), currencyValues.toArray())
+
+				// .withSeries(new Series<>("USD Value", valuePerHour.toArray())
+				// new Series<>("Alert Threshold", thresh.toArray())
+				)
+
+				/*.withLabels(
+					   //dates.toArray(new String[dates.size()])
+					   "A","B","C","D","E","F","G","G"
+					   )
+				*/
+				.withXaxis(XAxisBuilder.get().withType(XAxisType.NUMERIC)
+						/*.withLabels(LabelsBuilder
+								.get()
+								.withFormat("MMM dd")
+								.build())*/
+						.build())
+				/* .withYaxis(
+				 		YAxisBuilder.get().with
+				     		.withDecimalsInFloat(10d)
+				     		//.withTickAmount(10d)
+				             .withMin(0d)
+				             .build()
+				 ,YAxisBuilder.get()
+				 	.withOpposite(true)
+				 	.withMax(1)
+				 	.withMin(0)
+				 	.withDecimalsInFloat(2d)
+				 	.build()
+				         )
+				*/ .withLegend(LegendBuilder.get().withHorizontalAlign(HorizontalAlign.LEFT)
+
+						.build())
+				.build();
+		add(chart);
+		// chart.setHeight("600px");
+	}
+
 	public void callCoinbase() {
-		//OAuth2RestTemplate rest = new OAuth2RestTemplate();
-		//OAuth2AuthorizedClientService as;
+		// OAuth2RestTemplate rest = new OAuth2RestTemplate();
+		// OAuth2AuthorizedClientService as;
 		RestTemplate coinbase = new RestTemplate();
-		
-		UriBuilderFactory uriBuilder = new DefaultUriBuilderFactory();;
-		
-		//https://api.coinbase.com/oauth/token
+
+		UriBuilderFactory uriBuilder = new DefaultUriBuilderFactory();
+		;
+
+		// https://api.coinbase.com/oauth/token
 		UriBuilder builder = uriBuilder.uriString("");
-		//coinbase.postForObject(URI.create(""), request, responseType)
-		
+		// coinbase.postForObject(URI.create(""), request, responseType)
+
 	}
 
 	@PostConstruct
 	public void postConstruct() {
 		// breadcrumbs.resetBreadcrumbs().addBreadcrumb(DashboardView.TITLE,
 		// DashboardView.class).addBreadcrumb("About", TestingView.class);
-		
+
+		chart();
+
 		{
 			ClickableAnchor ca = new ClickableAnchor("", "Text");
 			add(ca);
 		}
-		
-		
+
 		{
 			VerticalLayout runLayout = new VerticalLayout();
 			add(runLayout);
 			ComboBox<Portfolio> ports = new ComboBox<Portfolio>();
 			ports.setItemLabelGenerator(Portfolio::getName);
-			ports.setItems(context.getBean(HasNameDataProvider.class,portRepo));
+			ports.setItems(context.getBean(HasNameDataProvider.class, portRepo));
 			runLayout.add(ports);
 			Button runHistory = new Button("Run 500 History Jobs");
 			runLayout.add(runHistory);
 			runHistory.addClickListener(click -> {
-				if(!ports.isEmpty()) {
+				if (!ports.isEmpty()) {
 					executor.execute(() -> {
-						for(int i=0;i<500;i++) {
-							LOGGER.info("Running: {}",i);
+						for (int i = 0; i < 500; i++) {
+							LOGGER.info("Running: {}", i);
 							portService.createHistory(ports.getValue());
 						}
 					});
 				}
-				
+
 			});
-			
-			
+
 		}
 
 		{
@@ -257,7 +334,7 @@ public class TestingView extends VerticalLayout {
 		Div text2 = new Div();
 		text2.setText("element 2");
 		popup.add(text, text2);
-		
+
 		add(button, popup);
 
 		/*	Div closeOnClickStatus = new Div();
@@ -295,113 +372,101 @@ public class TestingView extends VerticalLayout {
 			name.clear();
 			email.clear();
 		});
-		
-		
-		
-		Button images = new Button("Scan Images",click -> {
-			
+
+		Button images = new Button("Scan Images", click -> {
+
 			executor.execute(() -> {
-				
-				//List<String> check = Arrays.asList("grt","amp","comp","band","bat","nmr");
+
+				// List<String> check = Arrays.asList("grt","amp","comp","band","bat","nmr");
 				List<String> check = Arrays.asList(
-						//"grt",
-						//"dai",
-						"xrp",
-						"eos",
-						"xlm",
-						"forth",
-						"xmr"
-						
-						//"amp"
+						// "grt",
+						// "dai",
+						"xrp", "eos", "xlm", "forth", "xmr"
+
+				// "amp"
 				);
-				
+
 				List<Currency> save = new ArrayList<>();
-				
+
 				ColorSpaceConverter csc = new ColorSpaceConverter();
 				currRepo.findAll().forEach(cur -> {
-					
-					if(cur.getColorHex()!=null) return;
-					
-					LOGGER.info("checking image for: {}",cur);
+
+					if (cur.getColorHex() != null)
+						return;
+
+					LOGGER.info("checking image for: {}", cur);
 					try {
-						LOGGER.info("image: {}",cur.getImageUrl());
+						LOGGER.info("image: {}", cur.getImageUrl());
 						InputStream image = imageService.getImage(cur);
-						
-						if(image == null) return;
-						
+
+						if (image == null)
+							return;
+
 						BufferedImage bi = null;
 						try {
 							bi = Imaging.getBufferedImage(image);
-						}
-						catch(IllegalArgumentException iae) {
-							LOGGER.error("",iae);
+						} catch (IllegalArgumentException iae) {
+							LOGGER.error("", iae);
 							image = imageService.getImage(cur);
 							try {
 								bi = ImageIO.read(image);
-							} 
-							catch (Exception e) {
-								LOGGER.error("",e);
+							} catch (Exception e) {
+								LOGGER.error("", e);
 							}
 						}
-						
-						if(bi == null) {
+
+						if (bi == null) {
 							LOGGER.error("Could not load image");
 							return;
-							//throw new IllegalStateException("Could not load image");
+							// throw new IllegalStateException("Could not load image");
 						}
-						
-			
+
 						List<AbstractColor> toAvg = new ArrayList<>();
-						for(int x=0;x<bi.getWidth();x++) {
-							for(int y=0;y<bi.getHeight();y++) {
+						for (int x = 0; x < bi.getWidth(); x++) {
+							for (int y = 0; y < bi.getHeight(); y++) {
 								int color = bi.getRGB(x, y);
-								
+
 								LchColor lch = new LchColor(csc.InttoLCH(color));
-								//CieLabColor c = new CieLabColor(csc.InttoLAB(color));
-								//LOGGER.info("color: {}",lch);
-								if(lch.getL()<90 && lch.getL() > 10) {
-									
-									if(lch.getC() > 25) {
-									//LOGGER.info("color: {}",lch);
+								// CieLabColor c = new CieLabColor(csc.InttoLAB(color));
+								// LOGGER.info("color: {}",lch);
+								if (lch.getL() < 90 && lch.getL() > 10) {
+
+									if (lch.getC() > 25) {
+										// LOGGER.info("color: {}",lch);
 										toAvg.add(lch);
 									}
 								}
-								
-								
+
 							}
 						}
-						
-						if(toAvg.size()>0) {
+
+						if (toAvg.size() > 0) {
 							LchColor average = (LchColor) ColorUtils.averageColors(toAvg);
-							LOGGER.info("average: {}",average); 
+							LOGGER.info("average: {}", average);
 							int[] rgb = csc.LABtoRGB(csc.LCHtoLAB(average.getComponentsPrimitive()));
-							byte[] rbgb = new byte[] {(byte) rgb[0],(byte) rgb[1],(byte) rgb[2]};
-							LOGGER.info("rbg: {}",new Object[] {rgb}); 
+							byte[] rbgb = new byte[] { (byte) rgb[0], (byte) rgb[1], (byte) rgb[2] };
+							LOGGER.info("rbg: {}", new Object[] { rgb });
 							String hex = Hex.encodeHexString(rbgb);
-							LOGGER.info("hex: {}",hex);
+							LOGGER.info("hex: {}", hex);
 							cur.setColorHex(hex);
 							save.add(cur);
-							//currRepo.save(cur);
-						}
-						else {
+							// currRepo.save(cur);
+						} else {
 							LOGGER.info("NO COLORS TO AVERAGE");
 						}
-						
+
 					} catch (Exception e) {
-						LOGGER.error("",e);
-					} 
-						
-					
-						
-					//}
-					
+						LOGGER.error("", e);
+					}
+
+					// }
+
 				});
-				
+
 				currRepo.saveAll(save);
-				
+
 			});
-			
-			
+
 			/*this.template.executeWithoutResult(action -> {
 				histRepo.deleteAllByPortfolio(entity);
 				refreshChartTab();

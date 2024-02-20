@@ -1,18 +1,52 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-import '@polymer/polymer/lib/utils/html-tag.js';
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
+// @ts-ignore
 import ApexCharts from 'apexcharts/dist/apexcharts.esm';
+import '@webcomponents/shadycss/apply-shim.min.js';
+import color from "onecolor";
+import { PropertyValues } from "@lit/reactive-element/development/reactive-element";
 
-class ApexChartsWrapper extends PolymerElement {
-    static get template() {
+declare global {
+    interface Window {
+        ShadyCSS?: any;
+    }
+}
+
+@customElement('apex-charts-wrapper')
+export class ApexChartsWrapper extends LitElement {
+    config: any = {};
+    chartComponent?: ApexCharts;
+    annotations?: string;
+    chart?: string;
+    series?: string;
+    labels?: string;
+    colors?: string;
+    dataLabels?: string;
+    fill?: string;
+    forecastDataPoints?: string;
+    grid?: string;
+    legend?: string;
+    markers?: string;
+    noData?: string;
+    plotOptions?: string;
+    responsive?: string;
+    states?: string;
+    stroke?: string;
+    subtitle?: string;
+    theme?: string;
+    chartTitle?: string;
+    tooltip?: string;
+    xaxis?: string;
+    yaxis?: string;
+    width?: string;
+    height?: string;
+    debug?: string;
+
+    render() {
         return html`
             <style include="apex-charts-style"></style>
             <slot></slot>
         `;
-    }
-
-    static get is() {
-        return 'apex-charts-wrapper'
     }
 
     static get properties() {
@@ -32,6 +66,9 @@ class ApexChartsWrapper extends PolymerElement {
             fill: {
                 type: Object
             }, // ApexFill;
+            forecastDataPoints: {
+                type: Object
+            }, // ApexForecastDataPoints;
             grid: {
                 type: Object
             }, // ApexGrid;
@@ -89,12 +126,11 @@ class ApexChartsWrapper extends PolymerElement {
             height: {
                 type: String
             }
-        }
+        };
     }
 
-    ready() {
-        super.ready();
-        this.color = require('onecolor');
+    firstUpdated(_changedProperties: PropertyValues) {
+        super.firstUpdated(_changedProperties);
         const div = document.createElement('div');
         this.appendChild(div);
         this.updateConfig();
@@ -114,14 +150,14 @@ class ApexChartsWrapper extends PolymerElement {
 
     updateConfig() {
         let primaryColor;
-        if (ShadyCSS) {
-            primaryColor = ShadyCSS.getComputedStyleValue(this, '--apex-charts-primary-color');
+        if (window.ShadyCSS) {
+            primaryColor = window.ShadyCSS.getComputedStyleValue(this, '--apex-charts-primary-color');
         } else {
             primaryColor = getComputedStyle(this).getPropertyValue('--apex-charts-primary-color');
         }
-        var backgroundColor;
-        if (ShadyCSS) {
-            backgroundColor = ShadyCSS.getComputedStyleValue(this, '--apex-charts-background-color');
+        let backgroundColor;
+        if (window.ShadyCSS) {
+            backgroundColor = window.ShadyCSS.getComputedStyleValue(this, '--apex-charts-background-color');
         } else {
             backgroundColor = getComputedStyle(this).getPropertyValue('--apex-charts-background-color');
         }
@@ -203,6 +239,9 @@ class ApexChartsWrapper extends PolymerElement {
         if (this.fill) {
             this.config.fill = JSON.parse(this.fill);
         }
+        if (this.forecastDataPoints) {
+            this.config.forecastDataPoints = JSON.parse(this.forecastDataPoints);
+        }
         if (this.grid) {
             this.config.grid = JSON.parse(this.grid);
         }
@@ -236,18 +275,18 @@ class ApexChartsWrapper extends PolymerElement {
         if (this.theme) {
             this.config.theme = JSON.parse(this.theme);
         } else if (!this.config.fill || !this.config.fill.type || !Array.isArray(this.config.fill.type) || this.config.fill.type[0] !== "gradient") {
-            if (backgroundColor && this.color(backgroundColor)) {
+            if (backgroundColor && color(backgroundColor)) {
                 this.config.theme = {
-                    mode: ((this.color(backgroundColor).lightness() > 0.5) ? 'light' : 'dark')
+                    mode: ((color(backgroundColor).lightness() > 0.5) ? 'light' : 'dark')
                 };
             }
-            if (!this.colors && primaryColor && this.color(primaryColor)) {
+            if (!this.colors && primaryColor && color(primaryColor)) {
                 this.config.theme.monochrome = {
                     enabled: true,
-                    color: this.color(primaryColor).hex(),
+                    color: color(primaryColor).hex(),
                     shadeTo: 'light',
                     shadeIntensity: 0.65
-                }
+                };
             }
         }
         if (this.chartTitle) {
@@ -279,11 +318,13 @@ class ApexChartsWrapper extends PolymerElement {
         }
         if (this.yaxis) {
             this.config.yaxis = JSON.parse(this.yaxis);
-            if (this.config.yaxis.labels && this.config.yaxis.labels.formatter) {
-                this.config.yaxis.labels.formatter = this.evalFunction(this.config.yaxis.labels.formatter);
-            }
-            if (this.config.yaxis.title && this.config.yaxis.title.formatter) {
-                this.config.yaxis.title.formatter = this.evalFunction(this.config.yaxis.title.formatter);
+            for (let i = 0; i < this.config.yaxis.length; i++) {
+                if (this.config.yaxis[i].labels && this.config.yaxis[i].labels.formatter) {
+                    this.config.yaxis[i].labels.formatter = this.evalFunction(this.config.yaxis[i].labels.formatter);
+                }
+                if (this.config.yaxis[i].title && this.config.yaxis[i].title.formatter) {
+                    this.config.yaxis[i].title.formatter = this.evalFunction(this.config.yaxis[i].title.formatter);
+                }
             }
         }
         if (!this.config.chart) {
@@ -295,19 +336,19 @@ class ApexChartsWrapper extends PolymerElement {
         if (this.height) {
             this.config.chart.height = this.height;
         }
-        if (!this.config.chart.background && backgroundColor && this.color(backgroundColor)) {
+        if (!this.config.chart.background && backgroundColor && color(backgroundColor)) {
             this.config.chart.background = backgroundColor;
         }
         if (!this.config.stroke) {
             this.config.stroke = {};
         }
         if (this.config.chart && this.config.chart.type === "radar") {
-            if (!this.config.plotOptions && backgroundColor && this.color(backgroundColor)) {
+            if (!this.config.plotOptions && backgroundColor && color(backgroundColor)) {
                 this.config.plotOptions = {
                     radar: {
                         polygons: {
                             fill: {
-                                colors: [this.color(backgroundColor).hex()]
+                                colors: [color(backgroundColor).hex()]
                             }
                         }
                     }
@@ -337,12 +378,12 @@ class ApexChartsWrapper extends PolymerElement {
      * @param string for example "function (){return \"test\"}"
      * @returns {function} returns an actual JavaScript instance of the passed string function
      */
-    evalFunction(string) {
+    evalFunction(string: string) {
         return eval("(" + string + ")");
     }
 
     updateData() {
-        if (this.chartComponent) {
+        if (this.chartComponent && this.series) {
             this.chartComponent.updateSeries(JSON.parse(this.series));
         }
         if (this.debug) {
@@ -350,7 +391,7 @@ class ApexChartsWrapper extends PolymerElement {
         }
     }
 
-    render() {
+    reRender() {
         if (this.chartComponent) {
             this.updateConfig();
             this.chartComponent.render();
@@ -364,28 +405,28 @@ class ApexChartsWrapper extends PolymerElement {
         }
     }
 
-    toggleSeries(seriesName) {
+    toggleSeries(seriesName: string) {
         if (this.chartComponent) {
             this.updateConfig();
             return this.chartComponent.toggleSeries(seriesName);
         }
     }
 
-    hideSeries(seriesName) {
+    hideSeries(seriesName: string) {
         if (this.chartComponent) {
             this.updateConfig();
             return this.chartComponent.hideSeries(seriesName);
         }
     }
 
-    showSeries(seriesName) {
+    showSeries(seriesName: string) {
         if (this.chartComponent) {
             this.updateConfig();
             return this.chartComponent.showSeries(seriesName);
         }
     }
 
-    resetSeries(shouldUpdateChart, shouldResetZoom) {
+    resetSeries(shouldUpdateChart: boolean, shouldResetZoom: boolean) {
         if (this.chartComponent) {
             this.updateConfig();
             return this.chartComponent.resetSeries(shouldUpdateChart, shouldResetZoom);
@@ -393,6 +434,3 @@ class ApexChartsWrapper extends PolymerElement {
     }
 
 }
-
-customElements.define(ApexChartsWrapper.is, ApexChartsWrapper);
-export {ApexChartsWrapper};

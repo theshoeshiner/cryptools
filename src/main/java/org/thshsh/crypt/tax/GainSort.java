@@ -30,6 +30,8 @@ public class GainSort {
 		TAX_BRACKETS.put(2021,new BigDecimal(".22"));
 		//this is correct
 		TAX_BRACKETS.put(2022,new BigDecimal(".22"));
+		TAX_BRACKETS.put(2023,new BigDecimal(".22"));
+		TAX_BRACKETS.put(2024,new BigDecimal(".22"));
 	}
 
 	static BigDecimal LONG_TERM_TAX = new BigDecimal(".15");

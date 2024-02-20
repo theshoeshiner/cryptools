@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
+import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
 import org.thshsh.crypt.web.view.ManagePortfolioView;
 import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
@@ -51,16 +52,22 @@ public class PortfolioHistoryGrid extends AppEntityGrid<PortfolioHistory>{
 	@Override
 	public void setupColumns(Grid<PortfolioHistory> grid) {
 		
-		grid
-		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId)))
+		/*grid
+		.addColumn(
+				//new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId))
+				AppEasyRender.router(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getName))
+				)
 		.setHeader("Portfolio")
 		.setAutoWidth(true)
 		.setFlexGrow(0)
 		.setSortProperty("portfolio.id")
-		;
+		;*/
 		
 		grid
-		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getName), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId)))
+		.addColumn(
+				//new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getName), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId))
+				AppEasyRender.router(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getId), BinderUtils.nestedValue(PortfolioHistory::getPortfolio, Portfolio::getName))
+				)
 		.setHeader("Portfolio")
 		.setAutoWidth(true)
 		.setFlexGrow(0)

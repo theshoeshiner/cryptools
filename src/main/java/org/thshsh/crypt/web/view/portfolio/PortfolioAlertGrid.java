@@ -15,6 +15,7 @@ import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.User;
 import org.thshsh.crypt.repo.PortfolioAlertRepository;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
 import org.thshsh.crypt.web.view.ManagePortfolioView;
 import org.thshsh.vaadin.BinderUtils;
@@ -45,7 +46,10 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 
 		
 		grid
-		.addColumn(new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName), BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId)))
+		.addColumn(
+				//new RouterLinkRenderer<>(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName), BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId))
+				AppEasyRender.router(ManagePortfolioView.class, BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getId),  BinderUtils.nestedValue(PortfolioAlert::getPortfolio, Portfolio::getName))
+				)
 		.setHeader("Portfolio")
 		.setAutoWidth(true)
 		.setFlexGrow(0)

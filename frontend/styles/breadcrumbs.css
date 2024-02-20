@@ -1,3 +1,7 @@
+.breadcrumb-holder vaadin-icon {
+	color:var(--lumo-accent-color-4);
+}
+
 .breadcrumbs {
 	font-size:var(--lumo-font-size-xs); 
 	margin-top:0px;

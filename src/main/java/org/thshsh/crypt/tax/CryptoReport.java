@@ -28,7 +28,65 @@ public class CryptoReport {
 	public void run() throws IOException {
 
 		manager = new TransactionManager();
-
+		manager.filePrefix = "2023";
+		
+		//configure transaction manager
+		
+		manager.putTypeString("buy", Transaction.Type.Buy);
+		
+		manager.putTypeString("sell", Transaction.Type.Sell);
+		
+		manager.putTypeString("withdrawal", Transaction.Type.Withdrawal);
+		manager.putTypeString("send", Transaction.Type.Withdrawal);
+		
+		manager.putTypeString("deposit", Transaction.Type.Deposit);
+		manager.putTypeString("receive", Transaction.Type.Deposit);
+		
+		manager.putTypeString("earn", Transaction.Type.Income);
+		manager.putTypeString("income", Transaction.Type.Income);
+		
+		manager.putTypeString("order", null);
+		
+		ExchangeFile cbAdvBuyFile = new ExchangeFile("coinbaseadv-trades.csv");
+		cbAdvBuyFile.putTypeString("advanced trade trade", Transaction.Type.Buy);
+		cbAdvBuyFile.putTypeString("converted to", Transaction.Type.Buy);
+		cbAdvBuyFile.putTypeString("converted from", Transaction.Type.Sell);
+		
+		cbAdvBuyFile.sumDuplicates = true;
+		cbAdvBuyFile.exchange = "coinbase";
+		cbAdvBuyFile.mapColumn(Column.Id,0);
+		cbAdvBuyFile.mapColumn(Column.Type,1);
+		cbAdvBuyFile.mapColumn(Column.Timestamp,2);
+		
+		cbAdvBuyFile.mapColumn(Column.Asset,3);
+		cbAdvBuyFile.mapColumn(Column.Quantity,4);
+		cbAdvBuyFile.mapColumn(Column.Price,5);
+		
+		cbAdvBuyFile.mapColumn(Column.Asset,7);
+		cbAdvBuyFile.mapColumn(Column.Quantity,8);
+		cbAdvBuyFile.mapColumn(Column.Price,9);
+		
+		
+		//This only works if we know the fee seperately, which we dont have in this file
+		//cbAdvFile.mapColumn(Column.PriceWithFee,5);
+		
+		//cbAdvBuyFile.forceColumn(Transaction.Field.Type, Transaction.Type.Buy);
+		manager.addFile(cbAdvBuyFile);
+		
+		//same file but columns for sell transactions are different
+		/*ExchangeFile cbAdvSellFile = new ExchangeFile("coinbaseadv-trades.csv");
+		cbAdvSellFile.exchange = "coinbase";
+		cbAdvSellFile.sumDuplicates = true;
+		cbAdvSellFile.putTypeString("converted from", Transaction.Type.Sell);
+		cbAdvSellFile.mapColumn(Column.Id,0);
+		cbAdvSellFile.mapColumn(Column.Type,1);
+		cbAdvSellFile.mapColumn(Column.Timestamp,2);
+		cbAdvSellFile.mapColumn(Column.Asset,7);
+		cbAdvSellFile.mapColumn(Column.Quantity,8);
+		cbAdvSellFile.mapColumn(Column.Price,9);
+		//cbAdvSellFile.forceColumn(Transaction.Field.Type, Transaction.Type.Sell);
+		manager.addFile(cbAdvSellFile);*/
+		
 		ExchangeFile cbFile = new ExchangeFile("coinbase-transactions.csv");
 		cbFile.exchange = "coinbase";
 		cbFile.mapColumn(Column.Id,0);
@@ -52,6 +110,8 @@ public class CryptoReport {
 		cbpFile.mapColumn(Column.PriceWithFee,9);
 		cbpFile.mapColumn(Column.Fee,8);
 		manager.addFile(cbpFile);
+		
+		
 
 		ExchangeFile cbpTran = new ExchangeFile("coinbasepro-transactions.csv");
 		cbpTran.exchange = "coinbasepro";
@@ -90,7 +150,7 @@ public class CryptoReport {
 
 		{
 			ExchangeFile ef = new ExchangeFile("coinmetro.csv");
-			ef.force.put("type",Transaction.Type.Buy);
+			ef.forceColumn(Transaction.Field.Type,Transaction.Type.Buy);
 			ef.exchange = "coinmetro";
 			ef.allowDuplicates = false;
 			ef.swapFeeForBuy = true;
@@ -125,7 +185,7 @@ public class CryptoReport {
 
 		{
 			ExchangeFile btDep = new ExchangeFile("bittrex-deposits.csv");
-			btDep.force.put("type",Transaction.Type.Deposit);
+			btDep.forceColumn(Transaction.Field.Type,Transaction.Type.Deposit);
 			btDep.exchange = "bittrex";
 			btDep.mapColumn(Column.Id,0);
 			btDep.mapColumn(Column.Asset,1);
@@ -137,7 +197,7 @@ public class CryptoReport {
 
 		{
 			ExchangeFile btWit = new ExchangeFile("bittrex-withdrawals.csv");
-			btWit.force.put("type",Transaction.Type.Withdrawal);
+			btWit.forceColumn(Transaction.Field.Type,Transaction.Type.Withdrawal);
 			btWit.exchange = "bittrex";
 			btWit.mapColumn(Column.Id,0);
 			btWit.mapColumn(Column.Asset,1);
@@ -181,7 +241,7 @@ public class CryptoReport {
 
 		//salt was delisted while we still owned some
 		//TODO find a better way to do this
-		manager.addTransaction(
+		/*manager.addTransaction(
 				new Transaction(
 						"salt-delisted",
 						LocalDateTime.of(2020, 2, 21, 00, 00).atZone(ZoneId.of("Z")),
@@ -191,7 +251,7 @@ public class CryptoReport {
 						"bittrex",
 						new BigDecimal(0),
 						new String[]{"SALT","USD"}
-						));
+						));*/
 
 
 		//This forces the processor to consider these transfers matched
@@ -234,8 +294,14 @@ public class CryptoReport {
 
 		//processor = new CryptoProcessor("792c3be2e2607290ddb07ad8864a72ea33920bd12307b1dc08930f0431ed3921",exchange.transactionsList);
 
+		processor.setYears(Arrays.asList(2017,2018,2019,2020,2021,2022, 2023,2024));
+		
 		processor.setTransactions(manager.transactionsList);
 		processor.initTransactions();
+		
+		//FIXME REMOVE
+		//throw new RuntimeException();
+		
 		processor.processTransactions();
 
 

@@ -18,10 +18,31 @@ public class Coinbase {
 	
 	//https://cryptools.thshsh.org/oauthcallback?code=dbf25f0b52e05a680863b008e3e0e9f85627707f225b796048bf9bcf74892e30
 	
+	String apiKey;
+	String pass;
+	String secretKey;
+	
 	WebClient webClient;
 	
+	
+	
+	public Coinbase(String apiKey, String secretKey, String pass) {
+		super();
+		this.apiKey = apiKey;
+		this.secretKey = secretKey;
+		this.pass = pass;
+	}
+
 	public Coinbase() {
-		webClient = WebClient.builder().baseUrl("https://api.coinbase.com").build();
+		webClient = WebClient
+				.builder()
+				.codecs(config -> {
+					config
+					.defaultCodecs()
+					.maxInMemorySize(1024*1024*100);
+				})
+				.baseUrl("https://api.coinbase.com")
+				.build();
 		
 		
 		

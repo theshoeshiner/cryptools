@@ -32,7 +32,7 @@ import com.vaadin.flow.theme.material.Material;
 exclude = ErrorMvcAutoConfiguration.class)
 @Theme(themeClass = Lumo.class, variant = SpringVaadinApplication.THEME_VARIANT)
 @PWA(name = "Cryptools", shortName = "Cryptools",iconPath = "icons/cryptools-icon.png")
-@Push(transport = Transport.LONG_POLLING)
+@Push()
 public class SpringVaadinApplication extends SpringBootServletInitializer implements AppShellConfigurator {
 
 	public static final String THEME_VARIANT = Material.LIGHT;

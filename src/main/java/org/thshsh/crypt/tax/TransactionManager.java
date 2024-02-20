@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -51,10 +52,13 @@ public class TransactionManager {
 	
 	public static final String FIAT_ASSET = "USD";
 
+	String filePrefix;
+	
 	List<ExchangeFile> files;
 	Map<String,Transaction> externalIdTransactionMap;
 	List<Transaction> transactionsList;
 	
+	Map<String,Transaction.Type> typeStringMap = new HashMap<>();
 	/**
 	 * Missing transfers are transactions where only one side of the transfer is present 
 	 * and we need to create a phantom transaction for the missing side
@@ -141,6 +145,7 @@ public class TransactionManager {
 	public Transaction getTransactionByExternalId(String id){
 		if(this.externalIdTransactionMap.get(id) == null){
 			Transaction r = new Transaction(id);
+			LOGGER.info("adding transaction: {}",id);
 			this.externalIdTransactionMap.put(id,r);
 		}
 		return this.externalIdTransactionMap.get(id);
@@ -148,15 +153,17 @@ public class TransactionManager {
 
 
 
-	public void mapRow(CSVRecord row,ExchangeFile file) {
+	public String mapRow(CSVRecord row,ExchangeFile file) {
 
 
-		Map<Column,Integer> mapping = file.columns;
-		String id = row.get(mapping.get(Column.Id));
+		//Map<Column,List<Integer>> mapping = file.getColumns();
+		//LOGGER.info("row map: {}",row.toMap());
+		//String id = row.get(mapping.get(Column.Id));
+		String id = getValue(row, file, Column.Id);
 		//var id = row[mapping[Column.Id]];
 		if(id == null || id.length() == 0) {
 			LOGGER.debug("Skipping row with no id: {}",row);
-			return;
+			return null;
 		}
 
 		Transaction transaction = this.getTransactionByExternalId(id);
@@ -164,10 +171,11 @@ public class TransactionManager {
 		try {
 
 			if(transaction.loaded) {
+				LOGGER.info("Found Duplicate transaction by Id {} - {}",id,transaction);
 				if(!file.allowDuplicates) {
 					LOGGER.error("Ignoring Duplicate transaction by Id {} - {}",id,transaction);
 					//throw "Duplicate transaction not allowed";
-					return;
+					return null;
 				}
 			}
 			transaction.external = this.externalIds.indexOf(transaction.externalId) > -1;
@@ -175,8 +183,8 @@ public class TransactionManager {
 			transaction.exchange = file.exchange;
 			transaction.file = file;
 
-			if(file.force.size() > 0){
-				file.force.forEach((key,val)->{
+			if(file.getForce().size() > 0){
+				file.getForce().forEach((key,val)->{
 					try {
 
 						Field f = Transaction.class.getField(key);
@@ -193,10 +201,11 @@ public class TransactionManager {
 
 			}
 
-			if(mapping.containsKey(Column.Timestamp)){
+			if(file.containsColumn(Column.Timestamp)){
 
-				String ts = row.get(mapping.get(Column.Timestamp));
-
+				//String ts = row.get(mapping.get(Column.Timestamp));
+				String ts = getValue(row, file, Column.Timestamp);
+				
 				for(DateTimeFormatter dtf : formats) {
 					try {
 						LocalDateTime ldt = LocalDateTime.from(dtf.parse(ts));
@@ -214,84 +223,80 @@ public class TransactionManager {
 
 			}
 
-			if(mapping.containsKey(Column.Description)){
-				transaction.description = row.get(mapping.get(Column.Description));
+			if(file.containsColumn(Column.Description)){
+				transaction.description = getValue(row, file, Column.Description);
 			}
 
-			//see if this is a direct buy of crypto via USD
-			//Bought 0.0500 BTC for $224.68 USD
-			/*if(transaction.description.match(/Bought \d+ \w+ .* \d+ .* USD/) != null){
-				LOGGER.warn("Found external description: {}",transaction);
-			}*/
-			//TODO this doesnt work because coinbase always uses this text even if we already had a USD balance
-
-			//if(transaction.description != null && transaction.description.match(/Bought .* for .* USD/) != null){
-				//LOGGER.warn("Found external description: {}",transaction);
-			//}
-
-
-			this.mapType(row,mapping,transaction);
+			this.mapType(file,row,transaction);
 
 			if(transaction.isTradeType()) {
-				this.mapTrade(file,row,mapping,transaction);
+				this.mapTrade(file,row,transaction);
 			}
 			else if(transaction.type == Transaction.Type.Deposit || transaction.type == Transaction.Type.Withdrawal || transaction.type == Transaction.Type.Income ){
-				this.mapTransaction(row,mapping,transaction);
+				this.mapTransaction(file,row,transaction);
 			}
 
 			transaction.loaded = true;
-			LOGGER.debug("transaction: {}",transaction);
+			LOGGER.info("mapped row: {}",transaction);
+			return transaction.id;
 
 		}
 		catch(MappingException e){
 			LOGGER.warn("mapping exception on transaction: {} - {}",transaction.toStringPreInit(),e);
 			this.removeTransaction(id);
+			return null;
 		}
 
 
 	}
 
 	public void removeTransaction(String id){
-		this.externalIdTransactionMap.remove(id);
+		Transaction removed = this.externalIdTransactionMap.remove(id);
+		LOGGER.info("removed transaction: {}",removed);
+		LOGGER.info("contains: {} = {}",id,externalIdTransactionMap.containsKey(id));
 	}
 
-	public void mapType(CSVRecord row, Map<Column,Integer> mapping, Transaction transaction) throws MappingException{
-		if(mapping.containsKey(Column.Type)) {
-			String typeString = row.get(mapping.get(Column.Type)).toLowerCase();
-			Transaction.Type type;
-			if(typeString.indexOf(Transaction.Type.Buy.toString().toLowerCase()) >-1) type = Transaction.Type.Buy;
-			else if(typeString.indexOf(Transaction.Type.Sell.toString().toLowerCase()) >-1) type = Transaction.Type.Sell;
-			else if(typeString.indexOf(Transaction.Type.Withdrawal.toString().toLowerCase()) >-1) type = Transaction.Type.Withdrawal;
-			else if(typeString.indexOf("send") >-1) type = Transaction.Type.Withdrawal;
-			else if(typeString.indexOf(Transaction.Type.Deposit.toString().toLowerCase()) >-1) type = Transaction.Type.Deposit;
-			else if(typeString.indexOf("receive") >-1) type = Transaction.Type.Deposit;
-			else if(typeString.indexOf("earn") >-1) type = Transaction.Type.Income;
-			else if(typeString.indexOf("income") >-1) type = Transaction.Type.Income;
-			else if(typeString.indexOf("order") >-1) type = null; //we dont know the type, and it must come from some other method
-			else {
-				//we dont know transaction type
+	public void mapType(ExchangeFile file, CSVRecord row, Transaction transaction) throws MappingException{
+		if(file.containsColumn(Column.Type)) {
+			//String typeString = row.get(mapping.get(Column.Type)).toLowerCase();
+			String typeString = getValue(row,file,Column.Type).toLowerCase();
+			Transaction.Type type = null;
+			
+			boolean found = false;
+			for(String key : file.getTypeStringMap().keySet()) {
+				if(typeString.indexOf(key) >-1) {
+					type = file.getTypeStringMap().get(key);
+					found = true;
+					break;
+				}
+			}
+			
+			LOGGER.info("type string: {} found: {} as type: {}",typeString,found,type);
+			
+			if(!found) {
 				throw new MappingException( "Did not understand transaction type '"+typeString+"'");
 			}
+			
 			if(type!=null) transaction.type = type;
 		}
 	}
 
-	public void mapTransaction(CSVRecord row,Map<Column,Integer> mapping,Transaction transaction){
+	public void mapTransaction(ExchangeFile file,CSVRecord row,Transaction transaction){
 
-		if(mapping.containsKey(Column.Asset)) {
+		if(file.containsColumn(Column.Asset)) {
 			//var asset = row[mapping[Column.Asset]];
-			String asset = row.get(mapping.get(Column.Asset));
+			String asset = getValue(row, file, Column.Asset);
 			transaction.asset = asset;
 		}
 
-		if(mapping.containsKey(Column.Quantity)) {
+		if(file.containsColumn(Column.Quantity)) {
 			//transaction.quantity = new BigNum(row[mapping[Column.Quantity]]).abs();
-			transaction.quantity = toBigDecimal(row.get(mapping.get(Column.Quantity))).abs();
+			transaction.quantity = toBigDecimal(getValue(row, file, Column.Quantity)).abs();
 		}
 
-		if(mapping.containsKey(Column.Fee)) {
+		if(file.containsColumn(Column.Fee)) {
 			//transaction.fee = new BigNum(row[mapping[Column.Fee]]).abs();
-			transaction.fee = toBigDecimal(row.get(mapping.get(Column.Fee))).abs();
+			transaction.fee = toBigDecimal(getValue(row, file, Column.Fee)).abs();
 		}
 
 	}
@@ -312,23 +317,23 @@ public class TransactionManager {
 
 	
 
-	public void mapTrade(ExchangeFile file,CSVRecord row,Map<Column,Integer> mapping,Transaction transaction) throws MappingException{
+	public void mapTrade(ExchangeFile file,CSVRecord row,Transaction transaction) throws MappingException{
 
 
-		if(mapping.containsKey(Column.Market) || mapping.containsKey(Column.MarketInverse)) {
+		if(file.containsColumn(Column.Market) || file.containsColumn(Column.MarketInverse)) {
 			String markets;
-			if(mapping.containsKey(Column.Market)) {
-				markets = row.get(mapping.get(Column.Market));
+			if(file.containsColumn(Column.Market)) {
+				markets = getValue(row, file, Column.Market);
 			}
 			else {
-				markets = row.get(mapping.get(Column.MarketInverse));
+				markets = getValue(row, file, Column.MarketInverse);
 			}
-			transaction.market = this.splitMarket(markets,mapping.containsKey(Column.MarketInverse));
+			transaction.market = this.splitMarket(markets,file.containsColumn(Column.MarketInverse));
 			
-			if(mapping.containsKey(Column.Asset)) {
+			if(file.containsColumn(Column.Asset)) {
 				//if it contains an asset column as well then we need to use the asset column to swap the price and quantity
 				//This is only setup to use for BUY transactions
-				String asset = row.get(mapping.get(Column.Asset));
+				String asset = getValue(row, file, Column.Asset);
 				LOGGER.info("Trade has asset: {}",asset);
 				if(asset.equalsIgnoreCase(transaction.market[1])) {
 					//swap markets
@@ -338,9 +343,14 @@ public class TransactionManager {
 				
 			}
 		}
-		else if(mapping.containsKey(Column.Asset)) {
+		else if(file.containsColumn(Column.Asset)) {
 			//if we have an asset column then the other side is USD so asset is base and quote is USD
-			String asset = row.get(mapping.get(Column.Asset));
+			String asset = getValue(row, file, Column.Asset);
+			//FIXME UNCOMMENT
+			if(StringUtils.isBlank(asset)) throw new MappingException("Transaction had no asset");
+			/*if(StringUtils.isBlank(asset)) {
+				LOGGER.warn("Transaction had no asset: {}", transaction.toStringPreInit());
+			}*/
 			transaction.market = new String[] {asset,FIAT_ASSET};
 		}
 		else {
@@ -348,8 +358,8 @@ public class TransactionManager {
 			throw new RuntimeException("Transaction did not have proper markets: "+row);
 		}
 
-		if(mapping.containsKey(Column.Quantity)) {
-			BigDecimal quantity = toBigDecimal(row.get(mapping.get(Column.Quantity)));
+		if(file.containsColumn(Column.Quantity)) {
+			BigDecimal quantity = toBigDecimal(getValue(row, file, Column.Quantity));
 			if(quantity.compareTo(BigDecimal.ZERO) < 0) {
 				if(file.negativeQuantity) {
 					//use quantity to swap type
@@ -361,31 +371,34 @@ public class TransactionManager {
 				}
 			}
 			quantity = quantity.abs();
-			transaction.quantity = quantity;
+			transaction.quantity = sumOrOverwrite(file.sumDuplicates, transaction.quantity, quantity);
+
 		}
 
 
 
-		if(mapping.containsKey(Column.Fee)) {
-			transaction.fee = toBigDecimal(row.get(mapping.get(Column.Fee))).abs();
+		if(file.containsColumn(Column.Fee)) {
+			BigDecimal fee = toBigDecimal(getValue(row, file, Column.Fee)).abs();
+			transaction.fee = sumOrOverwrite(file.sumDuplicates, transaction.fee, fee);
 		}
 
 		//price not including fee
-		if(mapping.containsKey(Column.Price)) {
-			String price = row.get(mapping.get(Column.Price));
-			transaction.price = toBigDecimal(price).abs();
+		if(file.containsColumn(Column.Price)) {
+			BigDecimal price = toBigDecimal(getValue(row, file, Column.Price)).abs();
+			transaction.price = sumOrOverwrite(file.sumDuplicates, transaction.price, price);
+			
 		}
-		else if(mapping.containsKey(Column.PriceWithFee)) {
+		else if(file.containsColumn(Column.PriceWithFee)) {
 			//for a buy we need to subtract it, for a sell we need to add it  (we will eventually subtract the fee independently)
-			String price = row.get(mapping.get(Column.PriceWithFee));
+			String price = getValue(row, file, Column.PriceWithFee);
 			BigDecimal bn = toBigDecimal(price).abs();
 			if(transaction.type == Transaction.Type.Buy) bn = bn.subtract(transaction.fee);
 			else bn = bn.add(transaction.fee);
-			transaction.price = bn;
+			transaction.price = sumOrOverwrite(file.sumDuplicates, transaction.price, bn);
 		}
 
-		if(mapping.containsKey(Column.Remaining)) {
-			transaction.remaining = toBigDecimal( row.get(mapping.get(Column.Remaining)));
+		if(file.containsColumn(Column.Remaining)) {
+			transaction.remaining = toBigDecimal( getValue(row, file, Column.Remaining));
 		}
 		
 		if(file.swapPriceForSell && transaction.type == Type.Sell) {
@@ -487,9 +500,9 @@ public class TransactionManager {
 		this.files.add(file);
 	}
 
-	public void addTransaction(Transaction transaction){
+	/*public void addTransaction(Transaction transaction){
 		this.externalIdTransactionMap.put(transaction.externalId,transaction);
-	}
+	}*/
 
 	public void addMissingTransfer(String externalId,String exchange){
 		//this.missingTransfers = [externalId,exchange];
@@ -511,23 +524,23 @@ public class TransactionManager {
 	public void loadFiles() throws IOException{
 		for(int i=0;i<this.files.size();i++){
 			ExchangeFile f = this.files.get(i);
-			//await
-			//try {
-				this.loadFile(f);
-			//}
-			//catch (IOException e) {
-				//throw new RuntimeException(e);
-			//}
+			this.loadFile(f);
 		}
 	}
 
 
-	public void loadFile(ExchangeFile file) throws IOException{
+	public void loadFile(ExchangeFile file) throws IOException {
 
+		file.getTypeStringMap().putAll(typeStringMap);
 
 		LOGGER.info("loading file: {}",file);
+		
+		URL url = TransactionManager.class.getResource(filePrefix+"/"+file.url);
+		
+		LOGGER.info("loading file: {}",url);
 
-		Reader in = new InputStreamReader(TransactionManager.class.getResourceAsStream(file.url));
+
+		Reader in = new InputStreamReader(url.openStream());
 		Iterable<CSVRecord> records = CSVFormat
 				.DEFAULT
 				.withFirstRecordAsHeader()
@@ -541,16 +554,30 @@ public class TransactionManager {
 
 		LOGGER.info("load file: {}",file);
 
-		records.forEach(record -> {
+		/*records.forEach(record -> {
 			this.mapRow(record, file);
+		});*/
+		
+		int recordCount = 0;
+		int rowCount = 0;
+		for(CSVRecord record :  records) {
+			String id = this.mapRow(record, file);
+			if(id != null) recordCount++;
+			rowCount++;
+		}
+		
+		LOGGER.info("Loaded {} records from {} rows",recordCount,rowCount);
+		
 
-		});
 
 	}
 
 	protected void processTransactions() {
 
 		this.externalIdTransactionMap.forEach( (key,transaction) -> {
+			
+			LOGGER.info("contains: {} = {}",key,externalIdTransactionMap.containsKey(key));
+			
 			initAndAddTransaction(transaction);
 		});
 
@@ -559,12 +586,7 @@ public class TransactionManager {
 
 	public void initAndAddTransaction(Transaction transaction) {
 		this.initTransaction(transaction);
-		//if(transaction.timestamp.toInstant().toEpochMilli()  < this.maxTimestamp) {
 		this.transactionsList.add(transaction);
-			/*}
-			else {
-				LOGGER.debug("Transaction past time: {}",transaction);
-			}*/
 	}
 
 	protected void initTransactions(){
@@ -818,15 +840,35 @@ public class TransactionManager {
 		
 	}
 
+	public void putTypeString(String string, Transaction.Type t) {
+		typeStringMap.put(string, t);
+	}
 
 	public List<Transaction> getTransactionsList() {
 		return transactionsList;
 	}
 	
+	public static BigDecimal sumOrOverwrite(boolean allowSum, BigDecimal currentValue, BigDecimal newValue) {
+		if(currentValue != null && allowSum) {
+			return currentValue.add(newValue);
+		}
+		else return newValue;
+	}
 	
 	public static BigDecimal toBigDecimal(String s) {
 		if(StringUtils.isBlank(s)) return BigDecimal.ZERO;
 		else return new BigDecimal(s);
+	}
+	
+	public static String getValue(CSVRecord row, ExchangeFile file, Column column) {
+		List<Integer> indexes = file.getColumns().get(column);
+		if(indexes != null) {
+			for(Integer index : indexes) {
+				String value = row.get(index);
+				if(StringUtils.isNotBlank(value)) return value;
+			}
+		}
+		return null;
 	}
 
 }

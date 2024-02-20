@@ -18,9 +18,9 @@ public class GainsReport {
 
 	Map<Integer,List<GainRecord>> yearMap;
 
-	Integer[] years;
+	List<Integer> years;
 	
-	GainsReport(Integer[] y) {
+	GainsReport(List<Integer> y) {
 		this.years = y;
 		this.yearMap = new HashMap<>();
 

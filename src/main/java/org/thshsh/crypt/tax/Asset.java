@@ -110,7 +110,7 @@ public class Asset {
 	public SellRecord sell(BigDecimal quantity, BigDecimal price, Transaction transaction) {
 
 		this.balance = this.balance.subtract(quantity);
-		if(this.balance.compareTo(BigDecimal.ZERO)<0) throw new IllegalStateException("Asset Balance is < 0");
+		if(this.balance.compareTo(BigDecimal.ZERO)<0) throw new IllegalStateException("Negative Balance - Asset "+name+" Balance is: "+this.balance);
 		
 		transaction.account.setBalance(this.name,transaction.account.getBalance(this.name).subtract(quantity));
 		LOGGER.debug("Sell: {} Asset: {} New Balance: {}",new Object[] {quantity,this.name,this.balance});

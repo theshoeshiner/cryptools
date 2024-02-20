@@ -89,6 +89,8 @@ public class PortfolioValueChart extends Div {
        buttons.add(button("3m",Duration.ofDays(90),true));
        buttons.add(button("6m",Duration.ofDays(180),false));
        buttons.add(button("1y",Duration.ofDays(365),false));
+       buttons.add(button("2y",Duration.ofDays(730),false));
+       buttons.add(button("5y",Duration.ofDays(365*5),false));
        
      
 
@@ -204,7 +206,7 @@ public class PortfolioValueChart extends Div {
 		        chart = ApexChartsBuilder.get()
 		
 		                .withChart(ChartBuilder.get()
-		                        .withType(Type.line)
+		                        .withType(Type.LINE)
 		                        .withZoom(ZoomBuilder.get()
 		                                .withEnabled(false)
 		                                .build())
@@ -213,7 +215,7 @@ public class PortfolioValueChart extends Div {
 		                        .withEnabled(false)
 		                        .build())
 		                .withStroke(StrokeBuilder.get()
-		                		.withCurve(Curve.smooth)
+		                		.withCurve(Curve.SMOOTH)
 		                		.withColors(colors.toArray(new String[0]))
 		                		.withWidth(3d)
 		                		.build()
@@ -232,7 +234,7 @@ public class PortfolioValueChart extends Div {
 		               .withLabels(dates.toArray(new String[dates.size()]))
 		
 		                .withXaxis(XAxisBuilder.get()
-		                        .withType(XAxisType.datetime)
+		                        .withType(XAxisType.DATETIME)
 		                        .withLabels(LabelsBuilder
 		                        		.get()
 		                        		.withFormat("MMM dd")
@@ -252,7 +254,7 @@ public class PortfolioValueChart extends Div {
 						 	.build()*/
 		                        )
 		                .withLegend(
-		                		LegendBuilder.get().withHorizontalAlign(HorizontalAlign.left)
+		                		LegendBuilder.get().withHorizontalAlign(HorizontalAlign.LEFT)
 		                		
 		                		.build()
 		                		)

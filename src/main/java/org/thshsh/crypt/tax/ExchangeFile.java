@@ -1,14 +1,16 @@
 package org.thshsh.crypt.tax;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ExchangeFile {
 
 	String url;
 	String type;
-	Map<Column,Integer> columns;
-	Map<String,Object> force;
+	private Map<Column,List<Integer>> columns;
+	private Map<String,Object> force;
 	Boolean negativePrice = false;
 	//this means we allow negative quantities, even though we perform abs() on all of them anyways
 	Boolean negativeQuantity = false;
@@ -17,10 +19,14 @@ public class ExchangeFile {
 	//these are used for coinmetro, which swaps the meaning on some of their columns for buy/sell
 	Boolean swapPriceForSell = false;
 	Boolean swapFeeForBuy = false;
+	//tells transaction manager to sum values from duplicate records instead of overwriting, needed for coinbase adv
+	Boolean sumDuplicates = false; 
 	//this determines how we pick between duplicates and is used for coinbase
 	Integer priority = 100;
 
 	String exchange;
+	
+	Map<String,Transaction.Type> typeStringMap = new HashMap<>();
 
 	public ExchangeFile(String url) {
 		this(url,null);
@@ -34,14 +40,17 @@ public class ExchangeFile {
 	}
 
 	public void mapColumn(Column type,Integer index){
-		this.columns.put(type, index);
+		if(!columns.containsKey(type)) this.columns.put(type, new ArrayList<>());
+		this.columns.get(type).add(index);
+		//this.columns.put(type, index);
 
 	}
 
-	public void forceColumn(String key,String value){
-		this.force.put(key,value);
+	public void forceColumn(Object key,Object value){
+		this.force.put(key.toString(),value);
 	}
 
+	
 
 
 	/*
@@ -61,14 +70,44 @@ Column.Description = "Description";
 	 */
 
 
+	public Map<Column, List<Integer>> getColumns() {
+		return columns;
+	}
+
+	public Map<String, Object> getForce() {
+		return force;
+	}
+
 	@Override
 	public String toString() {
 		return "ExchangeFile [url=" + url + ", type=" + type + ", exchange=" + exchange + "]";
 	}
 
+	public void putTypeString(String string, Transaction.Type t) {
+		typeStringMap.put(string, t);
+	}
+
+	public boolean containsColumn(Column column) {
+		return columns.containsKey(column);
+	}
+	
+	public Map<String, Transaction.Type> getTypeStringMap() {
+		return typeStringMap;
+	}
+
 
 
 	public static enum Column {
-		Timestamp,Id,Type,Market,MarketInverse,Asset,Price,PriceWithFee,Fee,Quantity,Remaining,Address,Description;
+		Timestamp,Id,Type,
+		
+		Market,MarketInverse,
+		
+		Asset,
+		
+		Price,PriceWithFee,Fee,
+		
+		Quantity,
+		
+		Remaining,Address,Description;
 	}
 }

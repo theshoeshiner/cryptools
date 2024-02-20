@@ -21,18 +21,16 @@ import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
+import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
 import org.thshsh.crypt.web.view.ManagePortfolioView;
 import org.thshsh.vaadin.BinderUtils;
 import org.thshsh.vaadin.data.StringSearchDataProvider;
 import org.thshsh.vaadin.entity.EntityDescriptor;
-import org.vaadin.addons.thshsh.easyrender.EasyRender;
-import org.vaadin.addons.thshsh.easyrender.RouterLinkRenderer;
 import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.renderer.NumberRenderer;
@@ -109,7 +107,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 		
 
 		grid.addColumn(
-				EasyRender.router(ManagePortfolioView.class, Portfolio::getId, Portfolio::getName, ManagePortfolioView.ID_PARAM)
+				AppEasyRender.router(ManagePortfolioView.class, Portfolio::getId, Portfolio::getName)
 				)
 				.setHeader("Name").setAutoWidth(true).setFlexGrow(0).setSortProperty("name");
 

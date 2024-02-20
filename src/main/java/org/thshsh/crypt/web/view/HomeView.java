@@ -54,11 +54,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 
+@SuppressWarnings("serial")
 @Route(value = HomeView.PATH, layout = MainLayout.class)
 @PageTitle(HomeView.TITLE)
-//@RouteAlias(value = "", layout = MainLayout.class)
 public class HomeView extends VerticalLayout {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(HomeView.class);
@@ -280,7 +281,7 @@ public class HomeView extends VerticalLayout {
         	double t = Math.round(p.getLatest().getMaxToTriggerPercent().doubleValue()*100);
             ApexCharts radialBarChart = ApexChartsBuilder.get()
                     .withChart(ChartBuilder.get()
-                            .withType(Type.radialBar)
+                            .withType(Type.RADIALBAR)
                             .build())
                     .withPlotOptions(PlotOptionsBuilder.get()
                     		
@@ -320,7 +321,7 @@ public class HomeView extends VerticalLayout {
         public GradientRadialBarChartExample() {
             ApexCharts gradientRadialBarChart = ApexChartsBuilder.get()
                     .withChart(ChartBuilder.get()
-                            .withType(Type.radialBar)
+                            .withType(Type.RADIALBAR)
                             .withToolbar(ToolbarBuilder.get().withShow(true).build())
                             .build())
                     .withPlotOptions(PlotOptionsBuilder.get().withRadialBar(RadialBarBuilder.get()
@@ -330,7 +331,7 @@ public class HomeView extends VerticalLayout {
                                     .withMargin(0.0)
                                     .withSize("70%")
                                     .withBackground("#fff")
-                                    .withPosition(HollowPosition.front)
+                                    .withPosition(HollowPosition.FRONT)
                                     .withDropShadow(DropShadowBuilder.get()
                                             .withEnabled(true)
                                             .withTop(3.0)
@@ -380,7 +381,7 @@ public class HomeView extends VerticalLayout {
                             .build())
                     .withSeries(75.0)
                     .withStroke(StrokeBuilder.get()
-                            .withLineCap(LineCap.round)
+                            .withLineCap(LineCap.ROUND)
                             .build())
                     .withLabels("Percent")
                     .build();

@@ -37,7 +37,8 @@ public class CryptoProcessor {
 	//CryptoCompare cryptoCompare;
 	Accounts accounts;
 	
-	Integer[] years = new Integer[] {2017,2018,2019,2020,2021,2022};
+	//Integer[] years = new Integer[] {2017,2018,2019,2020,2021,2022};
+	List<Integer> years;
 
 	CryptoProcessor (){
 		this.loading = 0;
@@ -49,7 +50,10 @@ public class CryptoProcessor {
 	public void setTransactions(List<Transaction> trs) {
 		this.transactions = (trs==null)?new ArrayList<>():trs;
 	}
-
+	
+	public void setYears(List<Integer> years) {
+		this.years = years;
+	}
 
 	public Accounts getAccounts() {
 		return accounts;
@@ -85,9 +89,11 @@ public class CryptoProcessor {
 			if(asset.getBalance().compareTo(MIN)>0) {
 				Currency c = currRepo.findByKeyIgnoreCase(asset.name);
 				MarketRate rate = rateService.getMarketRates(timestamp, c).get(c);
-				value = asset.getBalance().multiply(rate.getRate());
-				//totalValue = totalValue.add(value);
+				if(rate != null) {
+					value = asset.getBalance().multiply(rate.getRate());
+				}
 				totalValue.inc(value);
+				
 			}
 			LOGGER.info("Asset: {} Balance: {} Value: {}",asset.getName(),asset.getBalance(),value);
 		});
@@ -148,7 +154,7 @@ public class CryptoProcessor {
 
 		for (Transaction t : ts) {
 
-			LOGGER.debug("initTransaction: {}",t);
+			LOGGER.info("initTransaction: {}",t);
 
 			if(t.feeTo == null) t.feeTo = BigDecimal.ZERO;
 			if(t.feeFrom == null) t.feeFrom = BigDecimal.ZERO;
@@ -170,6 +176,7 @@ public class CryptoProcessor {
 					spotTo = t.quantityFrom.divide(t.quantityTo ,RoundingMode.HALF_EVEN);
 				}
 				else if(t.assetTo.equals(Asset.FIAT_ASSET)){
+					LOGGER.info("quantityFrom: {} quantityTo: {}",t.quantityFrom,t.quantityTo);
 					spotFrom = t.quantityTo.divide(t.quantityFrom,RoundingMode.HALF_EVEN);
 				}
 				else {
@@ -198,7 +205,16 @@ public class CryptoProcessor {
 				t.fiatFeeFrom = t.feeFrom.multiply(spotFrom);
 				t.pricePerFrom = t.fiatFrom .divide(t.quantityFrom,RoundingMode.HALF_EVEN);
 				t.fiatFeeTo = t.feeTo.multiply(spotTo);
-				t.pricePerTo = t.fiatTo.equals(BigDecimal.ZERO)?BigDecimal.ZERO: t.fiatTo.divide(t.quantityTo,RoundingMode.HALF_EVEN);
+				//if(t.fiatTo.equals(BigDecimal.ZERO)) {
+				if(t.fiatTo.compareTo(BigDecimal.ZERO) == 0) {	
+					//LOGGER.info("fiatTo is zero: {}",t.fiatTo);
+					t.pricePerTo = BigDecimal.ZERO;
+				}
+				else {
+					//LOGGER.info("fiatTo is nonzero: {}",t.fiatTo);
+					t.pricePerTo = t.fiatTo.divide(t.quantityTo,RoundingMode.HALF_EVEN);
+				}
+				//t.pricePerTo = t.fiatTo.equals(BigDecimal.ZERO)?{BigDecimal.ZERO: t.fiatTo.divide(t.quantityTo,RoundingMode.HALF_EVEN);
 
 			}
 			else if(t.isIncomeType()){

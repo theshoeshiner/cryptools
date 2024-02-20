@@ -8,6 +8,18 @@ import org.thshsh.crypt.MarketRate;
 
 public class Transaction {
 
+	//public static final String FIELD_TYPE = "type";
+	
+	public enum Field {
+		Type;
+
+		@Override
+		public String toString() {
+			return super.toString().toLowerCase();
+		}
+		
+	}
+	
 	public enum Type {
 		Buy,Sell,Deposit,Withdrawal,Income;
 		public Type opposite() {

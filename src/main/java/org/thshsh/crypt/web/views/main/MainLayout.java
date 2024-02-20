@@ -439,4 +439,12 @@ public class MainLayout extends AppLayout {
     		lastDrawerUserState = null;
     	}
     }
+
+	@Override
+	public void setContent(Component content) {
+		LOGGER.info("setContent: {}",content);
+		super.setContent(content);
+	}
+    
+    
 }

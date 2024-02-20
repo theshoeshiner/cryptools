@@ -176,11 +176,6 @@ public class UserGrid extends AppEntityGrid<User> {
 		}
 	}*/
 
-	@Override
-	public Dialog createDialog(User entity) {
-		UserDialog cd = appCtx.getBean(UserDialog.class,entity);
-		return cd;
-	}
 
 
 	@Override
