@@ -19,6 +19,18 @@ public class Beans {
 
 	@Value("${cryptocompare.apikey}")
 	String apiKey;
+	
+	@Value("${smtp.user}")
+	String smtpUser;
+	
+	@Value("${smtp.pass}")
+	String smtpPass;
+	
+	@Value("${advtrade.client}")
+	String advTradeClient;
+	
+	@Value("${advtrade.secret}")
+	String advTradeSecret;
 
 	@Bean
 	@Scope("prototype")
@@ -33,8 +45,8 @@ public class Beans {
 	    mailSender.setHost("smtp.thshsh.org");
 	    mailSender.setPort(587);
 
-	    mailSender.setUsername("cryptools@thshsh.org");
-	    mailSender.setPassword("crypt00ls");
+	    mailSender.setUsername(smtpUser);
+	    mailSender.setPassword(smtpPass);
 
 	    Properties props = mailSender.getJavaMailProperties();
 	    props.put("mail.transport.protocol", "smtp");
@@ -56,8 +68,8 @@ public class Beans {
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public AdvancedTradeApi advancedtrade() {
 		return new AdvancedTradeApi(
-				"4008e661cd4e9c943ece898ccd3671050d852f03517341e453a5a7bc1a6f5e25",
-				"d905f7b250a654762288560e694e246ebfc4546d5abc54d09c11275118c2030d",
+				advTradeClient,
+				advTradeSecret,
 				"https://cryptools.thshsh.org/oauthcallback");
 	}
 	
