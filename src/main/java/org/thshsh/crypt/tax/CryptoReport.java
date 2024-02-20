@@ -292,29 +292,13 @@ public class CryptoReport {
 
 		manager.loadAndInit();
 
-		//processor = new CryptoProcessor("792c3be2e2607290ddb07ad8864a72ea33920bd12307b1dc08930f0431ed3921",exchange.transactionsList);
-
 		processor.setYears(Arrays.asList(2017,2018,2019,2020,2021,2022, 2023,2024));
 		
 		processor.setTransactions(manager.transactionsList);
 		processor.initTransactions();
-		
-		//FIXME REMOVE
-		//throw new RuntimeException();
-		
+
 		processor.processTransactions();
 
-
-
-		/*for(var record of processor.accounts.records){
-			addToTable(record);
-		}*/
-
-		/*for(var record of processor.accounts.records){
-			if(record instanceof SellRecordBlock) {
-				addSaleRecord(record);
-			}
-		}*/
 
 		processor.gainsReport();
 		processor.balanceReport();

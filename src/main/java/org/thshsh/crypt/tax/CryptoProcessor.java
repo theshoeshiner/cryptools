@@ -34,16 +34,12 @@ public class CryptoProcessor {
 
 	List<Transaction> transactions;
 	Integer loading;
-	//CryptoCompare cryptoCompare;
 	Accounts accounts;
 	
-	//Integer[] years = new Integer[] {2017,2018,2019,2020,2021,2022};
 	List<Integer> years;
 
 	CryptoProcessor (){
 		this.loading = 0;
-		//this.transactions = (trs==null)?new ArrayList<>():trs;
-		//this.cryptoCompare = new CryptoCompare(apiKey);
 		this.accounts = new Accounts();
 	}
 	
