@@ -1,10 +1,10 @@
-#Cryptools
+# Cryptools
 
 A Crypto Portfolio Tracker / Balancer
 
-#Cryptax
+# Cryptax
 
-A transaction capital gains calculator.
+A capital gains calculator (Currently requires manual coding to import transaction files)
 
 * Loads all past transactions and trades into memory
 * Calculates cost basis for each specific share based on historical price using the cryptocompare.com API
