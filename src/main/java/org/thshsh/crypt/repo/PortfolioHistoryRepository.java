@@ -7,9 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.vaadin.data.QueryByExampleRepository;
 
-public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHistory, Long>, QueryByExampleRepository<PortfolioHistory, Long>  {
+public interface PortfolioHistoryRepository  extends BaseRepository<PortfolioHistory, Long> {
 
 	List<PortfolioHistory> findByPortfolioOrderByTimestampAsc(Portfolio p);
 	

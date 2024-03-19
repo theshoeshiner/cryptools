@@ -7,9 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.thshsh.crypt.Balance;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.Portfolio;
-import org.thshsh.vaadin.data.QueryByExampleRepository;
 
-public interface BalanceRepository extends BaseRepository<Balance, Long>, QueryByExampleRepository<Balance, Long>  {
+public interface BalanceRepository extends BaseRepository<Balance, Long> {
 
 	List<Balance> findByPortfolio(Portfolio p);
 	

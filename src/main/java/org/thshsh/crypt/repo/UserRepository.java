@@ -7,9 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.User;
-import org.thshsh.vaadin.data.QueryByExampleRepository;
 
-public interface UserRepository extends BaseRepository<User, Long >, QueryByExampleRepository<User, Long> {
+public interface UserRepository extends BaseRepository<User, Long > {
 
 	Optional<User> findByConfirmToken(String email);
 	Optional<User> findByEmail(String email);

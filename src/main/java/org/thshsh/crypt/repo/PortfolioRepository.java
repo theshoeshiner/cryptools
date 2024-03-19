@@ -8,11 +8,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.User;
-import org.thshsh.vaadin.data.QueryByExampleRepository;
 import org.thshsh.vaadin.data.SecuredStringSearchRepository;
 
 public interface PortfolioRepository extends BaseRepository<Portfolio, Long>, 
-QueryByExampleRepository<Portfolio, Long>,
 HasNameRepository<Portfolio> ,
 SecuredStringSearchRepository<Portfolio, Long>
 {
