@@ -145,14 +145,14 @@ public class UserGrid extends AppEntityGrid<User> {
 	protected void createOperations() {
 		super.createOperations();
 		
-		operations.add(EntityOperation.<User>create()
-				.withIcon(VaadinIcon.CHECK)
-				.withName("Send Confirmation Email")
+		operations.add(EntityOperation.<User>builder()
+				.icon(VaadinIcon.CHECK)
+				.name("Send Confirmation Email")
 				//.withDisplay(!showEditButton)
-				.withConfirm(true)
-				.withSingularOperation((e) -> {
+				.confirm(true)
+				.singularOperation((e) -> {
 					mailService.sendAccountConfirmEmail(e, e.getConfirmToken());
-				}))
+				}).build())
 				;
 		
 	}

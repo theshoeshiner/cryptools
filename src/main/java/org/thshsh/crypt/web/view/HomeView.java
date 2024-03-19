@@ -18,8 +18,9 @@ import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioRepository;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.web.AppSession;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.crypt.web.view.portfolio.PortfolioDialog;
-import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
 import org.thshsh.crypt.web.views.main.MainLayout;
 
 import com.github.appreciated.apexcharts.ApexCharts;

@@ -11,7 +11,7 @@ import org.thshsh.crypt.Grade;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
 import org.thshsh.vaadin.entity.EntityDescriptor;
 
 import com.vaadin.flow.component.grid.Grid;

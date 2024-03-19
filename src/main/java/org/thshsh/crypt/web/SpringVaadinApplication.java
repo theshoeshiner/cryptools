@@ -10,14 +10,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.thshsh.crypt.CryptModel;
 import org.thshsh.crypt.CryptmanModel;
-import org.thshsh.crypt.web.view.portfolio.PortfolioSettingsDescriptor;
 import org.thshsh.vaadin.entity.EntityGrid;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.material.Material;

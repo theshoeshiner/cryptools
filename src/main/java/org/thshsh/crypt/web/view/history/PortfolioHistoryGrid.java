@@ -2,34 +2,27 @@ package org.thshsh.crypt.web.view.history;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioHistory;
-import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
-import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.vaadin.BinderUtils;
-import org.thshsh.vaadin.UIUtils;
 import org.thshsh.vaadin.entity.EntityDescriptor;
-import org.vaadin.addons.thshsh.easyrender.RouterLinkRenderer;
 import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 
 @SuppressWarnings("serial")
@@ -43,7 +36,7 @@ public class PortfolioHistoryGrid extends AppEntityGrid<PortfolioHistory>{
 	
 	public PortfolioHistoryGrid() {
 		super(null, FilterMode.Example);
-		this.defaultSortOrderProperty="timestamp";
+		this.defaultSortOrderProperties = Arrays.asList("timestamp");
 		this.defaultSortAsc=false;
 		this.appendButtonColumn = true;
 	}

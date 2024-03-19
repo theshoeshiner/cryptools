@@ -16,7 +16,7 @@ import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.UiComponents;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
 import org.thshsh.vaadin.UIUtils;
 import org.thshsh.vaadin.entity.EntityDescriptor;
 import org.thshsh.vaadin.entity.EntityOperation;
@@ -51,7 +51,7 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 		//this.showButtonColumn=true;
 		this.showEditButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWrite);
 		this.showDeleteButton = SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete);
-		this.defaultSortOrderProperty="rank";
+		this.defaultSortOrderProperties = Arrays.asList("rank");
 		this.defaultSortAsc=false;
 		this.appendButtonColumn=true;
 	}
@@ -153,15 +153,15 @@ public class CurrenciesGrid extends AppEntityGrid<Currency> {
 		
 		if(SecurityUtils.hasAccess(Currency.class, Access.ReadWriteDelete)) {
 			operations.add(
-			EntityOperation.<Currency>create()
-			.withIcon(VaadinIcon.REFRESH)
-			.withName("Refresh")
+			EntityOperation.<Currency>builder()
+			.icon(VaadinIcon.REFRESH)
+			.name("Refresh")
 			//.withDisplay(!showDeleteButton)
 			//.withCollectiveOperation(this::delete)
-			.withConfirm(true)
-			.withSingularOperation(e->{
+			.confirm(true)
+			.singularOperation(e->{
 				refreshRate(e);
-			})
+			}).build()
 			);
 		}
 		

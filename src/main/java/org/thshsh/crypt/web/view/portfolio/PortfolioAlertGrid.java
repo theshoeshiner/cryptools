@@ -2,10 +2,10 @@ package org.thshsh.crypt.web.view.portfolio;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Access;
@@ -13,14 +13,12 @@ import org.thshsh.crypt.Feature;
 import org.thshsh.crypt.Portfolio;
 import org.thshsh.crypt.PortfolioAlert;
 import org.thshsh.crypt.User;
-import org.thshsh.crypt.repo.PortfolioAlertRepository;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
 import org.thshsh.vaadin.BinderUtils;
 import org.thshsh.vaadin.entity.EntityDescriptor;
-import org.vaadin.addons.thshsh.easyrender.RouterLinkRenderer;
 import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.grid.Grid;
@@ -34,7 +32,7 @@ public class PortfolioAlertGrid extends AppEntityGrid<PortfolioAlert>{
 	public PortfolioAlertGrid() {
 		super(null, FilterMode.Example);
 		this.appendButtonColumn = SecurityUtils.hasAccess(Feature.Portfolio, Access.Super);
-		this.defaultSortOrderProperty="timestamp";
+		this.defaultSortOrderProperties = Arrays.asList("timestamp");
 		this.defaultSortAsc=false;
 	}
 

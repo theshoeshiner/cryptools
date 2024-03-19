@@ -2,6 +2,7 @@ package org.thshsh.crypt.web.view.activity;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class ActivityGrid extends AppEntityGrid<Activity> {
 	
 	public ActivityGrid() {
 		super(null, FilterMode.Example);
-		this.defaultSortOrderProperty = "timestamp";
+		this.defaultSortOrderProperties = Arrays.asList("timestamp");
 		this.defaultSortAsc=false;
 	}
 

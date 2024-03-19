@@ -12,7 +12,7 @@ import org.thshsh.crypt.Portfolio;
 public class PortfolioDialog extends org.thshsh.vaadin.entity.EntityDialog<Portfolio,Long> {
 
 	public PortfolioDialog() {
-		super(PortfolioForm.class,null);
+		super(PortfolioForm.class);
 	}
 	
 	public PortfolioDialog(Portfolio en) {

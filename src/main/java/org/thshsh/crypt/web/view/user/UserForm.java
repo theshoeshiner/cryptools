@@ -133,7 +133,7 @@ public class UserForm extends AppEntityForm<User,Long> {
 
 		//formLayout.startHorizontalLayout();
 		
-		formLayout.setSpacing(false);
+		formLayout.getLayout().setSpacing(false);
 		
 		
 		if(type == Type.Admin) {

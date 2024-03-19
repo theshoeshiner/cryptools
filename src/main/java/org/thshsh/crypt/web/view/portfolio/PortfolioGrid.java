@@ -23,7 +23,8 @@ import org.thshsh.crypt.web.AppSession;
 import org.thshsh.crypt.web.security.SecurityUtils;
 import org.thshsh.crypt.web.view.AppEasyRender;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.vaadin.BinderUtils;
 import org.thshsh.vaadin.data.StringSearchDataProvider;
 import org.thshsh.vaadin.entity.EntityDescriptor;
@@ -74,7 +75,7 @@ public class PortfolioGrid extends AppEntityGrid<Portfolio> {
 	}
 
 	@Override
-	public DataProvider<Portfolio, ?> createDataProvider() {
+	public DataProvider<Portfolio, ?> createRootDataProvider() {
 
 		// Authentication authentication =
 		// SecurityContextHolder.getContext().getAuthentication();

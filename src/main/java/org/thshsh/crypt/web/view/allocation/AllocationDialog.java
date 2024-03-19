@@ -28,7 +28,7 @@ public class AllocationDialog extends org.thshsh.vaadin.entity.EntityDialog<Allo
 	Currency currency;
 
 	public AllocationDialog(Portfolio p,Currency c) {
-		super(AllocationForm.class,null);
+		super(AllocationForm.class);
 		this.portfolio = p;
 		this.currency = c;
 		

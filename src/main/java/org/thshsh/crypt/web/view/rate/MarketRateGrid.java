@@ -2,27 +2,24 @@ package org.thshsh.crypt.web.view.rate;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 import org.thshsh.crypt.Currency;
 import org.thshsh.crypt.MarketRate;
-import org.thshsh.crypt.repo.MarketRateRepository;
 import org.thshsh.crypt.web.view.AppEntityGrid;
-import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.vaadin.BinderUtils;
-import org.thshsh.vaadin.data.QueryByExampleDataProvider;
 import org.thshsh.vaadin.entity.EntityDescriptor;
 import org.vaadin.addons.thshsh.easyrender.TemporalRenderer;
 
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 
 @SuppressWarnings("serial")
@@ -33,7 +30,7 @@ public class MarketRateGrid extends AppEntityGrid<MarketRate> {
 
 	public MarketRateGrid() {
 		super( null, FilterMode.Example);
-		this.defaultSortOrderProperty="timestamp";
+		this.defaultSortOrderProperties = Arrays.asList("timestamp");
 		this.defaultSortAsc=false;
 		this.showDeleteButton=false;
 		this.showEditButton=false;

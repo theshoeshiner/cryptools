@@ -20,7 +20,7 @@ import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.serv.ManagePortfolioService;
 import org.thshsh.crypt.web.view.AppEntityForm;
 import org.thshsh.crypt.web.view.PercentConverter;
-import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.vaadin.SingleCheckboxGroup;
 import org.thshsh.vaadin.entity.EntityDescriptor;
 
@@ -152,7 +152,7 @@ public class AllocationForm extends AppEntityForm<Allocation, Long> {
 		
 		
 		
-		formLayout.setPadding(false);
+		formLayout.getLayout().setPadding(false);
 
 		
 		BigDecimal sum = alloRepo.findAllocationSumByPortfolio(portfolio).orElseGet(() -> BigDecimal.ZERO);

@@ -16,8 +16,8 @@ import org.thshsh.crypt.PortfolioHistory;
 import org.thshsh.crypt.repo.PortfolioHistoryRepository;
 import org.thshsh.crypt.serv.ImageService;
 import org.thshsh.crypt.web.UiComponents;
-import org.thshsh.crypt.web.view.ManagePortfolioView;
-import org.thshsh.crypt.web.view.portfolio.PortfolioEntryGrid;
+import org.thshsh.crypt.web.view.manage.ManagePortfolioView;
+import org.thshsh.crypt.web.view.manage.PortfolioEntryGrid;
 import org.thshsh.vaadin.BinderUtils;
 import org.vaadin.addons.thshsh.easyrender.ImageRenderer;
 
